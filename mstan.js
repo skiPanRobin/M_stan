@@ -38,6 +38,7 @@ function mstand(){
     selectShop('深圳湾万象城店', 500)
     pressSleep('去下单', 300)
     pressSleep('零咖特饮', 2000)
+    pressSleep('零咖特饮', 2000)
     pressSleep('黑糖燕麦奶', 1000)
     pressSleep('少冰', 500)
     pressSleep('加入购物车', 1000)
