@@ -44,7 +44,7 @@ function mstand(){
     pressSleep('加入购物车', 1000)
     pressSleep('去结算', 500)
     pressSleep('如有忌口过敏请填写到这儿', 500)
-    pressSleep('去结算', 500)
+    pressSleep('店内就餐', 500)
     pressSleep('如有忌口过敏请填写到这儿', 500)
     writeNotes('不吃葱姜蒜', 500)
 }
