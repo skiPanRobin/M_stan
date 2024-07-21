@@ -5,6 +5,12 @@ var width = device.width;
 var height = device.height;
 toast('width: ' + width + 'height: ' + height)
 
+function randomInt(min, max){
+    min = Math.ceil(min)
+    max = Math.floor(max)
+    return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
 function actionSleep(func, sleepTime){
     func();
     sleep(sleepTime)
@@ -139,4 +145,5 @@ module.exports = {
     inputAndSubmit: inputAndSubmit,
     pressXY: pressXY,
     autoSwipe: autoSwipe,
+    randomInt: randomInt
 };
