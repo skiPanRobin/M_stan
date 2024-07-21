@@ -1,93 +1,104 @@
 // 打开调试
-// auto();
-// const {pressSleep, autoSwipe, pressXY, inputAndSubmit, actionSleep, clickByPartialText} = require('./utils')
-// var utils = require('./utils')
+auto();
+const {randomInt, pressSleep} = require('./utils')
 
-// utils.inputAndSubmit('海上世界', 1000)
-
-
-// function writeNotes(notes, sleepTime, callTimes){
-//     if (!notes){
-//         console.info('备注为空')
-//         sleep(sleepTime)
-//         return
-//     }
-//     // utils.clickSleep('如有忌口过敏请填写到这儿', 3000)
-//     // pressSleep('如有忌口过敏请填写到这儿', 1000)
-//     // var parentEditText = className('android.widget.TextView').textContains('如有忌口').findOne(3000)
-//     // var bounds = parentEditText.bounds()
-//     // var x = bounds.centerX()
-//     // var y = bounds.centerY()
-//     // console.info('x ' + x + 'y ' + y )
-//     // gesture(500,[x, y] , [x+10, y+10]) 
-//     // click(x, y)
-    
-//     pressSleep('如有忌口过敏请填写到这儿', 1000)
-//     sleep(2000)
-//     pressXY(500, 1000, 100, 1000)
-//     var parentEditText = className("android.widget.EditText").textContains("60字以内").findOne(3000);
-//     if (parentEditText) {
-//         console.info('parentEditText focusable ' + parentEditText.focusable()) 
-//         // 获取父控件的子控件列表
-//         var childEditText = parentEditText.parent().find(className("android.widget.EditText"));
-    
-//         // 过滤下一级子控件
-//         for (var i = 0; i < childEditText.size(); i++) {
-//             var child = childEditText.get(i);
-//             if (child.focusable()) {
-//                 // 你可以在这里对找到的子控件进行进一步操作，例如点击
-//                 toast('找到下一级子控件 focusable ' + child.focusable() + ' index: ' + i) 
-//                 child.click();
-//                 sleep(1000)
-//                 toast("找到下一级子控件 focused: " + child.focused())
-//                 child.setText(notes)
-//                 sleep(sleepTime)
-//             }
-//         }
-//     } else {
-//         callTimes = callTimes + 1
-//         if (callTimes > 3){
-//             console.error('无法定位到备注弹窗控件, 尝试' + callTimes  + '失败')
-//             return
-//         }
-//         pressSleep('店内就餐', 2000)
-//         console.info("未找到包含 '60字以内' 的 EditText 控件 callTimes" + callTimes);
-//         writeNotes(notes, sleepTime, callTimes)
-//     }
-// }
-while (condition) {
+function clickRemark(){
     var ele = text('如有忌口过敏请填写到这儿').findOne(5000)
     var bds = ele.bounds()
 
-    var x = bds.centerX()
-    var y = bds.centerY()
-    toast('x: '+ x + 'y: '+ y)
-    sleep(1000)
-    
+    var x = bds.centerX() 
+    var y = bds.centerY() 
+    // 定义脚本内容
+    var openRemarkShell = `su
+    sendevent /dev/input/event4 0 0 0
+    sendevent /dev/input/event4 3 57 486
+    sendevent /dev/input/event4 1 330 1
+    sendevent /dev/input/event4 1 325 1
+    sendevent /dev/input/event4 3 53 ${x + randomInt(-100, 100)}
+    sendevent /dev/input/event4 3 54 ${y + randomInt(-15, 15)}
+    sendevent /dev/input/event4 0 0 0
+    sendevent /dev/input/event4 3 57 -1
+    sendevent /dev/input/event4 1 330 0
+    sendevent /dev/input/event4 1 325 0
+    sleep ${randomInt(10, 20)/100}
+    sendevent /dev/input/event4 0 0 0
+    sleep ${randomInt(50, 60)/100}
+    sendevent /dev/input/event4 0 0 0
+    sendevent /dev/input/event4 3 57 486
+    sendevent /dev/input/event4 1 330 1
+    sendevent /dev/input/event4 1 325 1
+    sendevent /dev/input/event4 3 53 ${x + randomInt(-100, 100)}
+    sendevent /dev/input/event4 3 54 ${y + randomInt(-15, 15)}
+    sendevent /dev/input/event4 0 0 0
+    sendevent /dev/input/event4 3 57 -1
+    sendevent /dev/input/event4 1 330 0
+    sendevent /dev/input/event4 1 325 0
+    sleep ${randomInt(10, 20)/100}
+    sendevent /dev/input/event4 0 0 0
+    sleep ${randomInt(50, 60)/100}
+    sendevent /dev/input/event4 0 0 0
+    sendevent /dev/input/event4 3 57 486
+    sendevent /dev/input/event4 1 330 1
+    sendevent /dev/input/event4 1 325 1
+    sendevent /dev/input/event4 3 53 ${x + randomInt(-100, 100)}
+    sendevent /dev/input/event4 3 54 ${y + randomInt(-15, 15)}
+    sendevent /dev/input/event4 0 0 0
+    sendevent /dev/input/event4 3 57 -1
+    sendevent /dev/input/event4 1 330 0
+    sendevent /dev/input/event4 1 325 0
+    sleep ${randomInt(10, 20)/100}
+    sendevent /dev/input/event4 0 0 0
+    sleep ${randomInt(50, 60)/100}
+    exit
+    exit
+    `
+    var result = shell(openRemarkShell, true);
+    toast('打开备注结果: ' + result.code)
+
+
 }
 
-gesture(534, [x-5, y+3], [x+1, y-10])
-// // tap(bds.centerX(), bds.centerY());
-// writeNotes('加辣加麻, 葱姜蒜都要, 不要香菜', 1000, 0)
-// importClass(android.support.test.uiautomator.UiSelector);
-// var ra = new RootAutomator();
-// events.on('exit', function(){
-//   ra.exit();
-// });
-// ra.touchDown(x, y)
-// sleep(300)
-// ra.touchUp()
-// toast('x: '+ x + 'y: '+ y)
-// // toast('longClick' + ele.longClick(x, y));
-// press(x, y, 600)
-// sleep(1000)
-// click(400, 950)
-// sleep(2000)
-// var result = shell("input text '加辣加麻, 葱姜蒜都要, 不要香菜'", true);
-// if (result.code == 0) {
-//     toast("输入文本成功");
-// } else {
-//     toast("输入文本失败");
-// }
+function writeNotes(notes, sleepTime, callTimes){
+    if (!notes){
+        console.info('备注为空')
+        sleep(sleepTime)
+        return
+    }
+    var parentEditText = className("android.widget.EditText").textContains("60字以内").findOne(4000);
+    if (parentEditText) {
+        console.info('parentEditText focusable ' + parentEditText.focusable()) 
+        // 获取父控件的子控件列表
+        var childEditText = parentEditText.parent().find(className("android.widget.EditText"));
 
-toast("操作完成");
+        // 过滤下一级子控件
+        for (var i = 0; i < childEditText.size(); i++) {
+            var child = childEditText.get(i);
+            if (child.focusable()) {
+                // 你可以在这里对找到的子控件进行进一步操作，例如点击
+                toast('找到下一级子控件 focusable ' + child.focusable() + ' index: ' + i) 
+                child.click();
+                sleep(1000)
+                toast("找到下一级子控件 focused: " + child.focused())
+                child.setText(notes)
+                sleep(sleepTime)
+                break
+            }
+        }
+        sleep(randomInt(5, 15)/10)
+        className("android.widget.TextView").text("完成").findOne(4000).click();
+        sleep(randomInt(30, 50)/10)
+        className("android.widget.TextView").text("保存").findOne(4000).click();
+    } else {
+        callTimes = callTimes + 1
+        if (callTimes > 3){
+            console.error('无法定位到备注弹窗控件, 尝试' + callTimes  + '失败')
+            return
+        }
+        pressSleep('店内就餐', 2000)
+        console.info("未找到包含 '60字以内' 的 EditText 控件 callTimes" + callTimes);
+        writeNotes(notes, sleepTime, callTimes)
+    }
+}
+
+clickRemark()
+writeNotes('不加葱姜蒜', 1000, 0)
