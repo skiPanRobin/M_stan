@@ -11,6 +11,11 @@ function randomInt(min, max){
     return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
+// function sleep(sleepTime){
+//     var duration   = Math.ceil(sleepTime * 0.1)
+//     return randomInt(sleepTime - duration, sleepTime + duration)
+// }
+
 function actionSleep(func, sleepTime){
     func();
     sleep(sleepTime)
@@ -110,8 +115,6 @@ function inputAndSubmit(inputText, findText, sleepTime) {
         toast("已输入: " + inputText);
         inputField.click();
         sleep(sleepTime)
-        // pressXY(inputField.centerX(),inputField.centerY(), 100, 2000)
-        // 查找确定按钮元素（假设通过text定位）
     } else {
         toast("未找到输入框");
     }
@@ -136,6 +139,27 @@ function autoSwipe(sx, sy, ex, ey, duration, sleepTime){
     sleep(sleepTime)
 }
 
+function clickEvent(x, y, sleepTime){
+    var openRemarkShell = `
+    sendevent /dev/input/event4 0 0 0
+    sendevent /dev/input/event4 3 57 486
+    sendevent /dev/input/event4 1 330 1
+    sendevent /dev/input/event4 1 325 1
+    sendevent /dev/input/event4 3 53 ${x + randomInt(-10, 10)}
+    sendevent /dev/input/event4 3 54 ${y + randomInt(-15, 15)}
+    sendevent /dev/input/event4 0 0 0
+    sendevent /dev/input/event4 3 57 -1
+    sendevent /dev/input/event4 1 330 0
+    sendevent /dev/input/event4 1 325 0
+    sleep ${randomInt(10, 20)/100}
+    sendevent /dev/input/event4 0 0 0
+    sleep ${sleepTime/1000 + randomInt(50, 60)/100}
+    exit
+    `
+    shell(openRemarkShell, true)
+}
+
+
 module.exports = {
     actionSleep: actionSleep,
     clickSleep: clickSleep,
@@ -145,5 +169,6 @@ module.exports = {
     inputAndSubmit: inputAndSubmit,
     pressXY: pressXY,
     autoSwipe: autoSwipe,
-    randomInt: randomInt
+    randomInt: randomInt,
+    clickEvent: clickEvent
 };
