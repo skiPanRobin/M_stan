@@ -3,6 +3,7 @@ importPackage(Packages["okhttp3"]); //导入包
 
 const { openWechat } = require('./wechat');
 const { mstandTOMenu, mstandSelectDrinks, mstandPayment} = require('./mstan');
+const { backToDesk } = require('./utils')
 
 // 创建 OkHttpClient 实例
 var client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
@@ -16,6 +17,7 @@ client.dispatcher().cancelAll(); // 清理一次
 // var currentTask = null;
 var isProcessingTask = false;
 var cid = null;
+var uid = 'fb257b0c1044b5042d4ed7ede37ea1e2'
 var heartbeatInterval = 10000; 
 
 // 处理任务队列
@@ -41,13 +43,15 @@ function postScreenOss(filePath){
 }
 
 function updaloadPayPic(online_path){
+    console.info('online path: ' + online_path)
     var url = 'https://pay.lovexiaohuli.com/ws/sendtoUid'
     var json = {
         "uid": "system",
-        "creator": "fb257b0c1044b5042d4ed7ede37ea1e2", //微信账号uid  目前写死
+        "creator": uid, //微信账号uid  目前写死
         "type": "uploadPayPic",
         "data": {
             "id": "1", //订单id
+            "type": "uploadPayPic",
             "status": "1", //是否成功下单  1是2否
             "fileUrl": online_path,
             "msg": "", // 下单失败的提示
@@ -67,15 +71,25 @@ function updateTaskStatus(filePath){
 
 
 // 执行任务函数
-function executeTask(payload) {
+function _executeTask(payload) {
     console.log("Executing task:", payload.wechatName);
     openWechat(payload);
     mstandTOMenu(payload)
     mstandSelectDrinks(payload)
     var filePath = mstandPayment(payload)
     // 模拟任务完成，更新任务状态
+    console.info('filePath: ' + filePath)
     updateTaskStatus(filePath)
 };
+
+
+function executeTask(payload){
+    try {
+        _executeTask(payload)
+    } catch (error) {
+        backToDesk()
+    }
+}
 
 function bindUid(message){
     cid = message.cid
@@ -130,8 +144,8 @@ myListener = {
                 console.log("Received tasks list:", message);
                 processNextTask(message.payload);
                 break;
-            case "update_task_status_response":
-                if (message.payload.status === 1) {
+            case "uploadPayPic":
+                if (message.status === 1) {
                     console.log("Task status updated successfully");
                     isProcessingTask = false;
                     // 等待服务器推送下一个任务列表
