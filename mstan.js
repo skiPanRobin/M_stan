@@ -103,7 +103,7 @@ function textClickEvent(textContent, sleepTime){
     clickEvent(x, y, sleepTime)
 }
 
-function mstand(){
+function mstandTOMenu(message){
     function selectCity(cityName, sleepTime){
         pressSleep('上海市', 50)
         var ele = text(cityName).findOne(2000)
@@ -122,8 +122,9 @@ function mstand(){
         back()
         sleep(sleepTime)
     }
-
-    pressSleep('M Stand', 200)
+    var task_details = message.payload.task_details
+    
+    pressSleep(task_details.app_name, 200)
     // 关闭推荐弹窗
     pressSleep('首页', 500)
     pressXY(300, 300, 100, 500)    //  消除弹窗
@@ -131,21 +132,49 @@ function mstand(){
     pressXY(300, 300, 100, 500)   //   消除弹窗
     pressXY(300, 1250, 100, 3000);  //   门店自取
     pressSleep('手动选择', 1500)
-    selectCity('深圳市', 900)
-    selectShop('深圳湾万象城店', 1300)
+    selectCity(task_details.city, 900)
+    selectShop(task_details.shop_name, 1300)
     pressSleep('去下单', 2500)
     // pressSleep('零咖特饮', 2000)
     // pressSleep('零咖特饮', 800)
-    textClickEvent('奶咖', 2000)
-    textClickEvent('奶咖', 800)
-    textClickEvent('澳白', 1000)
-    textClickEvent('燕麦奶', 600)
-    textClickEvent('加入购物车', 1000)
-    textClickEvent('去结算', 1000)
-    clickRemark()
-    writeNotes('不加葱姜蒜, 多放辣椒', 2000, 0)   
+
 }
 
+function mstandSelectDrinks(message){
+    var shopList = message.payload.shopList
+    shopList.forEach(shop => {
+        textClickEvent(shop.category, 2000)
+        textClickEvent(shop.category, 800)
+        textClickEvent(shop.productName, 1000)
+        shop.feature.forEach( feat => {
+            textClickEvent(feat, 600)
+            // textClickEvent('燕麦奶', 600)
+        }
+        )
+        textClickEvent('加入购物车', 1000)
+    });
+}
+
+function mstandPayment(message){
+    textClickEvent('去结算', 1000)
+    clickRemark()
+    writeNotes( message.payload.notes, 2000, 0)   
+    toast('支付完成, 等待截图...')
+    var img = captureScreen();
+    if (img) {
+        // 保存截图到临时文件
+        var path = "/sdcard/screenshot.png";
+        images.save(img, path);
+        toast("截图已保存到: " + path);
+        return path
+
+    }
+}
+
+
+
 module.exports = {
-    mstand: mstand
+    mstandTOMenu: mstandTOMenu,
+    mstandSelectDrinks: mstandSelectDrinks,
+    mstandPayment: mstandPayment
 }
