@@ -1,8 +1,8 @@
 // 导入 okhttp 库
 importPackage(Packages["okhttp3"]); //导入包
 
-const { openWechat } = require('./wechat')
-const { mstandTOMenu, mstandSelectDrinks, mstandPayment} = require('./mstan')
+const { openWechat } = require('./wechat');
+const { mstandTOMenu, mstandSelectDrinks, mstandPayment} = require('./mstan');
 
 // 创建 OkHttpClient 实例
 var client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
@@ -68,7 +68,7 @@ function updateTaskStatus(filePath){
 
 // 执行任务函数
 function executeTask(payload) {
-    console.log("Executing task:", payload.task_id);
+    console.log("Executing task:", payload.wechatName);
     openWechat(payload);
     mstandTOMenu(payload)
     mstandSelectDrinks(payload)
@@ -104,7 +104,7 @@ function unbindUid(message){
 // 启动心跳检测
 function startHeartbeat(webSocket) {
     setInterval(() => {
-        webSocket.send(JSON.stringify({ type: 'heartbeat' }));
+        webSocket.send('ping');
     }, heartbeatInterval);
 }
 
@@ -116,8 +116,7 @@ myListener = {
     },
     onMessage: function (webSocket, msg) { 
         print('msg: ' + msg);
-        if (msg==='非法请求') {
-            sleep(3000)
+        if (msg==='非法请求'||msg === 'pong') {
             return 
         }
         var message = JSON.parse(msg);
@@ -145,7 +144,6 @@ myListener = {
                 break;
             default:
                 console.error("Unknown message type:", message);
-                console.error('type is ping', message.type === 'ping')
         }
     },
     onClosing: function (webSocket, code, response) {

@@ -33,6 +33,14 @@ function clickSleep(textToClick, sleepTime) {
     sleep(sleepTime); // 休眠指定时间
 };
 
+
+function descClick(descText, sleepTime) {
+    // 点击传入的文本
+    toast(descText);
+    desc(descText).findOne().click()
+    sleep(sleepTime); // 休眠指定时间
+};
+
 /**
  * 定义一个clickSleep方法
  * @param {string} resourceId - 需要点击元素的resource-id
@@ -170,5 +178,6 @@ module.exports = {
     pressXY: pressXY,
     autoSwipe: autoSwipe,
     randomInt: randomInt,
-    clickEvent: clickEvent
+    clickEvent: clickEvent,
+    descClick: descClick
 };

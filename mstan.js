@@ -97,13 +97,18 @@ function writeNotes(notes, sleepTime, callTimes){
 }
 
 function textClickEvent(textContent, sleepTime){
+    console.info('textContent: ' + textContent)
     var ele = text(textContent).findOne(5000)
-    var x = ele.bounds().centerX() 
-    var y = ele.bounds().centerY() 
-    clickEvent(x, y, sleepTime)
+    if (!ele) {
+        console.warn('缺少选项: ' + textContent)
+    } else {
+        var x = ele.bounds().centerX() 
+        var y = ele.bounds().centerY() 
+        clickEvent(x, y, sleepTime)
+    }
 }
 
-function mstandTOMenu(message){
+function mstandTOMenu(payload){
     function selectCity(cityName, sleepTime){
         pressSleep('上海市', 50)
         var ele = text(cityName).findOne(2000)
@@ -122,9 +127,9 @@ function mstandTOMenu(message){
         back()
         sleep(sleepTime)
     }
-    var task_details = message.payload.task_details
+    var shopList = payload.shopList
     
-    pressSleep(task_details.app_name, 200)
+    pressSleep(payload.appName, 200)
     // 关闭推荐弹窗
     pressSleep('首页', 500)
     pressXY(300, 300, 100, 500)    //  消除弹窗
@@ -132,17 +137,19 @@ function mstandTOMenu(message){
     pressXY(300, 300, 100, 500)   //   消除弹窗
     pressXY(300, 1250, 100, 3000);  //   门店自取
     pressSleep('手动选择', 1500)
-    selectCity(task_details.city, 900)
-    selectShop(task_details.shop_name, 1300)
+    selectCity(payload.city, 900)
+    selectShop(payload.shopName, 1300)
     pressSleep('去下单', 2500)
     // pressSleep('零咖特饮', 2000)
     // pressSleep('零咖特饮', 800)
 
 }
 
-function mstandSelectDrinks(message){
-    var shopList = message.payload.shopList
+function mstandSelectDrinks(payload){
+    var shopList = payload.shopList
     shopList.forEach(shop => {
+        console.info('shop: '+ shop)
+        console.info('category: ' + shop.category)
         textClickEvent(shop.category, 2000)
         textClickEvent(shop.category, 800)
         textClickEvent(shop.productName, 1000)
@@ -155,10 +162,10 @@ function mstandSelectDrinks(message){
     });
 }
 
-function mstandPayment(message){
+function mstandPayment(payload){
     textClickEvent('去结算', 1000)
     clickRemark()
-    writeNotes( message.payload.notes, 2000, 0)   
+    writeNotes( payload.notes, 2000, 0)   
     toast('支付完成, 等待截图...')
     var img = captureScreen();
     if (img) {
