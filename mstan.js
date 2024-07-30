@@ -1,19 +1,19 @@
-const {pressSleep, autoSwipe, pressXY, inputAndSubmit, randomInt, clickEvent } = require('./utils')
+const {pressSleep, autoSwipe, pressXY, inputAndSubmit, randomInt, clickEvent, takeScreenshot } = require('./utils')
 
 function clickRemark(){
-    var ele = text('如有忌口过敏请填写到这儿').findOne(5000)
+    var ele = text('如有忌口过敏请填写到这儿').findOne(10000)
     var bds = ele.bounds()
 
-    var x = bds.centerX() 
-    var y = bds.centerY() 
+    var x = bds.left
+    var y = bds.bottom
     // 定义脚本内容
     var openRemarkShell = `su
     sendevent /dev/input/event4 0 0 0
     sendevent /dev/input/event4 3 57 486
     sendevent /dev/input/event4 1 330 1
     sendevent /dev/input/event4 1 325 1
-    sendevent /dev/input/event4 3 53 ${x + randomInt(-100, 100)}
-    sendevent /dev/input/event4 3 54 ${y + randomInt(-15, 15)}
+    sendevent /dev/input/event4 3 53 ${x + randomInt(10, 15)}
+    sendevent /dev/input/event4 3 54 ${y - randomInt(10, 15)}
     sendevent /dev/input/event4 0 0 0
     sendevent /dev/input/event4 3 57 -1
     sendevent /dev/input/event4 1 330 0
@@ -25,8 +25,8 @@ function clickRemark(){
     sendevent /dev/input/event4 3 57 486
     sendevent /dev/input/event4 1 330 1
     sendevent /dev/input/event4 1 325 1
-    sendevent /dev/input/event4 3 53 ${x + randomInt(-100, 100)}
-    sendevent /dev/input/event4 3 54 ${y + randomInt(-15, 15)}
+    sendevent /dev/input/event4 3 53 ${x + randomInt(10, 15)}
+    sendevent /dev/input/event4 3 54 ${y - randomInt(10, 15)}
     sendevent /dev/input/event4 0 0 0
     sendevent /dev/input/event4 3 57 -1
     sendevent /dev/input/event4 1 330 0
@@ -38,8 +38,8 @@ function clickRemark(){
     sendevent /dev/input/event4 3 57 486
     sendevent /dev/input/event4 1 330 1
     sendevent /dev/input/event4 1 325 1
-    sendevent /dev/input/event4 3 53 ${x + randomInt(-100, 100)}
-    sendevent /dev/input/event4 3 54 ${y + randomInt(-15, 15)}
+    sendevent /dev/input/event4 3 53 ${x + randomInt(10, 15)}
+    sendevent /dev/input/event4 3 54 ${y - randomInt(10, 15)}
     sendevent /dev/input/event4 0 0 0
     sendevent /dev/input/event4 3 57 -1
     sendevent /dev/input/event4 1 330 0
@@ -106,6 +106,7 @@ function textClickEvent(textContent, sleepTime){
         var y = ele.bounds().centerY() 
         clickEvent(x, y, sleepTime)
     }
+    return !ele ? false : true
 }
 
 function mstandTOMenu(payload){
@@ -152,10 +153,15 @@ function mstandSelectDrinks(payload){
         console.info('category: ' + shop.category)
         textClickEvent(shop.category, 2000)
         textClickEvent(shop.category, 800)
-        textClickEvent(shop.productName, 1000)
+        textClickEvent(shop.productName, 500)
+        if (!text('规格').findOne(2000)){
+            textClickEvent('自提', 800)
+            textClickEvent(shop.productName, 500)
+        }
         shop.feature.forEach( feat => {
-            textClickEvent(feat, 600)
-            // textClickEvent('燕麦奶', 600)
+            if (textClickEvent(feat, 600)){
+                
+            }
         }
         )
         textClickEvent('加入购物车', 1000)
@@ -166,16 +172,10 @@ function mstandPayment(payload){
     textClickEvent('去结算', 1000)
     clickRemark()
     writeNotes( payload.notes, 2000, 0)   
-    toast('支付完成, 等待截图...')
-    var img = captureScreen();
-    if (img) {
-        // 保存截图到临时文件
-        var path = "/sdcard/screenshot.png";
-        images.save(img, path);
-        toast("截图已保存到: " + path);
-        return path
-
-    }
+    console.info('支付完成, 等待截图...')
+    var shotPath = "/sdcard/screenshot.png";
+    takeScreenshot(shotPath)
+    return shotPath
 }
 
 
