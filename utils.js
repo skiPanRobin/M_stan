@@ -167,6 +167,32 @@ function clickEvent(x, y, sleepTime){
     shell(openRemarkShell, true)
 }
 
+/**
+ * 截图函数
+*@param {string} savePath   - 保存路径
+*/
+function takeScreenshot(savePath) {
+    let result = shell("screencap -p " + savePath, true);
+    if (result.code == 0) {
+        console.log("截图成功，保存路径：" + savePath);
+    } else {
+        console.log("截图失败");
+    }
+    sleep(500)
+}
+
+/**
+ * 返回桌面
+*/ 
+function backToDesk(){
+    actionSleep(back, 200)
+    actionSleep(back, 200)
+    actionSleep(back, 200)
+    actionSleep(back, 200)
+    actionSleep(back, 200)
+    actionSleep(back, 200)
+}
+
 
 module.exports = {
     actionSleep: actionSleep,
@@ -179,5 +205,7 @@ module.exports = {
     autoSwipe: autoSwipe,
     randomInt: randomInt,
     clickEvent: clickEvent,
-    descClick: descClick
+    descClick: descClick,
+    backToDesk: backToDesk,
+    takeScreenshot: takeScreenshot
 };
