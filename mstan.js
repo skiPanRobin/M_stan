@@ -1,4 +1,4 @@
-const {pressSleep, autoSwipe, pressXY, inputAndSubmit, randomInt, clickEvent, takeScreenshot } = require('./utils')
+const {pressSleep, autoSwipe, pressXY, inputAndSubmit, randomInt, clickEvent, takeScreenshot, clickSleep } = require('./utils')
 
 function clickRemark(){
     var ele = text('如有忌口过敏请填写到这儿').findOne(10000)
@@ -76,14 +76,14 @@ function writeNotes(notes, sleepTime, callTimes){
                 sleep(1000)
                 toast("找到下一级子控件 focused: " + child.focused())
                 child.setText(notes)
-                sleep(sleepTime)
                 break
             }
         }
-        sleep(randomInt(5, 15)/10)
+        sleep(randomInt(50, 80) * 10)
         className("android.widget.TextView").text("完成").findOne(4000).click();
-        sleep(randomInt(30, 50)/10)
+        sleep(randomInt(50, 80) * 10)
         className("android.widget.TextView").text("保存").findOne(4000).click();
+        sleep(randomInt(sleepTime-100, sleepTime+100))
     } else {
         callTimes = callTimes + 1
         if (callTimes > 3){
@@ -109,11 +109,20 @@ function textClickEvent(textContent, sleepTime){
     return !ele ? false : true
 }
 
+function _getCityInitial(cityName){
+    var cites = files.read('./cites.json')
+    return JSON.parse(cites)[cityName]
+}
+
+
 function mstandTOMenu(payload){
     function selectCity(cityName, sleepTime){
+        if (cityName === '上海市'){
+            return 
+        }
         pressSleep('上海市', 50)
         var ele = text(cityName).findOne(2000)
-        while (ele === null) {
+        while (ele === null || ele.bounds()) {
             autoSwipe(500, 2110, 520, 800, 1000, 500)
             ele = text(cityName).findOne(200)
         }
@@ -122,14 +131,19 @@ function mstandTOMenu(payload){
     }
     
     function selectShop(shopName, sleepTime){
-    
-        inputAndSubmit(shopName, '请输入门店名称', sleepTime)
-        inputAndSubmit(shopName, '请输入门店名称', sleepTime)
-        back()
+        text('请输入门店名称').findOne(5000).click()
+        for (let index = 0; index < 4; index++) {
+            var ele = text(shopName).findOne(1000)
+            if (ele) {
+                sleep(sleepTime)
+                className('android.widget.TextView').textContains(shopName).findOne(3000).click()
+            } else {
+                text('请输入门店名称').findOne(1000).setText(shopName)
+            }
+            
+        }
         sleep(sleepTime)
-    }
-    var shopList = payload.shopList
-    
+    }    
     pressSleep(payload.appName, 200)
     // 关闭推荐弹窗
     pressSleep('首页', 500)
@@ -140,13 +154,11 @@ function mstandTOMenu(payload){
     pressSleep('手动选择', 1500)
     selectCity(payload.city, 900)
     selectShop(payload.shopName, 1300)
-    pressSleep('去下单', 2500)
-    // pressSleep('零咖特饮', 2000)
-    // pressSleep('零咖特饮', 800)
-
+    // pressSleep('去下单', 2500)
 }
 
 function mstandSelectDrinks(payload){
+    text('自提').waitFor()
     var shopList = payload.shopList
     shopList.forEach(shop => {
         console.info('shop: '+ shop)
@@ -154,7 +166,7 @@ function mstandSelectDrinks(payload){
         textClickEvent(shop.category, 2000)
         textClickEvent(shop.category, 800)
         textClickEvent(shop.productName, 500)
-        if (!text('规格').findOne(2000)){
+        if (!(text('规格').findOne(2000))){
             textClickEvent('自提', 800)
             textClickEvent(shop.productName, 500)
         }
@@ -168,10 +180,16 @@ function mstandSelectDrinks(payload){
     });
 }
 
+function payment(){
+    textClickEvent('确认下单', 1000)
+}
+
+
 function mstandPayment(payload){
     textClickEvent('去结算', 1000)
     clickRemark()
     writeNotes( payload.notes, 2000, 0)   
+    payment();
     console.info('支付完成, 等待截图...')
     var shotPath = "/sdcard/screenshot.png";
     takeScreenshot(shotPath)
