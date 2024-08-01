@@ -18,7 +18,7 @@ client.dispatcher().cancelAll(); // 清理一次
 var isProcessingTask = false;
 var cid = null;
 var uid = 'fb257b0c1044b5042d4ed7ede37ea1e2'
-var heartbeatInterval = 10000; 
+var heartbeatInterval = 30000; 
 
 // 处理任务队列
 function processNextTask(payload) {
@@ -38,12 +38,13 @@ function postScreenOss(filePath){
     var res = http.postMultipart(api, {
         file: open(filePath)
     }); 
-    console.info(res.body.string());
-    return  res.body.data.online_path
+    let jsonResponse = res.body.json()
+    console.info('post response' + JSON.stringify(jsonResponse));
+    console.log('online_path: ' + jsonResponse.data.online_path)
+    return jsonResponse.data.online_path
 }
 
 function updaloadPayPic(online_path){
-    console.info('online path: ' + online_path)
     var url = 'https://pay.lovexiaohuli.com/ws/sendtoUid'
     var json = {
         "uid": "system",
@@ -52,14 +53,14 @@ function updaloadPayPic(online_path){
         "data": {
             "id": "1", //订单id
             "type": "uploadPayPic",
-            "status": "1", //是否成功下单  1是2否
+            "status": 1, //是否成功下单  1是2否
             "fileUrl": online_path,
             "msg": "", // 下单失败的提示
             "shopList": []
         }
     }
     var res = http.postJson(url, json)
-    console.info(res.body.string())
+    console.info('updaloadPayPic res: ' + res.body.string())
 
 }
 
@@ -84,11 +85,12 @@ function _executeTask(payload) {
 
 
 function executeTask(payload){
-    try {
-        _executeTask(payload)
-    } catch (error) {
-        backToDesk()
-    }
+    // try {
+    //     _executeTask(payload)
+    // } catch (error) {
+    //     backToDesk()
+    // }
+    _executeTask(payload)
 }
 
 function bindUid(message){
