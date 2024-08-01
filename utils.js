@@ -3,6 +3,7 @@ var WIDTH = 1080
 var HEIGHT = 2340
 var width = device.width;
 var height = device.height;
+device.wakeUpIfNeeded()
 toast('width: ' + width + 'height: ' + height)
 
 function randomInt(min, max){
@@ -104,7 +105,8 @@ function clickByPartialText(partialText, sleepTime) {
 // 定义函数来模拟人类逐字逐句地输入内容
 function typeTextSlowly(inputField, text) {
     // 聚焦到输入框
-    inputField.click()
+    // inputField.click()
+    clickEvent(inputField.bounds().centerX, inputField.bounds().centerY, 2000)
     toast('准备输入：' + text)
     sleep(2000)
     for (var i = 0; i < text.length; i++) {
@@ -119,6 +121,9 @@ function inputAndSubmit(inputText, findText, sleepTime) {
     var inputField = text(findText).findOne(3000);
     if (inputField) {
         sleep(100)
+        clickEvent(inputField.bounds().centerX, inputField.bounds().centerY, 2000)
+        var inputField = text(findText).findOne(3000);
+        inputField.setText(findText)
         typeTextSlowly(inputField, inputText); // 每输入一个字母间隔200毫秒
         toast("已输入: " + inputText);
         inputField.click();
