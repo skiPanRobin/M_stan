@@ -1,38 +1,96 @@
 // 打开调试
 auto();
+// var parent微信 = className('android.widget.TextView').text('微信').findOne(5000).parent()
+// if (parent微信) {
+//     console.log(parent微信.bounds().centerX(), parent微信.bounds().centerY())
+//     click(parent微信.bounds().centerX(), parent微信.bounds().centerY())
+//     sleep(800)
+// } 
+var payload = {
+    "id": "1",  //订单id
+    "wechatNo": 1,
+    "wechatName": "阿呆的大哥",
+    "appName": "M Stand",
+    "city": "珠海市",
+    "shopName": "珠海环宇店",
+    "shopList": [
+        {
+            "category": "奶咖",
+            "productName": "黑糖椰香燕麦拿铁",
+            "quantity": 1,
+            "feature": ["少冰", "少糖"]
+        },
+        {
+            "category": "果卡",
+            "productName": "冰谣香橙美式",
+            "quantity": 2,
+            "feature": []
+        },
+        {
+            "category": "零咖特饮",
+            "productName": "黑糖燕麦奶",
+            "quantity": 1,
+            "feature": ["少冰", "少糖"]
+        }
+    ],
+    "notes": "不加葱姜蒜, 多放辣椒"
+}
+// const {openWechat} = require('./wechat')
+// const {mstand}  = require('./mstan')
+
+
+    
+// openWechat(payload)
+// mstand(payload)
+// var city = "广州市"
+function _getCityInitial(cityName){
+    var cites = files.read('./cites.json')
+    return JSON.parse(cites)[cityName]
+}
+text(_getCityInitial('广州市'))
+// print(text(city).findOne().bounds().centerX(), text(city).findOne().bounds().centerY(), text(city).findOne().bounds())
+
+// addQuantities(3)
+// p = className('android.widget.TextView').text('我').findOne(3000).parent()
+// console.log(p.bounds().centerX(), p.bounds().centerY())
+// // p.click()
+// click(p.bounds().centerX(), p.bounds().centerY())
+
+// p = className('android.widget.TextView').text('微信').findOne(3000).parent()
+// console.log(p.bounds().centerX(), p.bounds().centerY())
+// // p.click()
+// click(p.bounds().centerX(), p.bounds().centerY())
 // engines.stopAll()inputAndSubmit(shopName, '请输入门店名称', sleepTime)
 // const {inputAndSubmit} = require('./utils')
 // inputAndSubmit('上海陆家嘴中心店', '请输入门店名称', 2000)
 // text('请输入门店名称').findOne(3000).click()
 // setText('上海陆家嘴中心店')
-sleep(2000)
-
 // var shopName = '上海陆家嘴中心店'
 // var bottomText = '请输入门店名称'
-function selectShop(shopName, sleepTime){
-    text('请输入门店名称').findOne(5000).click()
-    for (let index = 0; index < 4; index++) {
-        var ele = text('请输入门店名称').findOne(2000)
-        console.log('"请输入门店名称" 定位 :', !!ele)
-        if (!ele) {
-            // sleep(1500)
-            list_ele = className('android.widget.TextView').textContains(shopName).findOne(3000)
-            if (list_ele) {
-                console.log(`店铺: ${shopName} 定位成功`)
-                sleep(600)
-                list_ele.click()
-                break
-            }
-        } else {
-            console.log(`定位 "请输入门店名称", 设置门店: ${shopName}` )
-            sleep(1000)
-            text('请输入门店名称').findOne(1000).setText(shopName)
-        }
+// function selectShop(shopName, sleepTime){
+//     text('请输入门店名称').findOne(5000).click()
+//     for (let index = 0; index < 4; index++) {
+//         var ele = text('请输入门店名称').findOne(2000)
+//         console.log('"请输入门店名称" 定位 :', !!ele)
+//         if (!ele) {
+//             // sleep(1500)
+//             list_ele = className('android.widget.TextView').textContains(shopName).findOne(3000)
+//             if (list_ele) {
+//                 console.log(`店铺: ${shopName} 定位成功`)
+//                 sleep(600)
+//                 list_ele.click()
+//                 break
+//             }
+//         } else {
+//             console.log(`定位 "请输入门店名称", 设置门店: ${shopName}` )
+//             sleep(1000)
+//             text('请输入门店名称').findOne(1000).setText(shopName)
+//         }
         
-    }
-    sleep(sleepTime)
-}  
-selectShop('上海陆家嘴中心店', 1200)
+//     }
+//     sleep(sleepTime)
+// }  
+// selectShop('上海陆家嘴中心店', 1200)
 // text(bottomText).findOne(3000).click()
 // sleep(1000)
 // text(bottomText).findOne(3000).setText(shopName)
@@ -157,4 +215,3 @@ selectShop('上海陆家嘴中心店', 1200)
 // // 调用函数执行ADB命令
 // executeAdbCommand(adbCommand);
 
-// console.log(getPackageName("Fake Location"))
