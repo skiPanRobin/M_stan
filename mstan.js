@@ -113,7 +113,34 @@ function _getCityInitial(cityName){
     var cites = files.read('./cites.json')
     return JSON.parse(cites)[cityName]
 }
-
+/**
+ * @param quantity -饮料数量
+*/
+function _addQuantities(quantity){
+    var siblings = text('¥').findOne().parent().children()
+    for (let index = 0; index < siblings.length; index++) {
+        var element = siblings[index];
+        console.log(element.text())
+        if (element.text() === '加入购物车'){
+            var currentQuantity = parseInt(siblings[index-2].text())
+            var addQuantity = quantity - currentQuantity
+            var addElement = siblings[index-1]
+            var subElement = siblings[index-3]
+            if (addQuantity > 0){
+                for (let index = 0; index < addQuantity; index++) {
+                    click(addElement.bounds().centerX(), addElement.bounds().centerY())
+                    sleep(300)
+                }
+            } else if(addQuantity < 0){
+                for (let index = 0; index > addQuantity; index--) {
+                    click(subElement.bounds().centerX(), subElement.bounds().centerY())
+                    sleep(300)
+                }
+            }
+        }
+    }
+    sleep(500)
+}
 
 function mstandTOMenu(payload){
     function selectCity(cityName, sleepTime){
@@ -123,8 +150,8 @@ function mstandTOMenu(payload){
         pressSleep('上海市', 50)
         var ele = text(cityName).findOne(2000)
         while (ele === null || ele.bounds()) {
-            autoSwipe(500, 2110, 520, 800, 1000, 500)
-            ele = text(cityName).findOne(200)
+            autoSwipe(500, 2110, 520, 800, 1000, 1000)
+            ele = text(cityName).findOne(2000)
         }
         ele.click()
         sleep(sleepTime)
@@ -133,7 +160,7 @@ function mstandTOMenu(payload){
     function selectShop(shopName, sleepTime){
         text('请输入门店名称').findOne(5000).click()
         for (let index = 0; index < 4; index++) {
-            var ele = text(shopName).findOne(1000)
+            var ele = textContains(shopName).findOne(500)
             if (ele) {
                 sleep(sleepTime)
                 className('android.widget.TextView').textContains(shopName).findOne(3000).click()
@@ -170,13 +197,10 @@ function mstandSelectDrinks(payload){
             textClickEvent('自提', 800)
             textClickEvent(shop.productName, 500)
         }
-        shop.feature.forEach( feat => {
-            if (textClickEvent(feat, 600)){
-                
-            }
-        }
-        )
-        textClickEvent('加入购物车', 1000)
+        shop.feature.forEach( feat => {if (textClickEvent(feat, 600)){}})
+        _addQuantities(shop.quantity)
+        textClickEvent('加入购物车', 500)
+
     });
 }
 
@@ -196,9 +220,15 @@ function mstandPayment(payload){
     return shotPath
 }
 
+function mstand(playload){
+    mstandTOMenu(playload);
+    mstandSelectDrinks(playload);
+    mstandPayment(playload);
+}
 
 
 module.exports = {
+    mstand: mstand,
     mstandTOMenu: mstandTOMenu,
     mstandSelectDrinks: mstandSelectDrinks,
     mstandPayment: mstandPayment
