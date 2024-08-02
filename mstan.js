@@ -149,7 +149,7 @@ function mstandTOMenu(payload){
         }
         pressSleep('上海市', 50)
         var ele = text(cityName).findOne(2000)
-        while (ele === null || ele.bounds()) {
+        while (ele === null && ele.bounds().centerX >0 ) {
             autoSwipe(500, 2110, 520, 800, 1000, 1000)
             ele = text(cityName).findOne(2000)
         }
