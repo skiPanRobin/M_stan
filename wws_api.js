@@ -26,6 +26,7 @@ function processNextTask(payload) {
         isProcessingTask = true;
         // currentTask = tasks.shift(); // 取出队列中的第一个任务
         executeTask(payload);
+        backToDesk()
     } else {
         console.log("No tasks to process or already processing a task");
     }
@@ -44,14 +45,14 @@ function postScreenOss(filePath){
     return jsonResponse.data.online_path
 }
 
-function updaloadPayPic(online_path){
+function updaloadPayPic(online_path, pid){
     var url = 'https://pay.lovexiaohuli.com/ws/sendtoUid'
     var json = {
         "uid": "system",
         "creator": uid, //微信账号uid  目前写死
         "type": "uploadPayPic",
         "data": {
-            "id": "1", //订单id
+            "id": pid, //订单id
             "type": "uploadPayPic",
             "status": 1, //是否成功下单  1是2否
             "fileUrl": online_path,
@@ -65,9 +66,9 @@ function updaloadPayPic(online_path){
 }
 
 
-function updateTaskStatus(filePath){
+function updateTaskStatus(filePath, pid){
     var online_path = postScreenOss(filePath);
-    updaloadPayPic(online_path);
+    updaloadPayPic(online_path, pid);
 }
 
 
@@ -80,7 +81,7 @@ function _executeTask(payload) {
     var filePath = mstandPayment(payload)
     // 模拟任务完成，更新任务状态
     console.info('filePath: ' + filePath)
-    updateTaskStatus(filePath)
+    updateTaskStatus(filePath, payload.id)
 };
 
 
