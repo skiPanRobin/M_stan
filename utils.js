@@ -37,8 +37,10 @@ function clickSleep(textToClick, sleepTime) {
 
 function descClick(descText, sleepTime) {
     // 点击传入的文本
-    toast(descText);
-    desc(descText).findOne().click()
+    // toast(descText);
+    var ele = desc(descText).findOne(3000)
+    ele ? ele.click() : console.log(`无法定位 ${descClick}`);
+    
     sleep(sleepTime); // 休眠指定时间
 };
 
@@ -64,7 +66,7 @@ function clickIdSleep(resourceId, sleepTime) {
  */
 function pressSleep(textToClick, sleepTime) {
     // 通过文本定位元素
-    toast(textToClick);
+    // toast(textToClick);
     var ele = text(textToClick).findOne(8000);
     if (ele === null) {
         toast("未找到文本: " + textToClick);
