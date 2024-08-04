@@ -1,3 +1,6 @@
+// const { clickByPartialText } = require("./utils");
+const {openWechat} = require('./wechat')
+const {mstandTOMenu, mstandSelectDrinks}  = require('./mstan')
 // 打开调试
 auto();
 // var parent微信 = className('android.widget.TextView').text('微信').findOne(5000).parent()
@@ -6,48 +9,60 @@ auto();
 //     click(parent微信.bounds().centerX(), parent微信.bounds().centerY())
 //     sleep(800)
 // } 
-var payload = {
-    "id": "1",  //订单id
-    "wechatNo": 1,
-    "wechatName": "阿呆的大哥",
+var payload =  {
+    "id": "1",
+    "city": "武汉市",
+    "notes": "武汉测试",
     "appName": "M Stand",
-    "city": "珠海市",
-    "shopName": "珠海环宇店",
     "shopList": [
         {
+            "feature": [
+                "燕麦奶"
+            ],
             "category": "奶咖",
-            "productName": "黑糖椰香燕麦拿铁",
             "quantity": 1,
-            "feature": ["少冰", "少糖"]
+            "productName": "脏咖啡"
         },
-        {
-            "category": "果卡",
-            "productName": "冰谣香橙美式",
-            "quantity": 2,
-            "feature": []
-        },
-        {
-            "category": "零咖特饮",
-            "productName": "黑糖燕麦奶",
-            "quantity": 1,
-            "feature": ["少冰", "少糖"]
-        }
+        // {
+        //     "feature": [
+        //         "标杯（冰）354ml",
+        //         "少冰",
+        //         "加份浓度+¥5元",
+        //         "标准糖"
+        //     ],
+        //     "category": "果咖",
+        //     "quantity": 2,
+        //     "productName": "野黑莓气泡美式"
+        // }
     ],
-    "notes": "不加葱姜蒜, 多放辣椒"
+    "shopName": "武汉群星城店",
+    "wechatNo": 2,
+    "wechatName": "巴巴爸爸的咖啡厅"
 }
-// const {openWechat} = require('./wechat')
-// const {mstand}  = require('./mstan')
+// openWechat(payload)
+// r = mstandTOMenu(payload)
+// console.log(r);
 
-
-    
+r = mstandSelectDrinks(
+    payload
+)
+console.log(r);
+// var ele = text( "中山市").findOne(2000)
+// console.log(ele.bounds().centerX() + ', ' + ele.bounds().centerY())
+// console.log(ele === null || ele.bounds().centerX() < 0 || ele.bounds().centerY() < 0 )
+// ele.click()
+// mstandTOMenu(payload)
+// mstandSelectDrinks(payload)    
 // openWechat(payload)
 // mstand(payload)
 // var city = "广州市"
-function _getCityInitial(cityName){
-    var cites = files.read('./cites.json')
-    return JSON.parse(cites)[cityName]
-}
-text(_getCityInitial('广州市'))
+// function _getCityInitial(cityName){
+//     var cites = files.read('./cites.json')
+//     return JSON.parse(cites)[cityName]
+// }
+// console.info(_getCityInitial('合肥市'))
+// var e = text(_getCityInitial('合肥市')).findOne(2000)
+// click(e.bounds().centerX(), e.bounds().centerY())
 // print(text(city).findOne().bounds().centerX(), text(city).findOne().bounds().centerY(), text(city).findOne().bounds())
 
 // addQuantities(3)
