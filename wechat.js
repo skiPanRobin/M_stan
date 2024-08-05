@@ -1,5 +1,5 @@
 auto();
-const { actionSleep, pressSleep, autoSwipe, pressXY, descClick, clickSleep } = require('./utils')
+const { actionSleep, pressSleep, autoSwipe, pressXY, descClick } = require('./utils')
 
 function openWechat(payload){
     actionSleep(back, 50);
