@@ -156,22 +156,20 @@ function autoSwipe(sx, sy, ex, ey, duration, sleepTime){
 
 function clickEvent(x, y, sleepTime){
     var openRemarkShell = `
-    sendevent /dev/input/event4 0 0 0
-    sendevent /dev/input/event4 3 57 486
+    sendevent /dev/input/event4 3 57 580
     sendevent /dev/input/event4 1 330 1
     sendevent /dev/input/event4 1 325 1
-    sendevent /dev/input/event4 3 53 ${x + randomInt(-10, 10)}
-    sendevent /dev/input/event4 3 54 ${y + randomInt(-15, 15)}
+    sendevent /dev/input/event4 3 53 ${x + randomInt(-20, 20)}
+    sendevent /dev/input/event4 3 54 ${y + randomInt(-10, 10)}
     sendevent /dev/input/event4 0 0 0
+    sleep 0.05
     sendevent /dev/input/event4 3 57 -1
     sendevent /dev/input/event4 1 330 0
     sendevent /dev/input/event4 1 325 0
-    sleep ${randomInt(10, 20)/100}
     sendevent /dev/input/event4 0 0 0
-    sleep ${sleepTime/1000 + randomInt(50, 60)/100}
-    exit
-    `
+    `    
     shell(openRemarkShell, true)
+    sleep(sleepTime)
 }
 
 /**
@@ -179,7 +177,7 @@ function clickEvent(x, y, sleepTime){
 *@param {string} savePath   - 保存路径
 */
 function takeScreenshot(savePath) {
-    let result = shell("screencap -p " + savePath, true);
+    var result = shell("screencap -p " + savePath, true);
     if (result.code == 0) {
         console.log("截图成功，保存路径：" + savePath);
     } else {
