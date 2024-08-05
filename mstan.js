@@ -274,22 +274,6 @@ function mstandSelectDrinks(payload){
     }
     sleep(500)
     return msg
-    // shopList.forEach(shop => {
-    //     console.info('shop: '+ shop)
-    //     console.info('category: ' + shop.category)
-    //     textClickEvent(shop.category, 2000)
-    //     textClickEvent(shop.category, 800)
-    //     textClickEvent(shop.productName, 500)
-    //     // 可能因为弹窗导致选购商品失败, 确认是否进入商品详情页面
-    //     if (!(text('规格').findOne(2000))){
-    //         textClickEvent('自提', 800)
-    //         textContains(shop.productName).findOne.click()
-    //     }
-    //     shop.feature.forEach( feat => {if (textClickEvent(feat, 600))})
-    //     _addQuantities(shop.quantity)
-    //     textClickEvent('加入购物车', 500)
-
-    // });
 }
 
 function _payment(){
