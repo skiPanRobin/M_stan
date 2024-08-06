@@ -141,8 +141,35 @@ function _addQuantities(quantity){
 /**
  * 清空购物车
 */
-function clearShopCar(){
-    console.log('TODO: clear shop car')
+function _clearShopCar(){
+    var 已选购 =  textContains('已选购').findOne(2000)
+    var b自提 = text('自提').findOne(2000).bounds()
+    if (!已选购){return}
+    var b已选购 = 已选购.bounds()
+    click(b已选购.centerX(), b已选购.centerY())
+    sleep(400)
+    click(b自提.centerX(), b自提.centerY())
+    sleep(300)
+    click(b已选购.centerX(), b已选购.centerY())
+    sleep(400)
+    var flag = false
+    while (textContains('最多可添加').findOne(300)){
+        flag = true
+        var ele最多 = textContains('最多可添加').findOne(300)
+        if (!ele最多){break}
+        var ele = ele最多.parent().children()[3].children()[0]
+        var children = ele.children()
+        for (let index = 0; index < children.length; index++) {
+            var element = children[index];
+            if (isNumeric(element.text())) {
+                console.log(`杯数 ${element.text()}, 下标: ${index}`);
+                children[index - 1].click()
+                sleep(300)
+                break
+            } 
+        }
+    }
+    return {'status': flag?0: 1, 'message': 'clearShopCar'}
 }
 
 
@@ -231,7 +258,14 @@ function mstandSelectDrinks(payload){
     }
     // 开始选购商品前清空购物车
     if (textContains('结算').findOne() && textContains('结算').findOne().text() === '去结算') {
-        clearShopCar()
+        var result = _clearShopCar()
+        if (result.status != 0){
+            msg.status == result.status
+            msg.message = result.message
+            return msg  // 状态异常, 直接返回
+        } else {
+            console.log(result);
+        }
     }
     var shopList = payload.shopList
     for (let shop of shopList){
@@ -242,7 +276,7 @@ function mstandSelectDrinks(payload){
         if (pnEle){
             text(shop.productName).findOne(3000)
         } else {
-            msg.status = 2
+            msg.status = 2  
             msg.payload.shopList.pusp(shop)
             break
         }
@@ -261,11 +295,13 @@ function mstandSelectDrinks(payload){
             } else {
                 console.log(`没有选中饮料属性: ${feat}`);
             }
-            sleep(400)
+            if (feat.includes('杯')){
+                sleep(500)
+            }
         })
         _addQuantities(shop.quantity)
-        textClickEvent('加入购物车', 800)
-        if (text('规格').findOne(500)){
+        textClickEvent('加入购物车', 500)
+        if (text('规格').findOne(200)){
             console.log('添加失败' + shop);
             msg.status = 2      // 商品添加失败
             msg.payload.shopList.push(shop)
