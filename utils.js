@@ -5,7 +5,7 @@ var width = device.width;
 var height = device.height;
 device.wakeUpIfNeeded()
 toast('width: ' + width + 'height: ' + height)
-
+var shotPath = "/sdcard/screenshot.png";
 function randomInt(min, max){
     min = Math.ceil(min)
     max = Math.floor(max)
@@ -239,5 +239,6 @@ module.exports = {
     backToDesk: backToDesk,
     takeScreenshot: takeScreenshot,
     isNumeric: isNumeric,
-    swithcScreenOn: swithcScreenOn
+    swithcScreenOn: swithcScreenOn,
+    shotPath: shotPath
 };
