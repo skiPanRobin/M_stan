@@ -23,17 +23,17 @@ var payload =  {
             "quantity": 1,
             "productName": "脏咖啡"
         },
-        // {
-        //     "feature": [
-        //         "标杯（冰）354ml",
-        //         "少冰",
-        //         "加份浓度+¥5元",
-        //         "标准糖"
-        //     ],
-        //     "category": "果咖",
-        //     "quantity": 2,
-        //     "productName": "野黑莓气泡美式"
-        // }
+        {
+            "feature": [
+                "标杯（冰）354ml",
+                "少冰",
+                "加份浓度+¥5元",
+                "标准糖"
+            ],
+            "category": "果咖",
+            "quantity": 2,
+            "productName": "野黑莓气泡美式"
+        }
     ],
     "shopName": "上海BFC外滩店",
     "wechatNo": 2,
