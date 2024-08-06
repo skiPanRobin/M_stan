@@ -1,4 +1,4 @@
-const {pressSleep, autoSwipe, pressXY, inputAndSubmit, randomInt, clickEvent, takeScreenshot, clickSleep, actionSleep, descClick } = require('./utils')
+const {pressSleep, pressXY, randomInt, clickEvent, takeScreenshot, actionSleep } = require('./utils')
 
 function clickRemark(){
     var ele = text('如有忌口过敏请填写到这儿').findOne(10000)
@@ -184,20 +184,36 @@ function mstandTOMenu(payload){
             "shopName": payload.shopName,
             "wechatNo": payload.wechatNo,
             "wechatName": payload.wechatName,
+            "shopList": payload.shopList
         }
     }
     function selectCity(cityName, sleepTime){
         if (cityName === '上海市'){
-            return 
+            // 默认城市为上海市
+            return true
         }
         pressSleep('上海市', 500)
         var ele = text(cityName).findOne(2000)
-        ele.click()
+        if (ele){
+            ele.click()
+        }else {
+            msg.status = 12
+            msg.message = `无法定位城市: ${cityName}`
+            return false
+        }
         sleep(sleepTime)
+        return true
     }
     
     function selectShop(shopName, sleepTime){
-        text('请输入门店名称').findOne(5000).click()
+        if (!text('请输入门店名称').findOne(5000)){
+            msg.status = 13
+            msg.message = '无法定位门店输入框'
+            return false
+        } else {
+            text('请输入门店名称').findOnce().click()
+        }
+
         for (let index = 0; index < 4; index++) {
             var ele = textContains(shopName).findOne(500)
             if (ele) {
@@ -215,7 +231,11 @@ function mstandTOMenu(payload){
             }
         }
         if (!text('自提').findOne(3000)) {
-            msg.status = 1
+            msg.status = 14
+            msg.message = `无法定位到门店: ${shopName}`
+            return false
+        } else {
+            return true
         }
     }    
     pressSleep(payload.appName, 200)
@@ -231,8 +251,14 @@ function mstandTOMenu(payload){
         sleep(500)
     }
     // pressSleep('手动选择', 1500)
-    selectCity(payload.city, 900)
-    selectShop(payload.shopName, 1300)
+    switch (true) {
+        case (selectCity(payload.city, 900) === false):
+            break;
+        case (selectShop(payload.shopName, 1300) === false):
+            break;
+        default:
+            break;
+    }
     // pressSleep('去下单', 2500)
     return msg
 }
