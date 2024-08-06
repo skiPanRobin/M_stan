@@ -1,4 +1,4 @@
-const {pressSleep, pressXY, randomInt, clickEvent, takeScreenshot, actionSleep, isNumeric} = require('./utils')
+const {pressSleep, pressXY, randomInt, clickEvent, takeScreenshot, actionSleep, isNumeric, shotPath} = require('./utils')
 
 function clickRemark(){
     var ele = text('如有忌口过敏请填写到这儿').findOne(10000)
@@ -197,7 +197,7 @@ function mstandTOMenu(payload){
         if (ele){
             ele.click()
         }else {
-            msg.status = 10
+            msg.status = 11
             msg.msg = `无法定位城市: ${cityName}`
             return false
         }
@@ -302,8 +302,8 @@ function mstandSelectDrinks(payload){
             text(shop.productName).findOne(3000).click()
             sleep(500)
         } else {
-            msg.status = 15
-            msg.msg = '无法定位到商品'
+            msg.status = 14
+            msg.msg = '商品列表中无法定位到商品'
             msg.payload.shopFailList.pusp(shop)
             break
         }
@@ -332,7 +332,7 @@ function mstandSelectDrinks(payload){
         // 当商品缺货时, 加入购物车不能点击, 页面保持在商品选购页.
         if (!text('规格').findOne(300)){
             console.log('添加失败' + shop);
-            msg.status = 16      // 商品添加失败
+            msg.status = 15      // 商品添加失败
             msg.msg = '商品选购失败'
             msg.payload.shopFailList.push(shop)
             actionSleep(back, 1000)
@@ -352,12 +352,17 @@ function _payment(isTest){
             return {'status': 0, "msg": "测试支付"}
         }
         if (textContains('余额支付').findOne(3000)){
-
+            var balance = parseFloat(textContains('可用余额：').findOne(3000).text())
+            var amount = parseFloat(textContains('余额支付').findOne(2000).text())
+            if (balance && balance < amount){
+                console.log(`余额不足, 余额: ${balance}, 需支付: ${amount}`);
+                return {'status': 17, "msg": "余额不足, 转人工"}
+            } else  {
+                textContains('余额支付').findOne(2000).click()
+            }
         } else {
-            return {"status": 18}
+            return {"status": 18, "msg": "没有进入到余额支付页面"}
         }
-        // textContains('余额支付').findOne(2000).click()
-
         for (let index = 0; index < 10; index++) {
             if (!text('查看卡券').findOne(1000)){
                 console.log('查看卡券 没定位到');
@@ -379,8 +384,10 @@ function _payment(isTest){
         }
         pressSleep('关注 M Stand', 300)
         console.log('已定位到确认门店.. 请确认点击');
+        return {"status": 0, "msg": ""}
     } else {
         console.log('无法定位确认门店.. 请人工确认');
+        return {"status": 19, "msg": "无法定位确认门店.. 请人工确认"}
     }
 }
 
@@ -444,7 +451,7 @@ function mstandPayment(payload){
     !_textClickEvent('去结算', 1000)
     switch (true) {
         case (!_newWriteNotes(payload.notes)):
-            msg.status = 17
+            msg.status = 16
             msg.msg = "备注输入失败"
             break;
         case (true):
@@ -456,13 +463,12 @@ function mstandPayment(payload){
         default:
             break;
     }    
-    _payment(payload.isTest);
-    console.info('支付完成, 等待截图...')
-    var shotPath = "/sdcard/screenshot.png";
+    // _payment(payload.isTest);
+    console.info('等待截图...')
     takeScreenshot(shotPath)
     className('android.widget.Button').desc('返回').findOne(3000).click()
     sleep(300)
-    return shotPath
+    return msg
 }
 
 function mstand(playload){
@@ -483,19 +489,15 @@ function mstand(playload){
         default:
             break;
     }
-    mstandTOMenu(playload);
-    mstandSelectDrinks(playload);
-    mstandPayment(playload);
+    return errorMsg
 }
 
 
-// module.exports = {
-//     mstand: mstand,
-//     mstandTOMenu: mstandTOMenu,
-//     mstandSelectDrinks: mstandSelectDrinks,
-//     mstandPayment: mstandPayment,
-//     clickRemark: clickRemark,
-//     writeNotes: writeNotes
-// }
-//}
+module.exports = {
+    mstand: mstand,
+    mstandTOMenu: mstandTOMenu,
+    mstandSelectDrinks: mstandSelectDrinks,
+    mstandPayment: mstandPayment,
+    clickRemark: clickRemark,
+    writeNotes: writeNotes
 }
