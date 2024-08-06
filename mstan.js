@@ -1,4 +1,4 @@
-const {pressSleep, pressXY, randomInt, clickEvent, takeScreenshot, actionSleep } = require('./utils')
+const {pressSleep, pressXY, randomInt, clickEvent, takeScreenshot, actionSleep, isNumeric} = require('./utils')
 
 function clickRemark(){
     var ele = text('如有忌口过敏请填写到这儿').findOne(10000)
@@ -96,7 +96,7 @@ function writeNotes(notes, sleepTime, callTimes){
     }
 }
 
-function textClickEvent(textContent, sleepTime){
+function _textClickEvent(textContent, sleepTime){
     console.info('textContent: ' + textContent)
     var ele = text(textContent).findOne(5000)
     if (!ele) {
@@ -279,8 +279,8 @@ function mstandSelectDrinks(payload){
     }
     if (text('自提').findOne(5000)){
         console.log('到达商品选购页面..')
-        textClickEvent('自提', 300)
-        textClickEvent('自提', 300)
+        _textClickEvent('自提', 300)
+        _textClickEvent('自提', 300)
     }
     // 开始选购商品前清空购物车
     if (textContains('结算').findOne() && textContains('结算').findOne().text() === '去结算') {
@@ -308,8 +308,8 @@ function mstandSelectDrinks(payload){
         }
         // 可能因为弹窗导致选购商品失败, 确认是否进入商品详情页面
         if (!(text('规格').findOne(2000))){
-            textClickEvent('自提', 300)
-            textClickEvent('自提', 500)
+            _textClickEvent('自提', 300)
+            _textClickEvent('自提', 500)
             text(shop.productName).findOne().click()
         }
         // autoSwipe(500, 1200, 520, 600, 300, 500)
@@ -326,8 +326,8 @@ function mstandSelectDrinks(payload){
             }
         })
         _addQuantities(shop.quantity)
-        textClickEvent('加入购物车', 500)
-        if (text('规格').findOne(200)){
+        _textClickEvent('加入购物车', 800)
+        if (!text('规格').findOne(300)){
             console.log('添加失败' + shop);
             msg.status = 2      // 商品添加失败
             msg.payload.shopList.push(shop)
@@ -338,7 +338,7 @@ function mstandSelectDrinks(payload){
     return msg
 }
 
-function _payment(){
+function _payment(isTest){
     text('确认下单').findOne(3000).click()
     if (text('确定门店').findOne(3000)) {
         // text('确定门店').findOne(3000).click()
@@ -347,6 +347,10 @@ function _payment(){
         // pressXY(device.width/ 2, device.height/ 2, 300, 1000)
         text('确定门店').findOne(2000).click()
         sleep(400)
+        if (isTest === true){
+            console.log('测试支付...');
+            return 
+        }
         textContains('余额支付').findOne(2000).click()
 
         for (let index = 0; index < 10; index++) {
@@ -393,11 +397,22 @@ function _newWriteNotes(notes){
     pressXY(523, 1750, 500, 300)
 }
 
+function _clickOrderType(orderType){
+    if (orderType === undefined || orderType === 1){
+        // 默认店内就餐
+        return
+    } else if (orderType === 2){
+        text('打包带走').findOne(2000).click()
+    } else {
+        console.log(`orderTYpe 参数错误: ${orderType}`);
+    }
+}
 
 function mstandPayment(payload){
-    textClickEvent('去结算', 1000)
+    _textClickEvent('去结算', 1000)
     _newWriteNotes(payload.notes);
-    _payment();
+    _clickOrderType(payload.orderType)
+    _payment(payload.isTest);
     console.info('支付完成, 等待截图...')
     var shotPath = "/sdcard/screenshot.png";
     takeScreenshot(shotPath)
@@ -407,6 +422,14 @@ function mstandPayment(payload){
 }
 
 function mstand(playload){
+    switch (true) {
+        case (value):
+            
+            break;
+    
+        default:
+            break;
+    }
     mstandTOMenu(playload);
     mstandSelectDrinks(playload);
     mstandPayment(playload);

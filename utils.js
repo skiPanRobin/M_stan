@@ -12,6 +12,10 @@ function randomInt(min, max){
     return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
+
+function isNumeric(str) {
+    return /^[0-9]+$/.test(str);
+  }
 // function sleep(sleepTime){
 //     var duration   = Math.ceil(sleepTime * 0.1)
 //     return randomInt(sleepTime - duration, sleepTime + duration)
@@ -210,5 +214,6 @@ module.exports = {
     clickEvent: clickEvent,
     descClick: descClick,
     backToDesk: backToDesk,
-    takeScreenshot: takeScreenshot
+    takeScreenshot: takeScreenshot,
+    isNumeric: isNumeric
 };

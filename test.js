@@ -1,6 +1,6 @@
 // const { clickByPartialText } = require("./utils");
 const {openWechat} = require('./wechat')
-// const {mstandTOMenu, mstandSelectDrinks}  = require('./mstan')
+const {mstandTOMenu, mstandSelectDrinks, mstandPayment}  = require('./mstan')
 // 打开调试
 auto();
 // var parent微信 = className('android.widget.TextView').text('微信').findOne(5000).parent()
@@ -11,8 +11,8 @@ auto();
 // } 
 var payload =  {
     "id": "1",
-    "city": "武汉市",
-    "notes": "武汉测试",
+    "city": "上海市",
+    "notes": "上海测试",
     "appName": "M Stand",
     "shopList": [
         {
@@ -35,16 +35,19 @@ var payload =  {
         //     "productName": "野黑莓气泡美式"
         // }
     ],
-    "shopName": "武汉群星城店",
+    "shopName": "上海BFC外滩店",
     "wechatNo": 2,
-    "wechatName": "巴巴爸爸的咖啡厅"
+    "wechatName": "巴巴爸爸的咖啡厅",
+    "orderType": 2,      // 1. 店内就餐; 2. 打包带走
+    "isTest": true
 }
 r = openWechat(payload)
-console.log(r);
-
+mstandTOMenu(payload)
+mstandSelectDrinks(payload)
+mstandPayment(payload)
 // r = mstandTOMenu(payload)
 // console.log(r);
-openWechat
+// openWechat
 // var ele = text( "中山市").findOne(2000)
 // console.log(ele.bounds().centerX() + ', ' + ele.bounds().centerY())
 // console.log(ele === null || ele.bounds().centerX() < 0 || ele.bounds().centerY() < 0 )
