@@ -1,6 +1,6 @@
 // const { clickByPartialText } = require("./utils");
 const {openWechat} = require('./wechat')
-const {mstandTOMenu, mstandSelectDrinks}  = require('./mstan')
+// const {mstandTOMenu, mstandSelectDrinks}  = require('./mstan')
 // 打开调试
 auto();
 // var parent微信 = className('android.widget.TextView').text('微信').findOne(5000).parent()
@@ -22,16 +22,29 @@ var payload =  {
             "category": "奶咖",
             "quantity": 1,
             "productName": "脏咖啡"
-        }
+        },
+        // {
+        //     "feature": [
+        //         "标杯（冰）354ml",
+        //         "少冰",
+        //         "加份浓度+¥5元",
+        //         "标准糖"
+        //     ],
+        //     "category": "果咖",
+        //     "quantity": 2,
+        //     "productName": "野黑莓气泡美式"
+        // }
     ],
     "shopName": "武汉群星城店",
     "wechatNo": 2,
     "wechatName": "巴巴爸爸的咖啡厅"
 }
-// openWechat(payload)
+r = openWechat(payload)
+console.log(r);
+
 // r = mstandTOMenu(payload)
 // console.log(r);
-
+openWechat
 // var ele = text( "中山市").findOne(2000)
 // console.log(ele.bounds().centerX() + ', ' + ele.bounds().centerY())
 // console.log(ele === null || ele.bounds().centerX() < 0 || ele.bounds().centerY() < 0 )
