@@ -70,21 +70,19 @@ function pressSleep(textToClick, sleepTime) {
     var ele = text(textToClick).findOne(8000);
     if (ele === null) {
         toast("未找到文本: " + textToClick);
-        sleep(1000)
+        sleep(sleepTime)
+        return false
     } else {
-        if (ele.clickable) {
-            var bounds = ele.bounds(); // 获取元素的边界
-            // 计算元素的中心点
-            var x = bounds.centerX();
-            var y = bounds.centerY();
-            // 在元素中心点长按0.5秒
-            press(x, y, 100);
-            sleep(sleepTime); // 休眠指定时间
-        } else {
-            toast(textToClick + '->元素不可点击')
-        }
-        }
+        var bounds = ele.bounds(); // 获取元素的边界
+        // 计算元素的中心点
+        var x = bounds.centerX();
+        var y = bounds.centerY();
+        // 在元素中心点长按0.5秒
+        press(x, y, 200);
+        sleep(sleepTime); // 休眠指定时间
+        return true
     }
+}
 ;
 
 /**
