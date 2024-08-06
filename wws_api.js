@@ -120,7 +120,6 @@ function executeTask(payload){
         console.error(error.track())
         backToDesk()
     }
-    // _executeTask(payload)
 }
 
 function bindUid(message){
