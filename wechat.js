@@ -12,7 +12,7 @@ function _openWechat(payload){
         descClick(wechatText, 500)
     } else {
         console.error(`打开微信失败, ` + JSON.stringify(payload))
-        return {'status': 2, "message": '打开微信失败'}
+        return {'status': 2, "msg": '打开微信失败'}
     }
     
     // 账号切换(选择账号)
@@ -33,7 +33,7 @@ function _openWechat(payload){
         pressSleep('切换账号', 500)
         if(!pressSleep(payload.wechatName, 500)){
             console.log('切换账号失败: ' + JSON.stringify(payload));
-            return {"status": 3, "message": "无法查找到微信名, 切换微信账号失败"}
+            return {"status": 3, "msg": "无法查找到微信名, 切换微信账号失败"}
         }
         
         // 返回
@@ -44,7 +44,7 @@ function _openWechat(payload){
         } else{
             actionSleep(back, 500)
         }
-        return {"status": 0, "message": "openWechat"}
+        return {"status": 0, "msg": "openWechat"}
     }
 
     var parent微信 = className('android.widget.TextView').text('微信').findOne(5000).parent()
@@ -66,7 +66,7 @@ function openWechat(payload){
     var msg = {
         'type': 'errorMsg',
         'status': 0,      
-        'message': 'openWechat',
+        'msg': 'openWechat',
         'payload': {
             'id': payload.id,
             "city": payload.city,
@@ -79,11 +79,11 @@ function openWechat(payload){
     try {
         r = _openWechat(payload)
         msg.status = r.status
-        msg.message = r.message
+        msg.msg = r.msg
     } catch (error) {
         error.to
         msg.status = 1
-        msg.message = error.message
+        msg.msg = error.msg
     }
     console.log(JSON.stringify(msg));
     return msg
