@@ -12,6 +12,29 @@ function randomInt(min, max){
     return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
+/**
+ * 点亮屏幕
+*/
+function swithcScreenOn(){
+    var counter = 0
+    let maxIter = 20
+    var status_ = 0
+    while (!device.isScreenOn()){
+        device.wakeUpIfNeeded()
+        sleep(300)
+        if(counter >= maxIter){
+            status_ = 90
+            console.error('无法点亮屏幕');
+            break
+        }
+        counter ++;
+    } 
+    if (device.isScreenOn()){
+        console.log('正常点亮屏幕 ' + counter);
+        device.keepScreenDim()
+    }
+    return status_
+}
 
 function isNumeric(str) {
     return /^[0-9]+$/.test(str);
@@ -215,5 +238,6 @@ module.exports = {
     descClick: descClick,
     backToDesk: backToDesk,
     takeScreenshot: takeScreenshot,
-    isNumeric: isNumeric
+    isNumeric: isNumeric,
+    swithcScreenOn: swithcScreenOn
 };
