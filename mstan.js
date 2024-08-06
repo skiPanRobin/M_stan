@@ -144,7 +144,7 @@ function _addQuantities(quantity){
 function _clearShopCar(){
     var 已选购 =  textContains('已选购').findOne(2000)
     var b自提 = text('自提').findOne(2000).bounds()
-    if (!已选购){return}
+    if (!已选购){ return {"status": 0, "msg": ""}}
     var b已选购 = 已选购.bounds()
     click(b已选购.centerX(), b已选购.centerY())
     sleep(400)
@@ -152,9 +152,9 @@ function _clearShopCar(){
     sleep(300)
     click(b已选购.centerX(), b已选购.centerY())
     sleep(400)
-    var flag = false
+    var status_ = 13
     while (textContains('最多可添加').findOne(300)){
-        flag = true
+        status_ = 0
         var ele最多 = textContains('最多可添加').findOne(300)
         if (!ele最多){break}
         var ele = ele最多.parent().children()[3].children()[0]
@@ -169,7 +169,7 @@ function _clearShopCar(){
             } 
         }
     }
-    return {'status': flag?0: 1, 'message': 'clearShopCar'}
+    return {'status': status_, 'msg': '清空购物车失败, 请人工检查'}
 }
 
 
@@ -177,7 +177,7 @@ function mstandTOMenu(payload){
     var msg = {
         'type': 'errorMsg',
         'status': 0,      
-        'message': 'selectShop',
+        'msg': 'selectShop',
         'payload': {
             'id': payload.id,
             "city": payload.city,
@@ -197,8 +197,8 @@ function mstandTOMenu(payload){
         if (ele){
             ele.click()
         }else {
-            msg.status = 12
-            msg.message = `无法定位城市: ${cityName}`
+            msg.status = 10
+            msg.msg = `无法定位城市: ${cityName}`
             return false
         }
         sleep(sleepTime)
@@ -207,8 +207,8 @@ function mstandTOMenu(payload){
     
     function selectShop(shopName, sleepTime){
         if (!text('请输入门店名称').findOne(5000)){
-            msg.status = 13
-            msg.message = '无法定位门店输入框'
+            msg.status = 11
+            msg.msg = '无法定位门店输入框'
             return false
         } else {
             text('请输入门店名称').findOnce().click()
@@ -231,8 +231,8 @@ function mstandTOMenu(payload){
             }
         }
         if (!text('自提').findOne(3000)) {
-            msg.status = 14
-            msg.message = `无法定位到门店: ${shopName}`
+            msg.status = 12
+            msg.msg = `无法定位到门店: ${shopName}`
             return false
         } else {
             return true
@@ -267,14 +267,15 @@ function mstandSelectDrinks(payload){
     var msg = {
         'type': 'errorMsg',
         'status': 0,      
-        'message': 'selectDrinks',
+        'msg': 'selectDrinks',
         'payload': {
             'id': payload.id,
             "city": payload.city,
             "shopName": payload.shopName,
             "wechatNo": payload.wechatNo,
             "wechatName": payload.wechatName,
-            'shopList': []
+            "shopList": payload.shopList,
+            "shopFailList": []
         }
     }
     if (text('自提').findOne(5000)){
@@ -287,10 +288,8 @@ function mstandSelectDrinks(payload){
         var result = _clearShopCar()
         if (result.status != 0){
             msg.status == result.status
-            msg.message = result.message
+            msg.msg = result.msg
             return msg  // 状态异常, 直接返回
-        } else {
-            console.log(result);
         }
     }
     var shopList = payload.shopList
@@ -300,37 +299,42 @@ function mstandSelectDrinks(payload){
         console.info('productName: ' + shop.productName)
         var pnEle = text(shop.productName).findOne(3000)
         if (pnEle){
-            text(shop.productName).findOne(3000)
+            text(shop.productName).findOne(3000).click()
+            sleep(500)
         } else {
-            msg.status = 2  
-            msg.payload.shopList.pusp(shop)
+            msg.status = 15
+            msg.msg = '无法定位到商品'
+            msg.payload.shopFailList.pusp(shop)
             break
         }
         // 可能因为弹窗导致选购商品失败, 确认是否进入商品详情页面
         if (!(text('规格').findOne(2000))){
             _textClickEvent('自提', 300)
             _textClickEvent('自提', 500)
-            text(shop.productName).findOne().click()
+            text(shop.productName).findOne(2000).click()
+            sleep(400)
         }
         // autoSwipe(500, 1200, 520, 600, 300, 500)
-        sleep(400)
         shop.feature.forEach( feat => {
-            var featEle = textContains(feat).findOne(400)
+            var featEle = textContains(feat).findOne(1000)
             if (featEle){
                 featEle.click()
             } else {
                 console.log(`没有选中饮料属性: ${feat}`);
             }
             if (feat.includes('杯')){
+                // 冷/热杯切换时, 商品可能会切换属性,如是加冰相关选项变动, 需要等待页面加载
                 sleep(500)
             }
         })
         _addQuantities(shop.quantity)
         _textClickEvent('加入购物车', 800)
+        // 当商品缺货时, 加入购物车不能点击, 页面保持在商品选购页.
         if (!text('规格').findOne(300)){
             console.log('添加失败' + shop);
-            msg.status = 2      // 商品添加失败
-            msg.payload.shopList.push(shop)
+            msg.status = 16      // 商品添加失败
+            msg.msg = '商品选购失败'
+            msg.payload.shopFailList.push(shop)
             actionSleep(back, 1000)
         }
     }
@@ -341,17 +345,18 @@ function mstandSelectDrinks(payload){
 function _payment(isTest){
     text('确认下单').findOne(3000).click()
     if (text('确定门店').findOne(3000)) {
-        // text('确定门店').findOne(3000).click()
-        // text("等待某节点加载").findOne(3000)
-        // sleep(3000)
-        // pressXY(device.width/ 2, device.height/ 2, 300, 1000)
         text('确定门店').findOne(2000).click()
         sleep(400)
         if (isTest === true){
             console.log('测试支付...');
-            return 
+            return {'status': 0, "msg": "测试支付"}
         }
-        textContains('余额支付').findOne(2000).click()
+        if (textContains('余额支付').findOne(3000)){
+
+        } else {
+            return {"status": 18}
+        }
+        // textContains('余额支付').findOne(2000).click()
 
         for (let index = 0; index < 10; index++) {
             if (!text('查看卡券').findOne(1000)){
@@ -383,25 +388,39 @@ function _newWriteNotes(notes){
     if (!notes){
         console.info('备注为空')
         sleep(sleepTime)
-        return
+        return true
     }
-    text('如有忌口过敏请填写到这儿').findOne(3000).click()
-    setClip(notes);
-    sleep(300)
-    press(600, 1000, 300)
-    var finish = text('完成').findOne()
-    click(device.width/2, finish.bounds().bottom + 80)
-    sleep(200)
-    finish.click()
-    sleep(300)
-    pressXY(523, 1750, 500, 300)
+    var counter = 0
+    text('如有忌口过敏请填写到这儿').findOne(3000)
+    while (text('如有忌口过敏请填写到这儿').findOne(300)) {
+        text('如有忌口过敏请填写到这儿').findOnce().click()
+        setClip(notes);
+        sleep(300)
+        press(600, 1000, 300) // 点击输入框
+        var finish = text('完成').findOne() 
+        click(device.width/2, finish.bounds().bottom + 80)  // 点击输入法剪贴板上备注
+        sleep(200)
+        finish.click()      // 点击完成
+        sleep(300)
+        pressXY(523, 1750, 500, 300)  // 点击备注框'保存'按钮
+        counter++
+        if (counter > 3){
+            return false
+        }
+    }
+    return true
+    
+
 }
 
+/**
+ * @param {string} orderType  - 店内就餐、打包带走
+*/
 function _clickOrderType(orderType){
-    if (orderType === undefined || orderType === 1){
+    if (orderType === undefined || orderType === "店内就餐"){
         // 默认店内就餐
-        return
-    } else if (orderType === 2){
+        return 
+    } else if (orderType === "打包带走"){
         text('打包带走').findOne(2000).click()
     } else {
         console.log(`orderTYpe 参数错误: ${orderType}`);
@@ -409,9 +428,34 @@ function _clickOrderType(orderType){
 }
 
 function mstandPayment(payload){
-    _textClickEvent('去结算', 1000)
-    _newWriteNotes(payload.notes);
-    _clickOrderType(payload.orderType)
+    var msg = {
+        'type': 'errorMsg',
+        'status': 0,      
+        'msg': 'mstandPayment',
+        'payload': {
+            'id': payload.id,
+            "city": payload.city,
+            "shopName": payload.shopName,
+            "wechatNo": payload.wechatNo,
+            "wechatName": payload.wechatName,
+            "shopList": payload.shopList,
+        }
+    }
+    !_textClickEvent('去结算', 1000)
+    switch (true) {
+        case (!_newWriteNotes(payload.notes)):
+            msg.status = 17
+            msg.msg = "备注输入失败"
+            break;
+        case (true):
+            _clickOrderType(payload.orderType)
+        case (true):
+            var result  = _payment(payload.orderType)
+            msg.status = result.status
+            msg.msg = result.msg
+        default:
+            break;
+    }    
     _payment(payload.isTest);
     console.info('支付完成, 等待截图...')
     var shotPath = "/sdcard/screenshot.png";
@@ -422,11 +466,20 @@ function mstandPayment(payload){
 }
 
 function mstand(playload){
+    var errorMsg;
     switch (true) {
-        case (value):
-            
-            break;
-    
+        case (errorMsg = mstandTOMenu(playload)):
+            if (errorMsg.status !== 0){
+                break;                
+            }
+        case (errorMsg = mstandSelectDrinks(playload)):
+            if (errorMsg.status !== 0){
+                break;                
+            }
+        case (errorMsg = mstandPayment(playload)):
+            if (errorMsg.status !== 0){
+                break;                
+            }
         default:
             break;
     }
@@ -436,11 +489,13 @@ function mstand(playload){
 }
 
 
-module.exports = {
-    mstand: mstand,
-    mstandTOMenu: mstandTOMenu,
-    mstandSelectDrinks: mstandSelectDrinks,
-    mstandPayment: mstandPayment,
-    clickRemark: clickRemark,
-    writeNotes: writeNotes
+// module.exports = {
+//     mstand: mstand,
+//     mstandTOMenu: mstandTOMenu,
+//     mstandSelectDrinks: mstandSelectDrinks,
+//     mstandPayment: mstandPayment,
+//     clickRemark: clickRemark,
+//     writeNotes: writeNotes
+// }
+//}
 }
