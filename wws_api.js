@@ -2,8 +2,8 @@
 importPackage(Packages["okhttp3"]); //导入包
 
 const { openWechat } = require('./wechat');
-const { mstandTOMenu, mstandSelectDrinks, mstandPayment} = require('./mstan');
-const { backToDesk } = require('./utils')
+const { mstand } = require('./mstan');
+const { backToDesk, swithcScreenOn, shotPath } = require('./utils')
 
 // 创建 OkHttpClient 实例
 var client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
@@ -19,25 +19,29 @@ var isProcessingTask = false;
 var cid = null;
 var uid = 'fb257b0c1044b5042d4ed7ede37ea1e2'
 var heartbeatInterval = 30000; 
+let taskQueue = [];
 
 // 处理任务队列
-function processNextTask(payload) {
-    if (!isProcessingTask) {
+function processTask() {
+    if (isProcessingTask === true) {
+        console.log("already processing a task");
+    }  else if (taskQueue.length == 0) {
+        console.log("taskQueue length 0");
+    } else {
         isProcessingTask = true;
         // currentTask = tasks.shift(); // 取出队列中的第一个任务
+        var payload = taskQueue.shift()
         executeTask(payload);
-        backToDesk()
-    } else {
-        console.log("No tasks to process or already processing a task");
+        isProcessingTask = false;
     }
 }
 
-function postScreenOss(filePath){
+function postScreenOss(){
     // var path = '"/sdcard/screenshot.png"'
     var api = "https://sapi.lovexiaohuli.com/api/file/upload"
 
     var res = http.postMultipart(api, {
-        file: open(filePath)
+        file: open(shotPath)
     }); 
     let jsonResponse = res.body.json()
     console.info('post response' + JSON.stringify(jsonResponse));
@@ -65,9 +69,22 @@ function updaloadPayPic(online_path, pid){
 
 }
 
+function uploadErrorStatus(errorMsg){
+    var url = 'https://pay.lovexiaohuli.com/ws/sendtoUid'
+    var json = {
+        "uid": "system",
+        "creator": uid, //微信账号uid  目前写死
+        "type": "uploadPayPic",
+        "data": errorMsg
+    }
+    var res = http.postJson(url, json)
+    console.info('updaloadPayPic res: ' + res.body.string())
 
-function updateTaskStatus(filePath, pid){
-    var online_path = postScreenOss(filePath);
+}
+
+
+function updateTaskStatus(pid){
+    var online_path = postScreenOss();
     updaloadPayPic(online_path, pid);
 }
 
@@ -75,23 +92,35 @@ function updateTaskStatus(filePath, pid){
 // 执行任务函数
 function _executeTask(payload) {
     console.log("Executing task:", payload.wechatName);
-    openWechat(payload);
-    mstandTOMenu(payload)
-    mstandSelectDrinks(payload)
-    var filePath = mstandPayment(payload)
-    // 模拟任务完成，更新任务状态
-    console.info('filePath: ' + filePath)
-    updateTaskStatus(filePath, payload.id)
+    var errorMsg ;
+    switch (true) {
+        case (errorMsg = openWechat(payload)):
+            if (errorMsg.status !== 0) break;
+        case (errorMsg = mstand(payload)):
+            if (errorMsg.status !== 0) break;
+        default:
+            break;
+    }
+    if (errorMsg.status !== 0){
+        uploadErrorStatus(errorMsg)
+    } else {
+        // 模拟任务完成，更新任务状态
+        updateTaskStatus(payload.id)
+    }
+
+
 };
 
 
 function executeTask(payload){
-    // try {
-    //     _executeTask(payload)
-    // } catch (error) {
-    //     backToDesk()
-    // }
-    _executeTask(payload)
+    try {
+        _executeTask(payload)
+    } catch (error) {
+        console.error(error.message);
+        console.error(error.track())
+        backToDesk()
+    }
+    // _executeTask(payload)
 }
 
 function bindUid(message){
@@ -136,7 +165,13 @@ myListener = {
         if (msg==='非法请求'||msg === 'pong') {
             return 
         }
-        var message = JSON.parse(msg);
+        try {
+            var message = JSON.parse(msg);
+        } catch (error) {
+            console.error('msg类型错误不能解析' + msg);
+            return
+        }
+        
         switch (message.type) {
             case 'ping':
                 break;
@@ -145,13 +180,11 @@ myListener = {
                 break;
             case "goToPay":    
                 console.log("Received tasks list:", message);
-                processNextTask(message.payload);
+                taskQueue.push(data)
                 break;
             case "uploadPayPic":
                 if (message.status === 1) {
                     console.log("Task status updated successfully");
-                    isProcessingTask = false;
-                    // 等待服务器推送下一个任务列表
                 } else {
                     console.error("Failed to update task status");
                 }
@@ -159,6 +192,10 @@ myListener = {
             case 'disconnect':
                 bindUid(message)
                 break;
+            case 'exit':
+                console.log('Exit message received. Closing WebSocket connection.');
+                unbindUid()
+                webSocket.close(1000, "Closing connection as requested");
             default:
                 console.error("Unknown message type:", message);
         }
@@ -179,4 +216,4 @@ myListener = {
 var webSocket = client.newWebSocket(request, new WebSocketListener(myListener)); //创建链接
 
 // 防止主线程退出
-setInterval(() => {}, 1000);
+setInterval(() => { processTask() }, 2000);
