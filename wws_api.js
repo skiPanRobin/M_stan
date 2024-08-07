@@ -20,6 +20,7 @@ var cid = null;
 var uid = 'fb257b0c1044b5042d4ed7ede37ea1e2'
 var heartbeatInterval = 30000; 
 let taskQueue = [];
+let isClose = false
 
 // 处理任务队列
 function processTask() {
@@ -134,9 +135,9 @@ function bindUid(message){
     console.log('bindUid: ' + r.body.string())
 }
 
-function unbindUid(message){
+function unbindUid(){
     var registMessage = {
-        "cid": message.cid,
+        "cid": cid,
         "uid": "fb257b0c1044b5042d4ed7ede37ea1e2", //微信账号uid  目前写
     }
     var r = http.postJson('https://pay.lovexiaohuli.com/ws/unBind', registMessage)
@@ -195,6 +196,8 @@ myListener = {
                 console.log('Exit message received. Closing WebSocket connection.');
                 unbindUid()
                 webSocket.close(1000, "Closing connection as requested");
+                isClose = true
+                break
             default:
                 console.error("Unknown message type:", message);
         }
@@ -215,4 +218,10 @@ myListener = {
 var webSocket = client.newWebSocket(request, new WebSocketListener(myListener)); //创建链接
 
 // 防止主线程退出
-setInterval(() => { processTask() }, 2000);
+const intervalId = setInterval(() => { 
+    processTask() 
+    if (isClose === true) {
+        clearInterval(intervalId)
+        console.log('收到关闭ws指令');
+    }
+}, 5000);
