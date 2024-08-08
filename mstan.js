@@ -1,4 +1,4 @@
-const {pressSleep, pressXY, randomInt, clickEvent, takeScreenshot, actionSleep, isNumeric, shotPath} = require('./utils')
+const {pressSleep, pressXY, randomInt, clickEvent, actionSleep, isNumeric, isExists, shotPath} = require('./utils')
 
 function clickRemark(){
     var ele = text('如有忌口过敏请填写到这儿').findOne(10000)
@@ -116,7 +116,7 @@ function _addQuantities(quantity){
     var siblings = text('¥').findOne().parent().children()
     for (let index = 0; index < siblings.length; index++) {
         var element = siblings[index];
-        console.log(element.text())
+        // console.log(element.text())
         if (element.text() === '加入购物车'){
             var currentQuantity = parseInt(siblings[index-2].text())
             var addQuantity = quantity - currentQuantity
@@ -162,7 +162,7 @@ function _clearShopCar(){
         for (let index = 0; index < children.length; index++) {
             var element = children[index];
             if (isNumeric(element.text())) {
-                console.log(`杯数 ${element.text()}, 下标: ${index}`);
+                // console.log(`杯数 ${element.text()}, 下标: ${index}`);
                 children[index - 1].click()
                 sleep(300)
                 break
@@ -244,10 +244,10 @@ function mstandTOMenu(payload){
     while (!text("手动选择").findOne(200)){
         pressXY(300, 300, 100, 300)    //  消除弹窗
         pressXY(300, 300, 100, 300)    //  消除弹窗
-        pressXY(300, 1250, 100, 500);  //   门店自取
+        pressXY(300, 1250, 100, 300);  //   门店自取
     }
-    while (!text('选择门店').findOne(200)) {
-        text('手动选择').findOnce().click()
+    while (!text('选择门店').findOne(400)) {
+        text('手动选择').findOne(500).click()
         sleep(500)
     }
     // pressSleep('手动选择', 1500)
@@ -295,7 +295,6 @@ function mstandSelectDrinks(payload){
     var shopList = payload.shopList
     for (let shop of shopList){
         console.info('shop: '+ shop)
-        console.info('category: ' + shop.category)
         console.info('productName: ' + shop.productName)
         var pnEle = text(shop.productName).findOne(3000)
         if (pnEle){
@@ -328,14 +327,24 @@ function mstandSelectDrinks(payload){
             }
         })
         _addQuantities(shop.quantity)
-        _textClickEvent('加入购物车', 800)
-        // 当商品缺货时, 加入购物车不能点击, 页面保持在商品选购页.
-        if (!text('规格').findOne(300)){
-            console.log('添加失败' + shop);
-            msg.status = 15      // 商品添加失败
-            msg.msg = '商品选购失败'
-            msg.payload.shopFailList.push(shop)
-            actionSleep(back, 1000)
+        pressSleep('加入购物车', 200)
+        // 当商品缺货时, 加入购物车不能点击, 页面保持在商品选购页. "规格" 只会出现在选购页面
+        switch (false) {
+            case isExists('规格', 400, 400):
+                break;
+            case isExists('规格', 400, 400):
+                break;
+            case isExists('规格', 400, 400):
+                break;
+            case isExists('规格', 400, 400):
+                break;
+            default:
+                console.log('添加失败' + shop);
+                msg.status = 15      // 商品添加失败
+                msg.msg = '商品选购失败'
+                msg.payload.shopFailList.push(shop)
+                actionSleep(back, 500)  // 回到饮品列表页
+                break;
         }
     }
     sleep(500)
@@ -448,8 +457,12 @@ function mstandPayment(payload){
             "shopList": payload.shopList,
         }
     }
-    !_textClickEvent('去结算', 1000)
+    
     switch (true) {
+        case (!_textClickEvent('去结算', 1000)):
+            msg.status = 16
+            msg.msg = '“去结算”无法点击'
+            break
         case (!_newWriteNotes(payload.notes)):
             msg.status = 16
             msg.msg = "备注输入失败"
@@ -457,17 +470,13 @@ function mstandPayment(payload){
         case (true):
             _clickOrderType(payload.orderType)
         case (true):
-            var result  = _payment(payload.orderType)
+            var result  = _payment(payload.isTest)
             msg.status = result.status
             msg.msg = result.msg
+            break
         default:
             break;
     }    
-    // _payment(payload.isTest);
-    console.info('等待截图...')
-    takeScreenshot(shotPath)
-    className('android.widget.Button').desc('返回').findOne(3000).click()
-    sleep(300)
     return msg
 }
 

@@ -3,9 +3,13 @@ var WIDTH = 1080
 var HEIGHT = 2340
 var width = device.width;
 var height = device.height;
-device.wakeUpIfNeeded()
-toast('width: ' + width + 'height: ' + height)
-var shotPath = "/sdcard/screenshot.png";
+if (WIDTH == width && height == HEIGHT) {
+} else {
+    setScreenMetrics(WIDTH, HEIGHT)
+}
+var shotPath = "/sdcard/Pictures/Screenshots/screenshot.png";
+
+
 function randomInt(min, max){
     min = Math.ceil(min)
     max = Math.floor(max)
@@ -197,19 +201,23 @@ function clickEvent(x, y, sleepTime){
     sleep(sleepTime)
 }
 
+function isExists(content, findTime, sleepTime){
+    sleep(sleepTime)
+    return !!text(content).findOne(findTime)
+}
+
 /**
  * 截图函数
-*@param {string} savePath   - 保存路径
 */
-function takeScreenshot(savePath) {
+function takeScreenShot(savePath) {
+    sleep(200)
     var result = shell("screencap -p " + savePath, true);
     if (result.code == 0) {
         console.log("截图成功，保存路径：" + savePath);
     } else {
         console.log("截图失败");
     }
-    sleep(500)
-}
+};
 
 /**
  * 返回桌面
@@ -220,7 +228,9 @@ function backToDesk(){
     actionSleep(back, 200)
     actionSleep(back, 200)
     actionSleep(back, 200)
-    actionSleep(back, 200)
+    home()
+    home()
+    home()
 }
 
 
@@ -237,8 +247,9 @@ module.exports = {
     clickEvent: clickEvent,
     descClick: descClick,
     backToDesk: backToDesk,
-    takeScreenshot: takeScreenshot,
+    takeScreenShot: takeScreenShot,
     isNumeric: isNumeric,
     swithcScreenOn: swithcScreenOn,
+    isExists, isExists,
     shotPath: shotPath
 };

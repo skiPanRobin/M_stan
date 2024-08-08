@@ -38,7 +38,7 @@ var payload =  {
     "shopName": "上海BFC外滩店",
     "wechatNo": 2,
     "wechatName": "巴巴爸爸的咖啡厅",
-    "orderType": "店内就餐",      // 1. 店内就餐; 2. 打包带走
+    "orderType": "店内就餐",
     "isTest": true
 }
 r = openWechat(payload)
