@@ -1,13 +1,13 @@
 {
-    "name": "MStanAuto",
+    "name": "MStandAuto",
     "main": "main.js",
     "ignore": [
         "build"
-    ],
-    "packageName": "com.mstan.auto",
-    "versionName": "1.0.0",
-    "versionCode": 1, 
+    ], 
     "launchConfig": {
         "hideLogs": true
-    }
+    },
+    "packageName": "com.mstand.autox",
+    "versionName": "1.0.0",
+    "versionCode": 1
 }
