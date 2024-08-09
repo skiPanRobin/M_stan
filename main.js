@@ -185,7 +185,6 @@ myListener = {
             console.error('msg类型错误不能解析' + msg);
             return
         }
-        shell("input keyevent 26", true);
         switch (message.type) {
             case 'ping':
                 break;
