@@ -35,6 +35,7 @@ function processTask() {
         isProcessingTask = false;
         if (taskQueue.length === 0){
             device.cancelKeepingAwake();
+            sleep(200)
             shell("input keyevent 26", true);
         }
     }
