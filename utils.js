@@ -24,6 +24,7 @@ function swithcScreenOn(){
     let maxIter = 20
     var status_ = 0
     while (!device.isScreenOn()){
+        shell("input keyevent 26", true);
         device.wakeUpIfNeeded()
         sleep(300)
         if(counter >= maxIter){
@@ -35,7 +36,7 @@ function swithcScreenOn(){
     } 
     if (device.isScreenOn()){
         console.log('正常点亮屏幕 ' + counter);
-        device.keepScreenDim()
+        device.keepScreenDim(600*1000)
     }
     return status_
 }

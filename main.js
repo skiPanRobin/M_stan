@@ -33,6 +33,10 @@ function processTask() {
         var payload = taskQueue.shift()
         executeTask(payload);
         isProcessingTask = false;
+        if (taskQueue.length === 0){
+            device.cancelKeepingAwake();
+            shell("input keyevent 26", true);
+        }
     }
 }
 
@@ -180,7 +184,7 @@ myListener = {
             console.error('msg类型错误不能解析' + msg);
             return
         }
-        
+        shell("input keyevent 26", true);
         switch (message.type) {
             case 'ping':
                 break;
@@ -233,15 +237,13 @@ const intervalId = setInterval(() => {
     }
 }, 5000);
 
-function updateTime(){
 
-}
 function setWindow(){
     if (!floaty.checkPermission()) {
         // 没有悬浮窗权限，提示用户并跳转请求
         toast("本脚本需要悬浮窗权限来显示悬浮窗，请在随后的界面中允许并重新运行本脚本。");
         floaty.requestPermission();
-        exit();
+        // exit();
     } else {
         toastLog('已有悬浮窗权限');
     }
@@ -250,8 +252,8 @@ function setWindow(){
             <text id='time' textSize='16sp' textColor="#FFFFFF" />
         </frame>
     );
-    window.setPosition(device.width - 200, 0);
-    return   window
+    window.setPosition(device.width - 300, 0);
+    return window
 }
 
 var window = setWindow()

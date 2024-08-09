@@ -163,7 +163,7 @@ function _clearShopCar(){
             var element = children[index];
             if (isNumeric(element.text())) {
                 // console.log(`杯数 ${element.text()}, 下标: ${index}`);
-                children[index - 1].click()
+                click(children[index - 1].bounds().centerX(), children[index - 1].bounds().centerY())
                 sleep(300)
                 break
             } 
