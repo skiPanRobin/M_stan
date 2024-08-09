@@ -44,7 +44,6 @@ function _openWechat(payload){
         } else{
             actionSleep(back, 500)
         }
-        return {"status": 0, "msg": "openWechat"}
     }
 
     var parent微信 = className('android.widget.TextView').text('微信').findOne(5000).parent()
@@ -56,6 +55,7 @@ function _openWechat(payload){
     }
     autoSwipe(500, 1037, 520, 2568, 300, 100)
     toast("微信切换完成")
+    return {"status": 0, "msg": "openWechat"}
 }
 
 /**
@@ -81,7 +81,6 @@ function openWechat(payload){
         msg.status = r.status
         msg.msg = r.msg
     } catch (error) {
-        error.to
         msg.status = 1
         msg.msg = error.msg
     }

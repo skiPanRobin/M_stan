@@ -19,7 +19,7 @@ var cid = null;
 var uid = 'fb257b0c1044b5042d4ed7ede37ea1e2'
 var heartbeatInterval = 30000; 
 let taskQueue = [];
-var isClose = false
+var isClose = false;
 
 // 处理任务队列
 function processTask() {
@@ -232,3 +232,36 @@ const intervalId = setInterval(() => {
         toast('收到关闭ws指令');
     }
 }, 5000);
+
+function updateTime(){
+
+}
+function setWindow(){
+    if (!floaty.checkPermission()) {
+        // 没有悬浮窗权限，提示用户并跳转请求
+        toast("本脚本需要悬浮窗权限来显示悬浮窗，请在随后的界面中允许并重新运行本脚本。");
+        floaty.requestPermission();
+        exit();
+    } else {
+        toastLog('已有悬浮窗权限');
+    }
+    var window = floaty.window(
+        <frame>
+            <text id='time' textSize='16sp' textColor="#FFFFFF" />
+        </frame>
+    );
+    window.setPosition(device.width - 200, 0);
+    return   window
+}
+
+var window = setWindow()
+
+const windowInterId = setInterval(() => {
+    var timeString =(new Date()).toTimeString().substring(0, 8);
+    ui.run(function(){
+            window.time.setText(`${timeString} AUTOX`);
+    });
+    if (isClose){
+        clearInterval(windowInterId)
+    }
+}, 1000);

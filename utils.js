@@ -219,6 +219,36 @@ function takeScreenShot(savePath) {
     }
 };
 
+function clockFloaty(isClose){
+    if (!floaty.checkPermission()) {
+        // 没有悬浮窗权限，提示用户并跳转请求
+        toast("本脚本需要悬浮窗权限来显示悬浮窗，请在随后的界面中允许并重新运行本脚本。");
+        floaty.requestPermission();
+        exit();
+    } else {
+        toastLog('已有悬浮窗权限');
+    }
+    var window = floaty.window(
+        <frame>
+            <text id='time' textSize='16sp' textColor="#FFFFFF" />
+        </frame>
+    );
+    window.setPosition(width - 200, 0);
+    function updateTime(){
+        var timeString =(new Date()).toTimeString().substring(0, 8);
+        ui.run(function(){
+                window.time.setText(`${timeString} AUTOX`);
+        });
+    }
+    var windowInterId = setInterval(() => {
+        updateTime();
+        if (isClose){
+            clearInterval(windowInterId)
+        }
+    }, 1000);
+    updateTime();
+}
+
 /**
  * 返回桌面
 */ 
@@ -251,5 +281,6 @@ module.exports = {
     isNumeric: isNumeric,
     swithcScreenOn: swithcScreenOn,
     isExists, isExists,
+    clockFloaty: clockFloaty,
     shotPath: shotPath
 };
