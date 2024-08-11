@@ -303,7 +303,7 @@ function mstandSelectDrinks(payload){
         } else {
             msg.status = 14
             msg.msg = '商品列表中无法定位到商品'
-            msg.payload.shopFailList.pusp(shop)
+            msg.payload.shopFailList.push(shop)
             break
         }
         // 可能因为弹窗导致选购商品失败, 确认是否进入商品详情页面

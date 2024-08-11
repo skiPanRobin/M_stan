@@ -37,7 +37,7 @@ function _openWechat(payload){
         }
         
         // 返回
-        var button返回 = className('android.widget.ImageView').desc('返回').findOne(8000)
+        var button返回 = className('android.widget.ImageView').desc('返回').findOne(40000)
         if (button返回 && button返回.bounds().centerX() > 0 && button返回.bounds().centerY()>0){
             click(button返回.bounds().centerX(), button返回.bounds().centerY())
             sleep(200)
@@ -46,7 +46,7 @@ function _openWechat(payload){
         }
     }
 
-    var parent微信 = className('android.widget.TextView').text('微信').findOne(5000).parent()
+    var parent微信 = className('android.widget.TextView').text('微信').findOne(20000).parent()
     if (parent微信 && parent微信.bounds().centerX() >0 && parent微信.bounds().centerY()>0) {
         click(parent微信.bounds().centerX(), parent微信.bounds().centerY())
         sleep(500)
