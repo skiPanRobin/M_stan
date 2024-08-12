@@ -55,7 +55,16 @@ function _openWechat(payload){
     }
     autoSwipe(500, 1037, 520, 2568, 300, 100)
     toast("微信切换完成")
-    return {"status": 0, "msg": "openWechat"}
+    // 当appName为空时, 给出错误提示
+    if (!payload.appName){
+        return {"status": 9, "msg": "appName缺失或为空"}
+    } else {
+        if (text(payload.appName).findOne(2000)){
+            return {"status": 0, "msg": "openWechat"}
+        } else {
+            return {"status": 4, "msg": "无法定位小程序,  确认微信是否操作完成"}
+        }
+    }
 }
 
 /**
