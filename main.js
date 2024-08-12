@@ -16,28 +16,22 @@ client.dispatcher().cancelAll(); // 清理一次
 // 全局变量，用于跟踪当前任务状态
 var isProcessingTask = false;
 var cid = null;
-var uid = 'fb257b0c1044b5042d4ed7ede37ea1e2'
+var uid = device.serial
 var heartbeatInterval = 30000; 
-let taskQueue = [];
 var isClose = false;
 
 // 处理任务队列
-function processTask() {
+function processTask(payload) {
     if (isProcessingTask === true) {
         // console.log("already processing a task");
-    }  else if (taskQueue.length == 0) {
-        // console.log("taskQueue length 0");
-    } else {
+        
+    }
+    else {
         isProcessingTask = true;
         // currentTask = tasks.shift(); // 取出队列中的第一个任务
-        var payload = taskQueue.shift()
+        // var payload = taskQueue.shift()
         executeTask(payload);
         isProcessingTask = false;
-        if (taskQueue.length === 0){
-            device.cancelKeepingAwake();
-            sleep(200)
-            shell("input keyevent 26", true);
-        }
     }
 }
 
@@ -192,8 +186,8 @@ myListener = {
                 bindUid(message)
                 break;
             case "goToPay":    
-                console.log("Received tasks list:" + msg);
-                taskQueue.push(message.payload)
+                console.log("Received task msg: " + msg);
+                processTask(msg.payload)
                 break;
             case "uploadPayPic":
                 console.log(msg);
