@@ -34,7 +34,6 @@ function updaloadPayPic(online_path, msg){
     }
     var res = http.postJson(api.apiMsg, json)
     console.info('updaload pic res: ' + res.body.string())
-
 }
 
 
@@ -64,8 +63,32 @@ function uploadErrorStatus(errorMsg){
 
 }
 
+
+/**接受到任务后, 返回设备状态
+ * @param {string} payloadId    - payload.id
+ * @param {number} status       - 0: 空闲, 1: 忙碌
+*/
+function updateDeviceStatus(payloadId, status){
+    var json = {
+        "uid": "system",
+        "creator": uid, //微信账号uid  目前写死
+        "type": "uploadPayPic",
+        "data": {
+            "id": payloadId,   //订单id
+            "type": 'deviceStatus',
+            "status": status,       // 返回设备是否忙碌
+            "msg": status === 0 ? '设备空闲' : "设备忙碌", // 下单失败的提示
+        }
+    }
+    var res = http.postJson(api.apiMsg, json)
+    console.info('updateDeviceStatus: ' + res.body.string())
+}
+
+
+
 module.exports = {
     postScreenOss: postScreenOss,
     updaloadPayPic: updaloadPayPic,
-    uploadErrorStatus: uploadErrorStatus
+    uploadErrorStatus: uploadErrorStatus,
+    updateDeviceStatus: updateDeviceStatus
 };

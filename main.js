@@ -4,6 +4,7 @@ importPackage(Packages["okhttp3"]); //导入包
 const { openWechat } = require('./wechat');
 const { mstand } = require('./mstan');
 const { backToDesk, swithcScreenOn, shotPath, takeScreenShot } = require('./utils')
+const { postScreenOss, updaloadPayPic, uploadErrorStatus, updateDeviceStatus } = require('./api')
 
 // 创建 OkHttpClient 实例
 var client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
@@ -22,63 +23,16 @@ var isClose = false;
 
 // 处理任务队列
 function processTask(payload) {
+    updateDeviceStatus(payload.id, isProcessingTask === true? 1: 0)
     if (isProcessingTask === true) {
-        // console.log("already processing a task");
-        
-    }
-    else {
+        console.log("already processing a task");
+    } else {
         isProcessingTask = true;
         // currentTask = tasks.shift(); // 取出队列中的第一个任务
         // var payload = taskQueue.shift()
         executeTask(payload);
         isProcessingTask = false;
     }
-}
-
-function postScreenOss(shotPath){
-    // var path = '"/sdcard/screenshot.png"'
-    var api = "https://sapi.lovexiaohuli.com/api/file/upload"
-
-    var res = http.postMultipart(api, {
-        file: open(shotPath)
-    }); 
-    let jsonResponse = res.body.json()
-    console.info('post response' + JSON.stringify(jsonResponse));
-    console.log('online_path: ' + jsonResponse.data.online_path)
-    return jsonResponse.data.online_path
-}
-
-function updaloadPayPic(online_path, msg){
-    var url = 'https://pay.lovexiaohuli.com/ws/sendtoUid'
-    var json = {
-        "uid": "system",
-        "creator": uid, //微信账号uid  目前写死
-        "type": "uploadPayPic",
-        "data": {
-            "id": msg.payload.id, //订单id
-            "type": "uploadPayPic",
-            "status": msg.status, //是否成功下单  1是2否
-            "fileUrl": online_path,
-            "msg": msg.msg, // 下单失败的提示
-            "shopList": []
-        }
-    }
-    var res = http.postJson(url, json)
-    console.info('updaloadPayPic res: ' + res.body.string())
-
-}
-
-function uploadErrorStatus(errorMsg){
-    var url = 'https://pay.lovexiaohuli.com/ws/sendtoUid'
-    var json = {
-        "uid": "system",
-        "creator": uid, //微信账号uid  目前写死
-        "type": "uploadPayPic",
-        "data": errorMsg
-    }
-    var res = http.postJson(url, json)
-    console.info('updaloadPayPic res: ' + res.body.string())
-
 }
 
 
@@ -169,7 +123,6 @@ myListener = {
         startHeartbeat(webSocket);
     },
     onMessage: function (webSocket, msg) { 
-        print('msg: ' + msg);
         if (msg==='非法请求'||msg === 'pong') {
             return 
         }
