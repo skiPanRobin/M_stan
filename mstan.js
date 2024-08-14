@@ -240,16 +240,49 @@ function mstandTOMenu(payload){
     }    
     pressSleep(payload.appName, 200)
     text('首页').findOne(5000)
+    var currentStep = 1
+    var whileCnt = 0
+
+    // 网络问题可能导致页面无法加载
+    while (currentStep < 3) {
+        switch (currentStep){
+            case 1:
+                whileCnt = 0
+                while (!text("手动选择").findOne(200)){
+                    pressXY(300, 300, 100, 300)    //  消除弹窗
+                    pressXY(300, 300, 100, 300)    //  消除弹窗
+                    pressXY(300, 1250, 100, 500);  //   门店自取
+                    whileCnt++
+                    if (whileCnt >= 10) {
+                        break
+                    }
+                }
+                currentStep = 2
+                break
+            case 2: 
+                whileCnt = 0
+                while (!text('选择门店').findOne(400)) {
+                    text('手动选择').findOne(500).click()
+                    sleep(500)
+                    whileCnt++
+                    if (whileCnt >= 10) {
+                        break
+                    }
+                }
+                if (whileCnt >= 10){
+                    currentStep = 1  // 退回到case 1
+                    actionSleep(back, 1000)
+                } else {
+                    currentStep = 3
+                } 
+                break
+        }
+        
+    }
+
     // 关闭推荐弹窗
-    while (!text("手动选择").findOne(200)){
-        pressXY(300, 300, 100, 300)    //  消除弹窗
-        pressXY(300, 300, 100, 300)    //  消除弹窗
-        pressXY(300, 1250, 100, 300);  //   门店自取
-    }
-    while (!text('选择门店').findOne(400)) {
-        text('手动选择').findOne(500).click()
-        sleep(500)
-    }
+    
+    
     // pressSleep('手动选择', 1500)
     switch (true) {
         case (selectCity(payload.city, 900) === false):

@@ -1,4 +1,7 @@
 const {api} = require('./config')
+console.log('android id' + device.getAndroidId())
+const uid = $crypto.digest(device.getAndroidId(), "MD5", {output: 'toString'})    // "fb257b0c1044b5042d4ed7ede37ea1e2"
+
 
 /** 上传截图
  * @param {string} shotPath -截图路径
@@ -84,11 +87,36 @@ function updateDeviceStatus(payloadId, status){
     console.info('updateDeviceStatus: ' + res.body.string())
 }
 
+/**设备与服务端绑定
+ * @param {string} cid - 
+*/
+function bindUid(cid){
+    var registMessage = {
+        "cid": cid,
+        "uid": uid, //微信账号uid  目前写死
+        "name": device.brand, //微信昵称 目前写死, 不绑定到微信, 绑定到设备
+        "terminal": "mini" //目前写死 终端类型  mini小程序  pc 电脑端 app 移动端
+    }
+    console.log("registMessage " + JSON.stringify(registMessage))
+    var r = http.postJson(api.apiBind, registMessage)
+    console.log("bindUid " + r.body.string())
+}
+
+function unbindUid(cid){
+    var registMessage = {
+        "cid": cid,
+        "uid": uid, //微信账号uid  目前写
+    }
+    var r = http.postJson(api.apiUnbind, registMessage)
+    console.log('unbindUid: '+ r.body.string())
+}
 
 
 module.exports = {
     postScreenOss: postScreenOss,
     updaloadPayPic: updaloadPayPic,
     uploadErrorStatus: uploadErrorStatus,
-    updateDeviceStatus: updateDeviceStatus
+    updateDeviceStatus: updateDeviceStatus,
+    bindUid: bindUid,
+    unbindUid: unbindUid
 };

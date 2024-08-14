@@ -36,7 +36,10 @@ function swithcScreenOn(){
     } 
     if (device.isScreenOn()){
         console.log('正常点亮屏幕 ' + counter);
-        device.keepScreenDim(600*1000)
+        device.keepScreenDim(200*1000)
+        device.setBrightnessMode(0)
+        sleep(200)
+        device.setBrightness(1)
     }
     return status_
 }

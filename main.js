@@ -4,7 +4,7 @@ importPackage(Packages["okhttp3"]); //导入包
 const { openWechat } = require('./wechat');
 const { mstand } = require('./mstan');
 const { backToDesk, swithcScreenOn, shotPath, takeScreenShot } = require('./utils')
-const { postScreenOss, updaloadPayPic, uploadErrorStatus, updateDeviceStatus } = require('./api')
+const { postScreenOss, updaloadPayPic, uploadErrorStatus, updateDeviceStatus, bindUid, unbindUid } = require('./api')
 
 // 创建 OkHttpClient 实例
 var client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
@@ -12,26 +12,27 @@ var client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
 // 创建 WebSocket 请求
 var request = new Request.Builder().url("wss://pay.lovexiaohuli.com").build(); //vscode 插件的ip地址
 
-client.dispatcher().cancelAll(); // 清理一次
-
 // 全局变量，用于跟踪当前任务状态
 var isProcessingTask = false;
 var cid = null;
-var uid = device.serial
-var heartbeatInterval = 30000; 
+var heartBeatId = null
 var isClose = false;
+var retryAttempts = 0;
+var maxRetryAttempts = 5; // 设置最大重试次数
+var heartbeatInterval = 30000; 
 
-// 处理任务队列
+
+
+// 收到任务直接执行, 不存储到缓存
 function processTask(payload) {
-    updateDeviceStatus(payload.id, isProcessingTask === true? 1: 0)
     if (isProcessingTask === true) {
+        updateDeviceStatus(payload.id, 1)
         console.log("already processing a task");
     } else {
         isProcessingTask = true;
-        // currentTask = tasks.shift(); // 取出队列中的第一个任务
-        // var payload = taskQueue.shift()
         executeTask(payload);
         isProcessingTask = false;
+        // updateDeviceStatus(payload.id,  0)
     }
 }
 
@@ -42,8 +43,8 @@ function updateTaskStatus(msg){
     console.log('截图完成....' + shotPath);
     var online_path = postScreenOss(shotPath);
     updaloadPayPic(online_path, msg);
-    if (className('android.widget.Button').desc('返回').findOne(200)) {
-        className('android.widget.Button').desc('返回').findOne(3000).click()
+    if (className('android.widget.Button').desc('返回').findOne(2000)) {
+        className('android.widget.Button').desc('返回').findOne(200).click()
     }
 }
 
@@ -82,117 +83,114 @@ function executeTask(payload){
     }
 }
 
-function bindUid(message){
-    cid = message.cid
-    var registMessage = {
-        "cid": cid,
-        "uid": "fb257b0c1044b5042d4ed7ede37ea1e2", //微信账号uid  目前写死
-        "name": "阿呆的大哥", //微信昵称 目前写死
-        "terminal": "mini" //目前写死 终端类型  mini小程序  pc 电脑端 app 移动端
-    }
-    var r = http.postJson('https://pay.lovexiaohuli.com/ws/bindUid', registMessage)
-    console.log('bindUid: ' + r.body.string())
-}
-
-function unbindUid(){
-    var registMessage = {
-        "cid": cid,
-        "uid": "fb257b0c1044b5042d4ed7ede37ea1e2", //微信账号uid  目前写
-    }
-    var r = http.postJson('https://pay.lovexiaohuli.com/ws/unBind', registMessage)
-    console.log('unbindUid'+ r.body.string())
-}
-
 
 // 启动心跳检测
 function startHeartbeat(webSocket) {
-    const heartBeatId = setInterval(() => {
+    heartBeatId = setInterval(() => {
         webSocket.send('ping');
         if (isClose === true) {
+            console.log('停止心跳!!!');
             clearInterval(heartBeatId)
-            toast('停止心跳');
-            sleep(1000)
         }
     }, heartbeatInterval);
 }
 
 // WebSocket 监听器
-myListener = {
-    onOpen: function (webSocket, response) {
-        toast("onOpen");
-        startHeartbeat(webSocket);
-    },
-    onMessage: function (webSocket, msg) { 
-        if (msg==='非法请求'||msg === 'pong') {
-            return 
+function startWebSocket(){
+    client.dispatcher().cancelAll(); // 清理一次
+    myListener = {
+        onOpen: function (webSocket, response) {
+            console.log("onOpen ");
+            isProcessingTask = false;
+            cid = null;
+            heartBeatId = null
+            isClose = false;
+            retryAttempts = 0;
+            startHeartbeat(webSocket);
+        },
+        onMessage: function (webSocket, msg) { 
+            console.log("msg " + msg);
+            if (msg === 'pong') {
+                return 
+            }
+            try {
+                var message = JSON.parse(msg);
+                if (!!message.type === false){
+                    console.warn("未定义消息类型： " + msg)
+                    return
+                }
+            } catch (error) {
+                console.log('无需JSON解析消息： ' + msg);
+                return
+            }
+            switch (message.type) {
+                // case 'ping':
+                //     break;
+                case 'connect':
+                    cid = message.cid
+                    bindUid(cid)
+                    break;
+                case "goToPay":    
+                    processTask(message.payload)
+                    break;
+                // case "uploadPayPic":
+                //     break;
+                // case 'disconnect':
+                    // bindUid(cid)
+                    // break;
+                case 'exit':
+                    console.log('Exit message received. Closing WebSocket connection.');
+                    unbindUid(cid)
+                    webSocket.close(1000, "Closing connection as requested");
+                    isClose = true
+                    break
+                default:
+                    console.log("无需处理类型消息：" + msg);
+                    break
+            }
+        },
+        onClosing: function (webSocket, code, response) {
+            console.log("onClosing 正在关闭");
+        },
+        onClosed: function (webSocket, code, response) {
+            console.log("onClosed 已关闭");
+            // device.cancelKeepingAwake();
+        },
+        onFailure: function (webSocket, t, response) {
+            console.log("onFailure 错误: " + t);
+            attemptReconnect()
         }
-        try {
-            var message = JSON.parse(msg);
-        } catch (error) {
-            console.error('msg类型错误不能解析' + msg);
-            return
-        }
-        switch (message.type) {
-            case 'ping':
-                break;
-            case 'connect':
-                bindUid(message)
-                break;
-            case "goToPay":    
-                console.log("Received task msg: " + msg);
-                processTask(msg.payload)
-                break;
-            case "uploadPayPic":
-                console.log(msg);
-                break;
-            case 'disconnect':
-                bindUid(message)
-                break;
-            case 'exit':
-                toast('Exit message received. Closing WebSocket connection.');
-                unbindUid()
-                webSocket.close(1000, "Closing connection as requested");
-                isClose = true
-                break
-            default:
-                console.error("Unknown message type:" + msg);
-        }
-    },
-    onClosing: function (webSocket, code, response) {
-        toast("正在关闭");
-    },
-    onClosed: function (webSocket, code, response) {
-        toast("已关闭");
-        device.cancelKeepingAwake();
-    },
-    onFailure: function (webSocket, t, response) {
-        toast("错误");
-        toast(t);
-    }
-};
+    };
+    // 创建 WebSocket 连接
+    client.newWebSocket(request, new WebSocketListener(myListener)); //创建链接
+}
 
-// 创建 WebSocket 连接
-var webSocket = client.newWebSocket(request, new WebSocketListener(myListener)); //创建链接
-
-// 防止主线程退出
-const intervalId = setInterval(() => { 
-    toast('INTERVAL FOR TASK')
-    processTask() 
-    if (isClose === true) {
-        clearInterval(intervalId)
-        toast('收到关闭ws指令');
+function attemptReconnect() {
+    retryAttempts++;
+    try {
+        unbindUid(cid)
+    } catch (error) {
     }
-}, 5000);
+    if (retryAttempts <= maxRetryAttempts) {
+        console.log("重试连接, 尝试次数: " + retryAttempts);
+        setTimeout(startWebSocket, 3000); // 延迟3秒后重试连接
+    } else {
+        console.log("已达到最大重试次数，停止重试。");
+        isClose = true
+    }
+}
+
+startWebSocket(); // 初次启动
 
 
 function setWindow(){
     if (!floaty.checkPermission()) {
         // 没有悬浮窗权限，提示用户并跳转请求
-        toast("本脚本需要悬浮窗权限来显示悬浮窗，请在随后的界面中允许并重新运行本脚本。");
+        console.log("本脚本需要悬浮窗权限来显示悬浮窗，请在随后的界面中允许并重新运行本脚本。");
         floaty.requestPermission();
         // exit();
     } else {
-        toastLog('已有悬浮窗权限');
+        console.log('已有悬浮窗权限');
     }
     var window = floaty.window(
         <frame>
@@ -205,12 +203,23 @@ function setWindow(){
 
 var window = setWindow()
 
+// 防止主线程退出
+const screenOnId = setInterval(() => {
+    swithcScreenOn()
+}, 1000 * 60 * 30);
+
+// 防止主线程退出
 const windowInterId = setInterval(() => {
     var timeString =(new Date()).toTimeString().substring(0, 8);
     ui.run(function(){
             window.time.setText(`${timeString} AUTOX`);
     });
     if (isClose){
+        clearInterval(screenOnId)
+        console.log("退出屏幕定时点亮!!!")
         clearInterval(windowInterId)
+        console.log("退出时钟悬浮窗!!!");
+        clearInterval(heartBeatId)
+        console.log("停止心跳!!!")
     }
 }, 1000);

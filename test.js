@@ -1,50 +1,56 @@
 // const { clickByPartialText } = require("./utils");
-const {openWechat} = require('./wechat')
-const {mstandTOMenu, mstandSelectDrinks, mstandPayment}  = require('./mstan')
+// const {openWechat} = require('./wechat')
+// const {mstandTOMenu, mstandSelectDrinks, mstandPayment}  = require('./mstan')
 // 打开调试
 auto();
+var message = device.getAndroidId()
+log(message)
+var md5 = $crypto.digest('f4a24d4fc36be4f6', "MD5", {output: 'toString'})
+log("MD5 [base64]: ", md5, md5.length);
+var sha1 = $crypto.digest(message, "SHA-1", {output: 'toString'})
+log("SHA1 [base64]: ", sha1, sha1.length);
 // var parent微信 = className('android.widget.TextView').text('微信').findOne(5000).parent()
 // if (parent微信) {
 //     console.log(parent微信.bounds().centerX(), parent微信.bounds().centerY())
 //     click(parent微信.bounds().centerX(), parent微信.bounds().centerY())
 //     sleep(800)
 // } 
-var payload =  {
-    "id": "1",
-    "city": "上海市",
-    "notes": "上海测试",
-    "appName": "M Stand",
-    "shopList": [
-        {
-            "feature": [
-                "燕麦奶"
-            ],
-            "category": "奶咖",
-            "quantity": 1,
-            "productName": "脏咖啡"
-        },
-        {
-            "feature": [
-                "标杯（冰）354ml",
-                "少冰",
-                "加份浓度+¥5元",
-                "标准糖"
-            ],
-            "category": "果咖",
-            "quantity": 2,
-            "productName": "野黑莓气泡美式"
-        }
-    ],
-    "shopName": "上海BFC外滩店",
-    "wechatNo": 2,
-    "wechatName": "巴巴爸爸的咖啡厅",
-    "orderType": "店内就餐",
-    "isTest": true
-}
-r = openWechat(payload)
-mstandTOMenu(payload)
-mstandSelectDrinks(payload)
-mstandPayment(payload)
+// var payload =  {
+//     "id": "1",
+//     "city": "上海市",
+//     "notes": "上海测试",
+//     "appName": "M Stand",
+//     "shopList": [
+//         {
+//             "feature": [
+//                 "燕麦奶"
+//             ],
+//             "category": "奶咖",
+//             "quantity": 1,
+//             "productName": "脏咖啡"
+//         },
+//         {
+//             "feature": [
+//                 "标杯（冰）354ml",
+//                 "少冰",
+//                 "加份浓度+¥5元",
+//                 "标准糖"
+//             ],
+//             "category": "果咖",
+//             "quantity": 2,
+//             "productName": "野黑莓气泡美式"
+//         }
+//     ],
+//     "shopName": "上海BFC外滩店",
+//     "wechatNo": 2,
+//     "wechatName": "巴巴爸爸的咖啡厅",
+//     "orderType": "店内就餐",
+//     "isTest": true
+// }
+// r = openWechat(payload)
+// mstandTOMenu(payload)
+// mstandSelectDrinks(payload)
+// mstandPayment(payload)
 // r = mstandTOMenu(payload)
 // console.log(r);
 // openWechat
