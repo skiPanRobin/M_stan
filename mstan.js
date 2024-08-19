@@ -261,7 +261,11 @@ function mstandTOMenu(payload){
                 break
             case 2: 
                 whileCnt = 0
-                while (!text('选择门店').findOne(400)) {
+                if (text('选择门店').findOne(1000)){
+                    // 页面可能会直接跳转到选择城市导致错误
+                    actionSleep(back, 500)
+                }
+                while (!text('选择门店').findOne(200)) {
                     text('手动选择').findOne(500).click()
                     sleep(500)
                     whileCnt++
@@ -277,7 +281,6 @@ function mstandTOMenu(payload){
                 } 
                 break
         }
-        
     }
 
     // 关闭推荐弹窗

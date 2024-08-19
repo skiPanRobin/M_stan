@@ -3,15 +3,19 @@ importPackage(Packages["okhttp3"]); //导入包
 
 const { openWechat } = require('./wechat');
 const { mstand } = require('./mstan');
-const { backToDesk, swithcScreenOn, shotPath, takeScreenShot } = require('./utils')
+const { backToDesk, swithcScreenOn, shotPath, takeScreenShot, isRunning } = require('./utils')
 const { postScreenOss, updaloadPayPic, uploadErrorStatus, updateDeviceStatus, bindUid, unbindUid } = require('./api')
+if (isProcessingTask !== undefined) {
+    console.log('isProcessingTask was defined, valuse: ' + isProcessingTask);
+    sleep(3000)
+    exit()
+}
 
 // 创建 OkHttpClient 实例
 var client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
 
 // 创建 WebSocket 请求
 var request = new Request.Builder().url("wss://pay.lovexiaohuli.com").build(); //vscode 插件的ip地址
-
 // 全局变量，用于跟踪当前任务状态
 var isProcessingTask = false;
 var cid = null;
@@ -20,7 +24,6 @@ var isClose = false;
 var retryAttempts = 0;
 var maxRetryAttempts = 5; // 设置最大重试次数
 var heartbeatInterval = 30000; 
-
 
 
 // 收到任务直接执行, 不存储到缓存
