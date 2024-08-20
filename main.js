@@ -3,7 +3,7 @@ importPackage(Packages["okhttp3"]); //导入包
 
 const { openWechat } = require('./wechat');
 const { mstand } = require('./mstan');
-const { backToDesk, swithcScreenOn, shotPath, takeScreenShot, isRunning } = require('./utils')
+const { backToDesk, swithcScreenOn, shotPath, takeScreenShot } = require('./utils')
 const { postScreenOss, updaloadPayPic, uploadErrorStatus, updateDeviceStatus, bindUid, unbindUid } = require('./api')
 if (isProcessingTask !== undefined) {
     console.log('isProcessingTask was defined, valuse: ' + isProcessingTask);

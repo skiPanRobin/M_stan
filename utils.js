@@ -39,7 +39,7 @@ function swithcScreenOn(){
         device.keepScreenDim(200*1000)
         device.setBrightnessMode(0)
         sleep(200)
-        device.setBrightness(1)
+        device.setBrightness(3)
     }
     return status_
 }

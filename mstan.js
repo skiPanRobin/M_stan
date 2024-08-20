@@ -245,10 +245,12 @@ function mstandTOMenu(payload){
 
     // 网络问题可能导致页面无法加载
     while (currentStep < 3) {
+        console.log('currentStep: ' + currentStep);
+        
         switch (currentStep){
             case 1:
                 whileCnt = 0
-                while (!text("手动选择").findOne(200)){
+                while (!text("手动选择").findOne(400)){
                     pressXY(300, 300, 100, 300)    //  消除弹窗
                     pressXY(300, 300, 100, 300)    //  消除弹窗
                     pressXY(300, 1250, 100, 500);  //   门店自取
@@ -278,6 +280,7 @@ function mstandTOMenu(payload){
                     actionSleep(back, 1000)
                 } else {
                     currentStep = 3
+                    console.log('break currentStep: ' + currentStep);
                 } 
                 break
         }
