@@ -1,45 +1,31 @@
-const { pressXY, actionSleep } = require('./utils')
-var currentStep = 2
-var whileCnt = 0
-
-// 网络问题可能导致页面无法加载
-while (currentStep < 3) {
-    console.log('currentStep: ' + currentStep);
-    
-    switch (currentStep){
-        case 1:
-            whileCnt = 0
-            while (!text("手动选择").findOne(400)){
-                pressXY(300, 300, 100, 300)    //  消除弹窗
-                pressXY(300, 300, 100, 300)    //  消除弹窗
-                pressXY(300, 1250, 100, 500);  //   门店自取
-                whileCnt++
-                if (whileCnt >= 10) {
-                    break
-                }
-            }
-            currentStep = 2
-            break
-        case 2: 
-            whileCnt = 0
-            if (text('选择门店').findOne(1000)){
-                // 页面可能会直接跳转到选择城市导致错误
-                actionSleep(back, 500)
-            }
-            while (!text('选择门店').findOne(200)) {
-                text('手动选择').findOne(500).click()
-                sleep(500)
-                whileCnt++
-                if (whileCnt >= 10) {
-                    break
-                }
-            }
-            if (whileCnt >= 10){
-                currentStep = 1  // 退回到case 1
-                actionSleep(back, 1000)
-            } else {
-                currentStep = 3
-            } 
-            break
-    }
+// const { takeScreenShot, shotPath } = require('./M_stan/utils')
+var payload = {
+    "id": "1",
+    "city": "北京市",
+    "notes": "今天七夕节",
+    "appName": "M Stand",
+    "shopList": [
+        {
+            "feature": [
+                "标杯（冷）354ml",
+                "加份浓度",
+                "少冰",
+                "少糖"
+            ],
+            "category": "奶咖",
+            "quantity": 1,
+            "productName": "椰香拿铁"
+        }
+    ],
+    "shopName": "北京喜隆多店",
+    "wechatNo": 1,
+    "wechatName": "巴巴爸爸的咖啡厅",
+    "orderType": "打包带走",
+    "isTest": true
 }
+
+// mstandPayment(
+//     payload
+// )
+// takeScreenShot(shotPath)
+console.log(text('黑糖碧螺春拿铁').findOne(1000).text());

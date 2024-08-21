@@ -7,7 +7,7 @@ if (WIDTH == width && height == HEIGHT) {
 } else {
     setScreenMetrics(WIDTH, HEIGHT)
 }
-var shotPath = "/sdcard/Pictures/Screenshots/screenshot.png";
+var shotPath = "/sdcard/Pictures/screenshot.png";
 
 
 function randomInt(min, max){
@@ -189,17 +189,17 @@ function autoSwipe(sx, sy, ex, ey, duration, sleepTime){
 
 function clickEvent(x, y, sleepTime){
     var openRemarkShell = `
-    sendevent /dev/input/event4 3 57 580
-    sendevent /dev/input/event4 1 330 1
-    sendevent /dev/input/event4 1 325 1
-    sendevent /dev/input/event4 3 53 ${x + randomInt(-20, 20)}
-    sendevent /dev/input/event4 3 54 ${y + randomInt(-10, 10)}
-    sendevent /dev/input/event4 0 0 0
+    sendevent /dev/input/event5 3 57 580
+    sendevent /dev/input/event5 1 330 1
+    sendevent /dev/input/event5 1 325 1
+    sendevent /dev/input/event5 3 53 ${x + randomInt(-20, 20)}
+    sendevent /dev/input/event5 3 54 ${y + randomInt(-10, 10)}
+    sendevent /dev/input/event5 0 0 0
     sleep 0.05
-    sendevent /dev/input/event4 3 57 -1
-    sendevent /dev/input/event4 1 330 0
-    sendevent /dev/input/event4 1 325 0
-    sendevent /dev/input/event4 0 0 0
+    sendevent /dev/input/event5 3 57 -1
+    sendevent /dev/input/event5 1 330 0
+    sendevent /dev/input/event5 1 325 0
+    sendevent /dev/input/event5 0 0 0
     `    
     shell(openRemarkShell, true)
     sleep(sleepTime)

@@ -1,6 +1,6 @@
 // 导入 okhttp 库
 importPackage(Packages["okhttp3"]); //导入包
-
+const {api} = require('./config')
 const { openWechat } = require('./wechat');
 const { mstand } = require('./mstan');
 const { backToDesk, swithcScreenOn, shotPath, takeScreenShot } = require('./utils')
@@ -15,16 +15,16 @@ if (isProcessingTask !== undefined) {
 var client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
 
 // 创建 WebSocket 请求
-var request = new Request.Builder().url("wss://pay.lovexiaohuli.com").build(); //vscode 插件的ip地址
+var request = new Request.Builder().url(api.apiWss).build(); //vscode 插件的ip地址
 // 全局变量，用于跟踪当前任务状态
 var isProcessingTask = false;
 var cid = null;
 var heartBeatId = null
 var isClose = false;
 var retryAttempts = 0;
-var maxRetryAttempts = 5; // 设置最大重试次数
+var maxRetryAttempts = 10; // 设置最大重试次数
 var heartbeatInterval = 30000; 
-
+var pongTime = new Date()
 
 // 收到任务直接执行, 不存储到缓存
 function processTask(payload) {
@@ -114,6 +114,7 @@ function startWebSocket(){
         onMessage: function (webSocket, msg) { 
             console.log("msg " + msg);
             if (msg === 'pong') {
+                pongTime = new Date()
                 return 
             }
             try {
@@ -176,7 +177,7 @@ function attemptReconnect() {
     }
     if (retryAttempts <= maxRetryAttempts) {
         console.log("重试连接, 尝试次数: " + retryAttempts);
-        setTimeout(startWebSocket, 3000); // 延迟3秒后重试连接
+        setTimeout(startWebSocket, heartbeatInterval); // 延迟3秒后重试连接
     } else {
         console.log("已达到最大重试次数，停止重试。");
         isClose = true
@@ -197,10 +198,10 @@ function setWindow(){
     }
     var window = floaty.window(
         <frame>
-            <text id='time' textSize='16sp' textColor="#FFFFFF" />
+            <text id='time' textSize='8sp' textColor="#FF6900" />
         </frame>
     );
-    window.setPosition(device.width - 300, 0);
+    window.setPosition(device.width - 600, 0);
     return window
 }
 
@@ -215,7 +216,12 @@ const screenOnId = setInterval(() => {
 const windowInterId = setInterval(() => {
     var timeString =(new Date()).toTimeString().substring(0, 8);
     ui.run(function(){
-            window.time.setText(`${timeString} AUTOX`);
+            var lastPong = new Date() - pongTime
+            window.time.setText(`${timeString} Last Pong ${lastPong}`);
+            if (lastPong >= heartbeatInterval * maxRetryAttempts){
+                console.log('pong 响应超时, 尝试重启wss');
+                attemptReconnect()
+            }
     });
     if (isClose){
         clearInterval(screenOnId)

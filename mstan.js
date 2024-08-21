@@ -142,7 +142,7 @@ function _addQuantities(quantity){
  * 清空购物车
 */
 function _clearShopCar(){
-    var 已选购 =  textContains('已选购').findOne(2000)
+    var 已选购 =  textMatches(/^[已未]选购\d{0,2}商品$/).findOne(2000)
     var b自提 = text('自提').findOne(2000).bounds()
     if (!已选购){ return {"status": 0, "msg": ""}}
     var b已选购 = 已选购.bounds()
@@ -547,5 +547,6 @@ module.exports = {
     mstandSelectDrinks: mstandSelectDrinks,
     mstandPayment: mstandPayment,
     clickRemark: clickRemark,
-    writeNotes: writeNotes
+    writeNotes: writeNotes,
+    _clearShopCar: _clearShopCar
 }
