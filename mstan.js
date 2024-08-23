@@ -521,23 +521,15 @@ function mstandPayment(payload){
 
 function mstand(playload){
     var errorMsg;
-    switch (true) {
-        case (errorMsg = mstandTOMenu(playload)):
-            if (errorMsg.status !== 0){
-                break;                
-            }
-        case (errorMsg = mstandSelectDrinks(playload)):
-            if (errorMsg.status !== 0){
-                break;                
-            }
-        case (errorMsg = mstandPayment(playload)):
-            if (errorMsg.status !== 0){
-                break;                
-            }
-        default:
-            break;
-    }
-    return errorMsg
+    errorMsg = mstandTOMenu(playload)
+    if (errorMsg.status !== 0){
+        return errorMsg
+    } 
+    errorMsg = mstandSelectDrinks(playload)
+    if (errorMsg.status !== 0){
+        return errorMsg
+    } 
+    return mstandPayment(playload)
 }
 
 
@@ -548,5 +540,4 @@ module.exports = {
     mstandPayment: mstandPayment,
     clickRemark: clickRemark,
     writeNotes: writeNotes,
-    _clearShopCar: _clearShopCar
 }

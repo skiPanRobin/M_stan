@@ -113,8 +113,8 @@ function startWebSocket(){
         },
         onMessage: function (webSocket, msg) { 
             console.log("msg " + msg);
+            pongTime = new Date()
             if (msg === 'pong') {
-                pongTime = new Date()
                 return 
             }
             try {
@@ -201,7 +201,7 @@ function setWindow(){
             <text id='time' textSize='8sp' textColor="#FF6900" />
         </frame>
     );
-    window.setPosition(device.width - 600, 0);
+    window.setPosition(device.width - 400, 0);
     return window
 }
 
@@ -209,8 +209,9 @@ var window = setWindow()
 
 // 防止主线程退出
 const screenOnId = setInterval(() => {
+    console.log('准备点亮屏幕');
     swithcScreenOn()
-}, 1000 * 60 * 30);
+}, 1000 * 60 * 10);
 
 // 防止主线程退出
 const windowInterId = setInterval(() => {
@@ -221,6 +222,7 @@ const windowInterId = setInterval(() => {
             if (lastPong >= heartbeatInterval * maxRetryAttempts){
                 console.log('pong 响应超时, 尝试重启wss');
                 attemptReconnect()
+                pongTime = new Date()  // 避免高频率重连wss
             }
     });
     if (isClose){

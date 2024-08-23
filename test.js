@@ -24,8 +24,44 @@ var payload = {
     "isTest": true
 }
 
-// mstandPayment(
-//     payload
-// )
-// takeScreenShot(shotPath)
-console.log(text('黑糖碧螺春拿铁').findOne(1000).text());
+function mstandTOMenu(payload){
+    return {
+        status: payload
+    }
+}
+function mstandSelectDrinks(payload){
+    return {
+        status: payload
+    }
+}
+function mstandPayment(payload){
+    return {
+        status: payload
+    }
+}
+
+
+function mstand(payload){
+    var errorMsg;
+    switch (true) {
+        case (errorMsg = mstandTOMenu(payload)):
+            console.log(1);
+            if (errorMsg.status !== 0){
+                break;                
+            }
+        case (errorMsg = mstandSelectDrinks(payload)):
+            console.log(2);
+            if (errorMsg.status !== 0){
+                break;                
+            }
+        case (errorMsg = mstandPayment(payload)):
+            console.log(3);
+            if (errorMsg.status !== 0){
+                break;                
+            }
+        default:
+            break;
+    }
+    return errorMsg
+}
+console.log(mstand(2));
