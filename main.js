@@ -54,15 +54,10 @@ function updateTaskStatus(msg){
 
 // 执行任务函数
 function _executeTask(payload) {
-    console.log("Executing task:", payload.wechatName);
-    var errorMsg ;
-    switch (true) {
-        case (errorMsg = openWechat(payload)):
-            if (errorMsg.status !== 0) break;
-        case (errorMsg = mstand(payload)):
-            if (errorMsg.status !== 0) break;
-        default:
-            break;
+    console.log("executing task:", payload.wechatName);
+    var errorMsg = openWechat(payload)
+    if (errorMsg.status === 0){
+        errorMsg = mstand(payload)
     }
     if (errorMsg.status !== 0){
         uploadErrorStatus(errorMsg)
@@ -74,7 +69,6 @@ function _executeTask(payload) {
 
 function executeTask(payload){
     try {
-        console.log("executing task:", payload.wechatName);
         swithcScreenOn();
         _executeTask(payload)
         backToDesk()
