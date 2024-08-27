@@ -23,45 +23,15 @@ var payload = {
     "orderType": "打包带走",
     "isTest": true
 }
-
-function mstandTOMenu(payload){
-    return {
-        status: payload
-    }
-}
-function mstandSelectDrinks(payload){
-    return {
-        status: payload
-    }
-}
-function mstandPayment(payload){
-    return {
-        status: payload
-    }
-}
+// console.log(device.getIMEI());
+// console.log(shell("service call iphonesubinfo 1", true));
 
 
-function mstand(payload){
-    var errorMsg;
-    switch (true) {
-        case (errorMsg = mstandTOMenu(payload)):
-            console.log(1);
-            if (errorMsg.status !== 0){
-                break;                
-            }
-        case (errorMsg = mstandSelectDrinks(payload)):
-            console.log(2);
-            if (errorMsg.status !== 0){
-                break;                
-            }
-        case (errorMsg = mstandPayment(payload)):
-            console.log(3);
-            if (errorMsg.status !== 0){
-                break;                
-            }
-        default:
-            break;
-    }
-    return errorMsg
-}
-console.log(mstand(2));
+
+// console.log(getAppName('com.mstand.autox'));
+// console.log(getPackageName('微信'))
+
+// 获取 mainActivity
+// console.log(shell("dumpsys package com.mstand.autox| grep -A 1 MAIN", true));
+// 使用shell启动应用
+console.log(shell("am start -n com.mstand.autox/com.stardust.auojs.inrt.SplashActivity;", true));
