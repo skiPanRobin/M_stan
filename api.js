@@ -1,6 +1,6 @@
 const {api} = require('./config')
-console.log('android id' + device.getAndroidId())
-const uid = $crypto.digest(device.getAndroidId(), "MD5", {output: 'toString'})    // "fb257b0c1044b5042d4ed7ede37ea1e2"
+var androidId = shell('settings get secure android_id', true).result
+const uid = $crypto.digest(androidId, "MD5", {output: 'toString'})    // "fb257b0c1044b5042d4ed7ede37ea1e2"
 
 
 /** 上传截图
