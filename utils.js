@@ -37,10 +37,10 @@ function swithcScreenOn(){
     } 
     if (device.isScreenOn()){
         console.log('正常点亮屏幕 ' + counter);
-        device.keepScreenDim(60*1000)
+        device.keepScreenOn(60*1000)
         device.setBrightnessMode(0)
         sleep(200)
-        device.setBrightness(3)
+        device.setBrightness(1)
     }
     return status_
 }
@@ -76,7 +76,6 @@ function descClick(descText, sleepTime) {
     // toast(descText);
     var ele = desc(descText).findOne(3000)
     ele ? ele.click() : console.log(`无法定位 ${descClick}`);
-    
     sleep(sleepTime); // 休眠指定时间
 };
 
