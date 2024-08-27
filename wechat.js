@@ -8,7 +8,7 @@ function _openWechat(payload){
     actionSleep(home, 500)
     // 打开微信应用
     var wechatText =  payload.wechatNo === 1? '微信' : '工作微信'
-    if (desc(wechatText).findOne(1000)){
+    if (desc(wechatText).findOne(5000)){
         descClick(wechatText, 500)
     } else {
         console.error(`打开微信失败, ` + JSON.stringify(payload))
