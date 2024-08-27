@@ -3,7 +3,7 @@ importPackage(Packages["okhttp3"]); //导入包
 const {api} = require('./config')
 const { openWechat } = require('./wechat');
 const { mstand } = require('./mstan');
-const { backToDesk, swithcScreenOn, shotPath, takeScreenShot } = require('./utils')
+const { backToDesk, swithcScreenOn, shotPath, takeScreenShot, randomInt } = require('./utils')
 const { postScreenOss, updaloadPayPic, uploadErrorStatus, updateDeviceStatus, bindUid, unbindUid } = require('./api')
 if (isProcessingTask !== undefined) {
     console.log('isProcessingTask was defined, valuse: ' + isProcessingTask);
@@ -77,7 +77,6 @@ function executeTask(payload){
         console.log("executing task:", payload.wechatName);
         swithcScreenOn();
         _executeTask(payload)
-        device.cancelKeepingAwake()
         backToDesk()
     } catch (error) {
         console.error(error.message);
@@ -201,7 +200,7 @@ function setWindow(){
             <text id='time' textSize='8sp' textColor="#FF6900" />
         </frame>
     );
-    window.setPosition(device.width - 400, 0);
+    window.setPosition(device.width - randomInt(300, 450), 0);
     return window
 }
 
@@ -209,9 +208,17 @@ var window = setWindow()
 
 // 防止主线程退出
 const screenOnId = setInterval(() => {
-    console.log('准备点亮屏幕');
-    swithcScreenOn()
-}, 1000 * 60 * 10);
+    console.log('检查屏幕是否点亮');
+    if (isProcessingTask === false) {
+        try {
+            swithcScreenOn()
+        } catch (error) {
+            console.log(error.message);
+        }
+    } else {
+        console.log('正在执行任务...');
+    }
+}, 1000 * 60 * 3);
 
 // 防止主线程退出
 const windowInterId = setInterval(() => {
