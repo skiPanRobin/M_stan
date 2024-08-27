@@ -195,6 +195,7 @@ function mstandTOMenu(payload){
         pressSleep('上海市', 500)
         var ele = text(cityName).findOne(2000)
         if (ele){
+            sleep(300)
             ele.click()
         }else {
             msg.status = 11
@@ -220,6 +221,7 @@ function mstandTOMenu(payload){
                 sleep(sleepTime)
                 var shopEle = className('android.widget.TextView').textContains(shopName).findOne(3000)
                 if (shopEle) {
+                    sleep(300)
                     shopEle.click()
                     break
                 } else {
