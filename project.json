@@ -2,12 +2,35 @@
     "name": "MStandAuto",
     "main": "main.js",
     "ignore": [
-        "build"
+        "build",
+        "test.js",
+        "fix_recode.md",
+        "api_status.md",
+        ".gitignore"
     ], 
-    "launchConfig": {
-        "hideLogs": true
+    "optimization": {
+        "removeOpenCv": true,
+        "unusedResources": true
     },
-    "packageName": "com.mstand.autox",
-    "versionName": "1.0.0",
-    "versionCode": 1
+    "launchConfig": {
+        "hideLogs": true,
+        "displaySplash": false,
+        "stableMode": true
+    },
+    "permissionConfig": {
+        "requestListOnStartup": [
+            "android.permission.READ_EXTERNAL_STORAGE",
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            "android.permission.INTERNET",
+            "android.permission.moe.shizuku.manager.permission.API_V23",
+            "android.permission.SYSTEM_ALERT_WINDOW",
+            "android.permission.BIND_ACCESSIBILITY_SERVICE",
+            "android.permission.WRITE_SETTINGS",
+            "android.permission.FOREGROUND_SERVICE",
+            "android.permission.RECEIVE_BOOT_COMPLETED"
+        ]
+    },
+    "packageName": "com.autox.mstandauto",
+    "versionName": "4.1.1",
+    "versionCode": 4
 }
