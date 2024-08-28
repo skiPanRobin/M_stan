@@ -113,7 +113,7 @@ function _textClickEvent(textContent, sleepTime){
  * @param quantity -饮料数量
 */
 function _addQuantities(quantity){
-    var siblings = text('¥').findOne().parent().children()
+    var siblings = text('¥').findOne(5000).parent().children()
     for (let index = 0; index < siblings.length; index++) {
         var element = siblings[index];
         // console.log(element.text())
@@ -325,7 +325,7 @@ function mstandSelectDrinks(payload){
         _textClickEvent('自提', 300)
     }
     // 开始选购商品前清空购物车
-    if (textContains('结算').findOne() && textContains('结算').findOne().text() === '去结算') {
+    if (textContains('结算').findOne(5000) && textContains('结算').findOne(5000).text() === '去结算') {
         var result = _clearShopCar()
         if (result.status != 0){
             msg.status == result.status
@@ -454,7 +454,7 @@ function _newWriteNotes(notes){
         setClip(notes);
         sleep(300)
         press(600, 1000, 300) // 点击输入框
-        var finish = text('完成').findOne() 
+        var finish = text('完成').findOne(5000) 
         click(device.width/2, finish.bounds().bottom + 80)  // 点击输入法剪贴板上备注
         sleep(200)
         finish.click()      // 点击完成
