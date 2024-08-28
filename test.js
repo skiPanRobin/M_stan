@@ -35,3 +35,4 @@ var payload = {
 // console.log(shell("dumpsys package com.mstand.autox| grep -A 1 MAIN", true));
 // 使用shell启动应用
 console.log(shell("am start -n com.mstand.autox/com.stardust.auojs.inrt.SplashActivity;", true));
+
