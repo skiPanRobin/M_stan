@@ -1,36 +1,55 @@
 {
-    "name": "MStandAuto",
-    "main": "main.js",
-    "ignore": [
-        "build",
-        "test.js",
-        "fix_recode.md",
-        "api_status.md",
-        ".gitignore"
-    ], 
-    "optimization": {
-        "removeOpenCv": true,
-        "unusedResources": true
+    "abis": [
+      "arm64-v8a"
+    ],
+    "assets": [
+      {
+        "form": "/storage/emulated/0/脚本/M_stan",
+        "to": "/project"
+      }
+    ],
+    "buildDir": "build",
+    "build": {
+      "build_id": null,
+      "build_number": 0,
+      "build_time": 0
     },
+    "useFeatures": [],
+    "icon": "res/logo.png",
+    "ignoredDirs": [
+      "build"
+    ],
+    "encrypt-code": false,
     "launchConfig": {
-        "hideLogs": true,
-        "displaySplash": false,
-        "stableMode": true
+      "displaySplash": false,
+      "hideAccessibilityServices": false,
+      "hideLauncher": true,
+      "hideLogs": true,
+      "stableMode": true,
+      "volumeUpcontrol": false,
+      "permissions": [
+        "accessibility_services",
+        "draw_overlay"
+      ],
+      "serviceDesc": "使脚本自动操作(点击、长按、滑动等)所需，若关闭则只能执行不涉及自动操作的脚本。",
+      "splashIcon": "res/splashIcon.png",
+      "splashText": "Powered by Autoxjs.com"
     },
-    "permissionConfig": {
-        "requestListOnStartup": [
-            "android.permission.READ_EXTERNAL_STORAGE",
-            "android.permission.WRITE_EXTERNAL_STORAGE",
-            "android.permission.INTERNET",
-            "android.permission.moe.shizuku.manager.permission.API_V23",
-            "android.permission.SYSTEM_ALERT_WINDOW",
-            "android.permission.BIND_ACCESSIBILITY_SERVICE",
-            "android.permission.WRITE_SETTINGS",
-            "android.permission.FOREGROUND_SERVICE",
-            "android.permission.RECEIVE_BOOT_COMPLETED"
-        ]
-    },
+    "libs": [
+      "libjackpal-androidterm5.so",
+      "libjackpal-termexec2.so"
+    ],
+    "main": "main.js",
+    "name": "MStandAuto",
+    "outputPath": "/storage/emulated/0/脚本/M_stan/build",
     "packageName": "com.autox.mstandauto",
-    "versionName": "4.1.1",
-    "versionCode": 4
-}
+    "projectDirectory": "/storage/emulated/0/脚本/M_stan",
+    "scripts": {},
+    "signingConfig": {
+      "alias": null,
+      "keystore": null
+    },
+    "sourcePath": "/storage/emulated/0/脚本/M_stan/main.js",
+    "versionCode": 4,
+    "versionName": "4.1.1"
+  }
