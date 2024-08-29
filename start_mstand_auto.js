@@ -30,6 +30,7 @@ function swithcScreenOn(){
 }
 
 swithcScreenOn()
+var packageName = 'com.autox.mstandauto'
 var androidIdRes = shell('settings get secure android_id', true)
 var androidId = androidIdRes.result
 console.log("android ID: " + androidId);
@@ -49,14 +50,17 @@ r = http.postJson('https://pay.lovexiaohuli.com/ws/sendtoUid', {
 
 var data = r.body.json()
 if(data['code']===200){
-    sleep(5000)
+    sleep(4000)
+    var forceRes = shell('am force-stop ' + packageName, true)
+    console.log('强制关闭mstandauto, code: ' + forceRes.code);
+    sleep(1000)
     shell("am start -n com.autox.mstandauto/com.stardust.auojs.inrt.SplashActivity;", true)
     sleep(2000)
 } else {
     toast('MStandAuto重启失败!!!')
     console.log('调用wss关闭客户端失败, res: ' + JSON.stringify(data));
 }
-if (currentPackage() == 'com.autox.mstandauto'){
+if (currentPackage() == packageName){
     back();
     sleep(300)
     back();
