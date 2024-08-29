@@ -219,7 +219,8 @@ const windowInterId = setInterval(() => {
     var timeString =(new Date()).toTimeString().substring(0, 8);
     ui.run(function(){
             var lastPong = new Date() - pongTime
-            window.time.setText(`${timeString} Last Pong ${lastPong}`);
+            var showText = isProcessingTask? ' ': `${timeString} Last Pong ${lastPong}` 
+            window.time.setText(showText);
             if (lastPong >= heartbeatInterval * maxRetryAttempts){
                 console.log('pong 响应超时, 尝试重启wss');
                 attemptReconnect()
@@ -234,4 +235,4 @@ const windowInterId = setInterval(() => {
         clearInterval(heartBeatId)
         console.log("停止心跳!!!")
     }
-}, 1000);
+}, 10000);
