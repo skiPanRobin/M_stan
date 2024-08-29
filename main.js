@@ -235,4 +235,4 @@ const windowInterId = setInterval(() => {
         clearInterval(heartBeatId)
         console.log("停止心跳!!!")
     }
-}, 10000);
+}, 1000);
