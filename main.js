@@ -25,6 +25,8 @@ var retryAttempts = 0;
 var maxRetryAttempts = 10; // 设置最大重试次数
 var heartbeatInterval = 30000; 
 var pongTime = new Date()
+var isReconnecting = false
+
 
 // 收到任务直接执行, 不存储到缓存
 function processTask(payload) {
@@ -56,10 +58,10 @@ function updateTaskStatus(msg){
 function _executeTask(payload) {
     console.log("executing task:", payload.wechatName);
     var errorMsg = openWechat(payload)
-    if (errorMsg.status === 0){
+    if (errorMsg.status == 0){
         errorMsg = mstand(payload)
     }
-    if (errorMsg.status !== 0){
+    if (errorMsg.status != 0){
         uploadErrorStatus(errorMsg)
     }
     // 模拟任务完成，更新任务状态
@@ -84,10 +86,6 @@ function executeTask(payload){
 function startHeartbeat(webSocket) {
     heartBeatId = setInterval(() => {
         webSocket.send('ping');
-        if (isClose === true) {
-            console.log('停止心跳!!!');
-            clearInterval(heartBeatId)
-        }
     }, heartbeatInterval);
 }
 
@@ -102,6 +100,7 @@ function startWebSocket(){
             heartBeatId = null
             isClose = false;
             retryAttempts = 0;
+            isReconnecting = false;
             startHeartbeat(webSocket);
         },
         onMessage: function (webSocket, msg) { 
@@ -163,6 +162,13 @@ function startWebSocket(){
 }
 
 function attemptReconnect() {
+    if (isReconnecting == true) {
+        console.log('已经尝试重启中...')
+        return
+    } else{
+        isReconnecting = true
+        console.log('正在尝试重启...')
+    }
     retryAttempts++;
     try {
         unbindUid(cid)
@@ -170,7 +176,7 @@ function attemptReconnect() {
     }
     if (retryAttempts <= maxRetryAttempts) {
         console.log("重试连接, 尝试次数: " + retryAttempts);
-        setTimeout(startWebSocket, heartbeatInterval); // 延迟3秒后重试连接
+        setTimeout(startWebSocket, 3000); // 延迟3秒后重试连接
     } else {
         console.log("已达到最大重试次数，停止重试。");
         isClose = true
