@@ -7,7 +7,7 @@ function _openWechat(payload){
     actionSleep(home, 100)
     actionSleep(home, 500)
     // 打开微信应用
-    var wechatText =  payload.wechatNo === 1? '微信' : '工作微信'
+    var wechatText =  payload.wechatNo == 1? '微信' : '工作微信'
     if (desc(wechatText).findOne(5000)){
         descClick(wechatText, 500)
     } else {
