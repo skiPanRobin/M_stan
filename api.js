@@ -25,7 +25,7 @@ function updaloadPayPic(online_path, msg){
     var json = {
         "uid": "system",
         "creator": uid, //微信账号uid  目前写死
-        "type": "uploadPayPic",
+        "type": msg.status === 0 ? 'uploadPayPic': 'uploadErrorPic',
         "data": {
             "id": msg.payload.id, //订单id
             "type": msg.status === 0 ? 'uploadPayPic': 'uploadErrorPic',
@@ -58,7 +58,7 @@ function uploadErrorStatus(errorMsg){
     var json = {
         "uid": "system",
         "creator": uid, //微信账号uid  目前写死
-        "type": "uploadPayPic",
+        "type": "errOrder",
         "data": errorMsg
     }
     var res = http.postJson(url, json)
@@ -75,7 +75,7 @@ function updateDeviceStatus(payloadId, status){
     var json = {
         "uid": "system",
         "creator": uid, //微信账号uid  目前写死
-        "type": "uploadPayPic",
+        "type": "deviceStatus",
         "data": {
             "id": payloadId,   //订单id
             "type": 'deviceStatus',
