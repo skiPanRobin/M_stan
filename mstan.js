@@ -397,7 +397,7 @@ function _payment(isTest){
     if (text('确定门店').findOne(3000)) {
         text('确定门店').findOne(2000).click()
         sleep(400)
-        if (isTest === true){
+        if (isTest == true){
             console.log('测试支付...');
             return {'status': 0, "msg": "测试支付"}
         }
@@ -474,10 +474,10 @@ function _newWriteNotes(notes){
  * @param {string} orderType  - 店内就餐、打包带走
 */
 function _clickOrderType(orderType){
-    if (orderType === undefined || orderType === "店内就餐"){
+    if (orderType == undefined || orderType == "店内就餐"){
         // 默认店内就餐
         return 
-    } else if (orderType === "打包带走"){
+    } else if (orderType == "打包带走"){
         text('打包带走').findOne(2000).click()
     } else {
         console.log(`orderTYpe 参数错误: ${orderType}`);
