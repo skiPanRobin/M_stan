@@ -26,6 +26,7 @@ var maxRetryAttempts = 10; // 设置最大重试次数
 var heartbeatInterval = 30000; 
 var pongTime = new Date()
 var isReconnecting = false
+var isScreenOning = false
 
 
 // 收到任务直接执行, 不存储到缓存
@@ -34,10 +35,11 @@ function processTask(payload) {
         updateDeviceStatus(payload.id, 1)
         console.log("already processing a task");
     } else {
+        updateDeviceStatus(payload.id, 0)
         isProcessingTask = true;
         executeTask(payload);
         isProcessingTask = false;
-        // updateDeviceStatus(payload.id,  0)
+        updateDeviceStatus(payload.id, 2)
     }
 }
 
@@ -50,6 +52,10 @@ function updateTaskStatus(msg){
     updaloadPayPic(online_path, msg);
     if (className('android.widget.Button').desc('返回').findOne(2000)) {
         className('android.widget.Button').desc('返回').findOne(200).click()
+    } else {
+        click(100, 210)
+        sleep(300)
+        click(130, 250)
     }
 }
 
@@ -57,6 +63,10 @@ function updateTaskStatus(msg){
 // 执行任务函数
 function _executeTask(payload) {
     console.log("executing task:", payload.wechatName);
+    while (isScreenOning === true){
+        toast('处理屏幕点亮')
+        sleep(1000)
+    }
     var errorMsg = openWechat(payload)
     if (errorMsg.status == 0){
         errorMsg = mstand(payload)
@@ -75,8 +85,22 @@ function executeTask(payload){
         _executeTask(payload)
         backToDesk()
     } catch (error) {
+        var errorMsg = {
+            'type': 'errorMsg',
+            'status': 99,      
+            'msg': "未定义异常" + error.message,
+            'payload': {
+                'id': payload.id,
+                "city": payload.city,
+                "shopName": payload.shopName,
+                "wechatNo": payload.wechatNo,
+                "wechatName": payload.wechatName,
+                "shopList": payload.shopList
+            }
+        }
         console.error(error.message);
-        // console.error(error.track())
+        uploadErrorStatus(errorMsg)
+        updateTaskStatus(errorMsg)
         backToDesk()
     }
 }
@@ -209,16 +233,26 @@ var window = setWindow()
 // 防止主线程退出
 const screenOnId = setInterval(() => {
     console.log('检查屏幕是否点亮');
-    if (isProcessingTask === false) {
+    if (isProcessingTask === false && isScreenOning === false) {
+        isScreenOning = true
         try {
             swithcScreenOn()
+            app.launchPackage('com.tencent.mm')
+            sleep(1000)
+            if (currentPackage() !== 'com.tencent.mm'){
+                toast('未能打开微信')
+            } {
+                toast('正常打开微信')
+            }
+            backToDesk()
         } catch (error) {
             console.log(error.message);
         }
     } else {
         console.log('正在执行任务...');
     }
-}, 1000 * 60 * 3);
+    isScreenOning = false
+}, 1000 * 60 * 2);
 
 // 防止主线程退出
 const windowInterId = setInterval(() => {
