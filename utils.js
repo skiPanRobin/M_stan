@@ -39,7 +39,7 @@ function swithcScreenOn(){
         console.log('正常点亮屏幕 ' + counter);
         device.keepScreenOn(60*1000)
         device.setBrightnessMode(0)
-        sleep(200)
+        sleep(100)
         device.setBrightness(1)
     }
     return status_
@@ -75,7 +75,7 @@ function descClick(descText, sleepTime) {
     // 点击传入的文本
     // toast(descText);
     var ele = desc(descText).findOne(3000)
-    ele ? ele.click() : console.log(`无法定位 ${descClick}`);
+    ele ? ele.click() : console.log(`无法定位 ${descText}`);
     sleep(sleepTime); // 休眠指定时间
 };
 

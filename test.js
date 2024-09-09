@@ -1,3 +1,5 @@
+const { descClick } = require("./utils");
+
 // const { takeScreenShot, shotPath } = require('./M_stan/utils')
 var payload = {
     "id": "1",
@@ -34,5 +36,44 @@ var payload = {
 // 获取 mainActivity
 // console.log(shell("dumpsys package com.mstand.autox| grep -A 1 MAIN", true));
 // 使用shell启动应用
-console.log(shell("am start -n com.mstand.autox/com.stardust.auojs.inrt.SplashActivity;", true));
+// console.log(shell("am start -n com.mstand.autox/com.stardust.auojs.inrt.SplashActivity;", true));
 
+// console.log(currentPackage() === 'com.tencent.mm')
+// app.launchPackage('com.tencent.mm')
+
+// var shotPath = "/sdcard/Pictures/screenshot.png";
+// function takeScreenShot() {
+//     sleep(200)
+//     var result = shell("screencap -p " + shotPath, true);
+//     if (result.code == 0) {
+//         console.log("截图成功，保存路径：" + shotPath);
+//     } else {
+//         console.log("截图失败");
+//     }
+// };
+// takeScreenShot()
+// console.log(text('自提').findOne(100).bounds().centerX());
+// if ((!!text('确认下单').findOne(2000) === false) && (!!text('去结算').findOne(1000) === false)){
+//     descClick('返回', 100)
+//     if (text('去结算').findOne(2000)){
+//         sleep(200)
+//         text('去结算').findOne(2000).click()
+//     } else {
+//         throw new Error('无法定位确认下单, 点击返回后, 无法定位去结算')
+//     }
+
+// }
+var testCnt = 0 
+while (true){
+    testCnt ++ 
+    descClick('返回', 100)
+    if (text('去结算').findOne(2000)){
+        sleep(200)
+        text('去结算').findOne(2000).click()
+    } else {
+        throw new Error('无法定位确认下单, 点击返回后, 无法定位去结算')
+    }
+    if (testCnt >= 3){
+        throw new Error('“确认下单”界面异常')
+    }
+}
