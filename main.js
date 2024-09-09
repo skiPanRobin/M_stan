@@ -5,11 +5,6 @@ const { openWechat } = require('./wechat');
 const { mstand } = require('./mstan');
 const { backToDesk, swithcScreenOn, shotPath, takeScreenShot, randomInt } = require('./utils')
 const { postScreenOss, updaloadPayPic, uploadErrorStatus, updateDeviceStatus, bindUid, unbindUid } = require('./api')
-if (isProcessingTask !== undefined) {
-    console.log('isProcessingTask was defined, valuse: ' + isProcessingTask);
-    sleep(3000)
-    exit()
-}
 
 // 创建 OkHttpClient 实例
 var client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
@@ -17,30 +12,53 @@ var client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
 // 创建 WebSocket 请求
 var request = new Request.Builder().url(api.apiWss).build(); //vscode 插件的ip地址
 // 全局变量，用于跟踪当前任务状态
-var isProcessingTask = false;
 var cid = null;
 var heartBeatId = null
 var isClose = false;
 var retryAttempts = 0;
-var maxRetryAttempts = 10; // 设置最大重试次数
-var heartbeatInterval = 30000; 
+var maxRetryAttempts = 99999; // 设置最大重试次数
+var heartbeatInterval = 20000; 
 var pongTime = new Date()
 var isReconnecting = false
 var isScreenOning = false
+var taskQueue = []
+var isTaskRunning = false
+var doTaskEndDate = new Date()
+var restart = false
+
+// 执行下一个任务
+function executeNextTask() {
+    if (isTaskRunning || taskQueue.length === 0) {
+        // 如果有任务在执行，或者队列为空，不执行
+        return;
+    }
+    // 标记任务正在执行
+    isTaskRunning = true;
+    while (isScreenOning === true){
+        toast('等待屏幕点亮事件循环完成')
+        sleep(300)
+    }
+    sleep(1500) // 等待关闭任务
+    // 取出队列中的第一个任务
+    var payload = taskQueue.shift();
+
+    // 使用 setTimeout 模拟异步任务
+    setTimeout(function() {
+        processTask(payload);
+        isTaskRunning = false; // 标记任务已完成
+        // 执行下一个任务
+        executeNextTask();
+        // 最后执行完成任务时间
+        doTaskEndDate = new Date()
+    }, 0); // 延迟 0ms, 模拟异步任务
+}
 
 
 // 收到任务直接执行, 不存储到缓存
 function processTask(payload) {
-    if (isProcessingTask === true) {
-        updateDeviceStatus(payload.id, 1)
-        console.log("already processing a task");
-    } else {
-        updateDeviceStatus(payload.id, 0)
-        isProcessingTask = true;
-        executeTask(payload);
-        isProcessingTask = false;
-        updateDeviceStatus(payload.id, 2)
-    }
+    updateDeviceStatus(payload.id, 0)
+    executeTask(payload);
+    updateDeviceStatus(payload.id, 2)
 }
 
 
@@ -50,23 +68,15 @@ function updateTaskStatus(msg){
     console.log('截图完成....' + shotPath);
     var online_path = postScreenOss(shotPath);
     updaloadPayPic(online_path, msg);
-    if (className('android.widget.Button').desc('返回').findOne(2000)) {
-        className('android.widget.Button').desc('返回').findOne(200).click()
-    } else {
-        click(100, 210)
-        sleep(300)
-        click(130, 250)
-    }
+    click(47, 176)
+    sleep(300)
+    click(43, 191)
 }
 
 
 // 执行任务函数
 function _executeTask(payload) {
     console.log("executing task:", payload.wechatName);
-    while (isScreenOning === true){
-        toast('处理屏幕点亮')
-        sleep(1000)
-    }
     var errorMsg = openWechat(payload)
     if (errorMsg.status == 0){
         errorMsg = mstand(payload)
@@ -119,11 +129,15 @@ function startWebSocket(){
     myListener = {
         onOpen: function (webSocket, response) {
             console.log("onOpen ");
-            isProcessingTask = false;
             cid = null;
             heartBeatId = null
             isClose = false;
             retryAttempts = 0;
+            if (isReconnecting === true){
+                toast('服务重连成功')
+                console.log('服务重连成功');
+                
+            }
             isReconnecting = false;
             startHeartbeat(webSocket);
         },
@@ -151,13 +165,16 @@ function startWebSocket(){
                     bindUid(cid)
                     break;
                 case "goToPay":    
-                    processTask(message.payload)
+                    // processTask(message.payload)
+                    taskQueue.push(message.payload)
+                    toast("任务队列长度: " + taskQueue.length)
+                    executeNextTask();
                     break;
                 // case "uploadPayPic":
                 //     break;
-                // case 'disconnect':
-                    // bindUid(cid)
-                    // break;
+                case 'disconnect':
+                    unbindUid(message.cid)  // 断线重连后, 解绑未绑定
+                    break;
                 case 'exit':
                     console.log('Exit message received. Closing WebSocket connection.');
                     unbindUid(cid)
@@ -165,7 +182,7 @@ function startWebSocket(){
                     isClose = true
                     break
                 default:
-                    console.log("无需处理类型消息：" + msg);
+                    console.log("无需处理类型消息：" + JSON.stringify(message));
                     break
             }
         },
@@ -201,10 +218,12 @@ function attemptReconnect() {
     if (retryAttempts <= maxRetryAttempts) {
         console.log("重试连接, 尝试次数: " + retryAttempts);
         setTimeout(startWebSocket, 3000); // 延迟3秒后重试连接
+        sleep(6000)
     } else {
         console.log("已达到最大重试次数，停止重试。");
         isClose = true
     }
+    isReconnecting = false
 }
 
 startWebSocket(); // 初次启动
@@ -233,7 +252,7 @@ var window = setWindow()
 // 防止主线程退出
 const screenOnId = setInterval(() => {
     console.log('检查屏幕是否点亮');
-    if (isProcessingTask === false && isScreenOning === false) {
+    if (isTaskRunning === false && isScreenOning === false) {
         isScreenOning = true
         try {
             swithcScreenOn()
@@ -256,17 +275,20 @@ const screenOnId = setInterval(() => {
 
 // 防止主线程退出
 const windowInterId = setInterval(() => {
-    var timeString =(new Date()).toTimeString().substring(0, 8);
+    var date = new Date()
+    var timeString = date.toTimeString().substring(0, 8);
     ui.run(function(){
-            var lastPong = new Date() - pongTime
-            var showText = isProcessingTask? ' ': `${timeString} Last Pong ${lastPong}` 
+            var lastPong = date - pongTime
+            var showText = isTaskRunning? ' ': `${timeString} Last Pong ${lastPong}` 
             window.time.setText(showText);
-            if (lastPong >= heartbeatInterval * maxRetryAttempts){
-                console.log('pong 响应超时, 尝试重启wss');
-                attemptReconnect()
-                pongTime = new Date()  // 避免高频率重连wss
-            }
     });
+    // 2 * 3600 * 1000
+    if ((date - doTaskEndDate) > 2 * 3600 * 1000 && isTaskRunning === false && restart === false){ 
+        // 超过2个小时没执行任务, 则重启/关闭(22:30以后)关闭任务
+        restart = true
+        swithcScreenOn();   // 需要点亮屏幕才能启动
+        launchPackage('com.autox.startmstandauto');
+    }
     if (isClose){
         clearInterval(screenOnId)
         console.log("退出屏幕定时点亮!!!")

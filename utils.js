@@ -19,7 +19,7 @@ function randomInt(min, max){
 /**
  * 点亮屏幕
 */
-function swithcScreenOn(){
+function swithcScreenOn(isTest){
     var counter = 0
     let maxIter = 20
     var status_ = 0
@@ -40,7 +40,8 @@ function swithcScreenOn(){
         device.keepScreenOn(60*1000)
         device.setBrightnessMode(0)
         sleep(100)
-        device.setBrightness(1)
+        var brightInt = !!isTest === true? 30 : 1
+        device.setBrightness(brightInt)
     }
     return status_
 }

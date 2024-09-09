@@ -5,7 +5,7 @@ function _openWechat(payload){
     var status = 0
     for (let index = 0; index < 5; index++) {
         status = 0
-        if (swithcScreenOn() === 90) {
+        if (swithcScreenOn(payload.isTest) === 90) {
             // return {'status': 90, "msg": '点亮屏幕失败'}
             status = 90
         }
@@ -15,9 +15,11 @@ function _openWechat(payload){
         actionSleep(home, 500)
         // 打开微信应用
         var wechatText =  payload.wechatNo == 1? '微信' : '工作微信'
-        if (desc(wechatText).findOne(5000)){
+        if (desc(wechatText).findOne(2000)){
             descClick(wechatText, 500)
             break
+        } else if (descContains(`"${wechatText}"`).findOne(1000)) {
+            descClick(`"${wechatText}"`, 500)
         } else {
             console.error(`打开微信失败, ` + JSON.stringify(payload))
             // return {'status': 2, "msg": '打开微信失败'}
@@ -27,7 +29,6 @@ function _openWechat(payload){
             status = 0
             break
         }
-
     }
     if (status !== 0){
         return {'status': status, "msg": status === 2? '打开微信失败': '点亮屏幕失败'}

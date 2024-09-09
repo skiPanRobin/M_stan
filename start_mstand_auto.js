@@ -1,8 +1,22 @@
-auto()
+auto();
+toast('uid见剪贴板')
+
+function getCloseTimeSec(){
+    // 22:30 - 5: 00 自动关闭程序
+    return [22 * 3600 + 30 * 60, 5 * 3600 + 30 *60]
+}
+
+
+function getCurrentTimeSec(){
+    // 当前时间
+    var now = new Date()
+    return now.getHours * 3600 + now.getMinutes * 60 + now.getSeconds()
+}
+
+
 /**
  * 点亮屏幕
 */
-toast('uid见剪贴板')
 function swithcScreenOn(){
     var counter = 0
     let maxIter = 20
@@ -18,6 +32,7 @@ function swithcScreenOn(){
             break
         }
         counter ++;
+        sleep(1000)
     } 
     if (device.isScreenOn()){
         console.log('正常点亮屏幕 ' + counter);
@@ -37,7 +52,6 @@ console.log("android ID: " + androidId);
 const uid = $crypto.digest(androidId, "MD5", {output: 'toString'}) 
 console.log('uid: ' + uid);
 setClip(uid)
-toast('MStandAuto重启中')
 console.log('发送关闭MStandAuto命令, uid: ' + uid + ' android id: ' + androidId);
 r = http.postJson('https://pay.lovexiaohuli.com/ws/sendtoUid', {
     "uid": uid,
@@ -50,22 +64,23 @@ r = http.postJson('https://pay.lovexiaohuli.com/ws/sendtoUid', {
 
 var data = r.body.json()
 if(data['code']===200){
-    sleep(4000)
-    var forceRes = shell('am force-stop ' + packageName, true)
-    console.log('强制关闭mstandauto, code: ' + forceRes.code);
-    sleep(1000)
+    sleep(3000)
+} else {
+    toast('请求wss关闭客户端失败!!!')
+    console.log('请求wss关闭客户端失败, res: ' + JSON.stringify(data));
+}
+var forceRes = shell('am force-stop ' + packageName, true)
+console.log('强制关闭mstandauto, code: ' + forceRes.code);
+sleep(1000)
+var [laterTime, earlierTime] = getCloseTimeSec()
+var currentTimeSec = getCurrentTimeSec()
+if ( currentTimeSec >= laterTime || currentTimeSec <= earlierTime ){
+    toast('MStandAuto关闭, 等待定时任务重启')
+} else {
+    toast('MStandAuto重启')
     shell("am start -n com.autox.mstandauto/com.stardust.auojs.inrt.SplashActivity;", true)
     sleep(2000)
-} else {
-    toast('MStandAuto重启失败!!!')
-    console.log('调用wss关闭客户端失败, res: ' + JSON.stringify(data));
 }
-if (currentPackage() == packageName){
-    back();
-    sleep(300)
-    back();
-    sleep(300)
-    home();
-    sleep(300)
-    home();
-}
+home();
+sleep(300)
+home();

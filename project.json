@@ -1,4 +1,4 @@
-{
+  {
     "abis": [
       "arm64-v8a"
     ],
@@ -21,9 +21,9 @@
     ],
     "encrypt-code": false,
     "launchConfig": {
-      "displaySplash": false,
+      "displaySplash": true,
       "hideAccessibilityServices": false,
-      "hideLauncher": true,
+      "hideLauncher": false,
       "hideLogs": true,
       "stableMode": true,
       "volumeUpcontrol": false,
@@ -51,5 +51,5 @@
     },
     "sourcePath": "/storage/emulated/0/脚本/M_stan/main.js",
     "versionCode": 4,
-    "versionName": "4.2.6"
+    "versionName": "4.3.2"
   }

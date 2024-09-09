@@ -1,4 +1,4 @@
-const { descClick } = require("./utils");
+// const { descClick } = require("./utils");
 
 // const { takeScreenShot, shotPath } = require('./M_stan/utils')
 var payload = {
@@ -62,18 +62,9 @@ var payload = {
 //         throw new Error('无法定位确认下单, 点击返回后, 无法定位去结算')
 //     }
 
-// }
-var testCnt = 0 
-while (true){
-    testCnt ++ 
-    descClick('返回', 100)
-    if (text('去结算').findOne(2000)){
-        sleep(200)
-        text('去结算').findOne(2000).click()
-    } else {
-        throw new Error('无法定位确认下单, 点击返回后, 无法定位去结算')
-    }
-    if (testCnt >= 3){
-        throw new Error('“确认下单”界面异常')
-    }
-}
+// }currentPackage() ==  'com.autox.mstandauto'
+// console.log(currentPackage());
+// home()
+// console.log(currentPackage());
+console.log(launchPackage('com.autox.startmstandauto'));
+

@@ -194,10 +194,10 @@ function mstandTOMenu(payload){
             return true
         }
         pressSleep('上海市', 500)
-        var ele = text(cityName).findOne(2000)
-        if (ele){
+        if (text(cityName).findOne(2000)){
             sleep(300)
-            ele.click()
+            // ele.click()
+            pressSleep(cityName, 300)
         }else {
             msg.status = 11
             msg.msg = `无法定位城市: ${cityName}`
@@ -268,17 +268,23 @@ function mstandTOMenu(payload){
                 whileCnt = 0
                 if (text('选择门店').findOne(1000)){
                     // 页面可能会直接跳转到选择城市导致错误
+                    toast('定位到 "选择门店"')
                     actionSleep(back, 500)
                 }
                 while (!text('选择门店').findOne(200)) {
-                    text('手动选择').findOne(500).click()
+                    if (text('手动选择').findOne(500)){
+                        toast("点击手动选择")
+                        pressSleep('手动选择', 300)
+                    } else {
+                        toast(`无法定位: 手动选择`)
+                    }                    
                     sleep(500)
                     whileCnt++
-                    if (whileCnt >= 10) {
+                    if (whileCnt >= 5) {
                         break
                     }
                 }
-                if (whileCnt >= 10){
+                if (whileCnt >= 5){
                     currentStep = 1  // 退回到case 1
                     actionSleep(back, 1000)
                 } else {
