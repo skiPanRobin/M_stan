@@ -1,4 +1,4 @@
-const {pressSleep, pressXY, randomInt, clickEvent, actionSleep, isNumeric, isExists, shotPath} = require('./utils')
+const {pressSleep, pressXY, randomInt, clickEvent, actionSleep, isNumeric, isExists, shotPath, clickSleep} = require('./utils')
 
 function clickRemark(){
     var ele = text('如有忌口过敏请填写到这儿').findOne(10000)
@@ -104,7 +104,8 @@ function _textClickEvent(textContent, sleepTime){
     } else {
         var x = ele.bounds().centerX() 
         var y = ele.bounds().centerY() 
-        clickEvent(x, y, sleepTime)
+        // clickEvent(x, y, sleepTime)
+        click(x, y)
     }
     return !ele ? false : true
 }
@@ -321,8 +322,10 @@ function mstandSelectDrinks(payload){
     }
     if (text('自提').findOne(5000)){
         console.log('到达商品选购页面..')
-        _textClickEvent('自提', 300)
-        _textClickEvent('自提', 300)
+        // _textClickEvent('自提', 300)
+        // _textClickEvent('自提', 300)
+        pressSleep('自提', 300)
+        pressSleep('自提', 300)
     }
     // 开始选购商品前清空购物车
     if (textContains('结算').findOne(5000) && textContains('结算').findOne(5000).text() === '去结算') {
@@ -349,8 +352,10 @@ function mstandSelectDrinks(payload){
         }
         // 可能因为弹窗导致选购商品失败, 确认是否进入商品详情页面
         if (!(text('规格').findOne(2000))){
-            _textClickEvent('自提', 300)
-            _textClickEvent('自提', 500)
+            // _textClickEvent('自提', 300)
+            // _textClickEvent('自提', 500)
+            pressSleep('自提', 300)
+            pressSleep('自提', 300)
             text(shop.productName).findOne(2000).click()
             sleep(400)
         }
@@ -395,6 +400,7 @@ function mstandSelectDrinks(payload){
 function _payment(isTest){
     text('确认下单').findOne(3000).click()
     if (text('确定门店').findOne(3000)) {
+        console.log('已定位到确认门店.. 请确认点击');
         text('确定门店').findOne(2000).click()
         sleep(400)
         if (isTest == true){
@@ -402,8 +408,14 @@ function _payment(isTest){
             return {'status': 0, "msg": "测试支付"}
         }
         if (textContains('余额支付').findOne(3000)){
-            var balance = parseFloat(textContains('可用余额：').findOne(3000).text())
-            var amount = parseFloat(textContains('余额支付').findOne(2000).text())
+            var balance = 0
+            var amount = 0
+            if (textContains('可用余额').findOne(3000)){
+                balance = parseFloat(textContains('可用余额').findOne(3000).text())
+            }
+            if (textContains('余额支付').findOne(2000)){
+                amount = parseFloat(textContains('余额支付').findOne(2000).text())
+            }   
             if (balance && balance < amount){
                 console.log(`余额不足, 余额: ${balance}, 需支付: ${amount}`);
                 return {'status': 17, "msg": "余额不足, 转人工"}
@@ -413,11 +425,13 @@ function _payment(isTest){
         } else {
             return {"status": 18, "msg": "没有进入到余额支付页面"}
         }
-        for (let index = 0; index < 10; index++) {
+        for (let index = 0; index < 3; index++) {
             if (!text('查看卡券').findOne(1000)){
                 console.log('查看卡券 没定位到');
+                click(250, 250)
             }  else {
                 console.log('定位到卡券 break')
+                click(250, 250)
                 break
             }
         }
@@ -432,8 +446,12 @@ function _payment(isTest){
             click(250, 250);
             sleep(1000)
         }
-        pressSleep('关注 M Stand', 300)
-        console.log('已定位到确认门店.. 请确认点击');
+        if (textContains('关注 M Stand').findOne(500)){
+            pressSleep('关注 M Stand', 300)
+        } {
+            console.log();
+            click(820, 371)
+        }
         return {"status": 0, "msg": ""}
     } else {
         console.log('无法定位确认门店.. 请人工确认');
@@ -443,8 +461,8 @@ function _payment(isTest){
 
 function _newWriteNotes(notes){
     if (!notes){
-        console.info('备注为空')
-        sleep(sleepTime)
+        console.info('备注为空')        
+        sleep(500)
         return true
     }
     var counter = 0
@@ -466,8 +484,6 @@ function _newWriteNotes(notes){
         }
     }
     return true
-    
-
 }
 
 /**
@@ -484,6 +500,27 @@ function _clickOrderType(orderType){
     }
 }
 
+function toPayPage(){
+    if (!_textClickEvent('去结算', 1000)){
+        throw new Error('“去结算”无法点击')
+    }
+    var testCnt = 0
+    while ((!!text('确认下单').findOne(2000) === false) && (!!text('去结算').findOne(1000) === false)){
+        testCnt ++ 
+        descClick('返回', 100)
+        if (text('去结算').findOne(2000)){
+            sleep(200)
+            text('去结算').findOne(2000).click()
+        } else {
+            throw new Error('无法定位确认下单, 点击返回后, 无法定位去结算')
+        }
+        if (testCnt >= 3){
+            throw new Error('“确认下单”界面异常')
+        }
+    }
+
+}
+
 function mstandPayment(payload){
     var msg = {
         'type': 'errorMsg',
@@ -498,12 +535,8 @@ function mstandPayment(payload){
             "shopList": payload.shopList,
         }
     }
-    
+    toPayPage()
     switch (true) {
-        case (!_textClickEvent('去结算', 1000)):
-            msg.status = 16
-            msg.msg = '“去结算”无法点击'
-            break
         case (!_newWriteNotes(payload.notes)):
             msg.status = 16
             msg.msg = "备注输入失败"
