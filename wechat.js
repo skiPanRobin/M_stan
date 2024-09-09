@@ -1,18 +1,36 @@
 auto();
-const { actionSleep, pressSleep, autoSwipe, pressXY, descClick } = require('./utils')
+const { actionSleep, pressSleep, autoSwipe, pressXY, descClick,  swithcScreenOn} = require('./utils')
 
 function _openWechat(payload){
-    actionSleep(back, 50);
-    actionSleep(back, 100)
-    actionSleep(home, 100)
-    actionSleep(home, 500)
-    // 打开微信应用
-    var wechatText =  payload.wechatNo == 1? '微信' : '工作微信'
-    if (desc(wechatText).findOne(5000)){
-        descClick(wechatText, 500)
-    } else {
-        console.error(`打开微信失败, ` + JSON.stringify(payload))
-        return {'status': 2, "msg": '打开微信失败'}
+    var status = 0
+    for (let index = 0; index < 5; index++) {
+        status = 0
+        if (swithcScreenOn() === 90) {
+            // return {'status': 90, "msg": '点亮屏幕失败'}
+            status = 90
+        }
+        actionSleep(back, 50);
+        actionSleep(back, 100)
+        actionSleep(home, 100)
+        actionSleep(home, 500)
+        // 打开微信应用
+        var wechatText =  payload.wechatNo == 1? '微信' : '工作微信'
+        if (desc(wechatText).findOne(5000)){
+            descClick(wechatText, 500)
+            break
+        } else {
+            console.error(`打开微信失败, ` + JSON.stringify(payload))
+            // return {'status': 2, "msg": '打开微信失败'}
+            status = 2
+        }
+        if (currentPackage() === 'com.tencent.mm'){
+            status = 0
+            break
+        }
+
+    }
+    if (status !== 0){
+        return {'status': status, "msg": status === 2? '打开微信失败': '点亮屏幕失败'}
     }
     
     // 账号切换(选择账号)
