@@ -65,6 +65,10 @@ var payload = {
 // }currentPackage() ==  'com.autox.mstandauto'
 // console.log(currentPackage());
 // home()
-// console.log(currentPackage());
-console.log(launchPackage('com.autox.startmstandauto'));
-
+// console.log(currentActivity());
+// console.log(launchPackage('com.autox.startmstandauto'));
+// forceStopApp('com.tencent.mm.plugin.appbrand.ui.AppBrandUI00')
+// shell('am force-stop ' + 'com.tencent.mm', true)
+// var packageName = 'com.autox.mstandauto'
+// shell('am force-stop ' + packageName, true)
+click((text('拿铁').findOne(1000).bounds().centerX()),  (text('拿铁').findOne(1000).bounds().centerY()))

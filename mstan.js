@@ -196,7 +196,6 @@ function mstandTOMenu(payload){
         pressSleep('上海市', 500)
         if (text(cityName).findOne(2000)){
             sleep(300)
-            // ele.click()
             pressSleep(cityName, 300)
         }else {
             msg.status = 11
@@ -223,7 +222,7 @@ function mstandTOMenu(payload){
                 var shopEle = className('android.widget.TextView').textContains(shopName).findOne(3000)
                 if (shopEle) {
                     sleep(300)
-                    shopEle.click()
+                    click(shopEle.bounds().centerX(), shopEle.bounds().centerY())
                     break
                 } else {
                     console.log('无法定位商店, 重试次数: ' + index);  

@@ -71,6 +71,10 @@ function updateTaskStatus(msg){
     click(47, 176)
     sleep(300)
     click(43, 191)
+    if (msg.status != 0){
+        console.error('未成功完成任务， 强制退出应用及微信程序');
+        shell('am force-stop ' + 'com.tencent.mm', true)
+    }
 }
 
 
@@ -86,6 +90,7 @@ function _executeTask(payload) {
     }
     // 模拟任务完成，更新任务状态
     updateTaskStatus(errorMsg)
+    
 };
 
 
