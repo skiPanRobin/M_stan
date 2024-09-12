@@ -1,100 +1,4 @@
-const {pressSleep, pressXY, randomInt, clickEvent, actionSleep, isNumeric, isExists, shotPath, clickSleep} = require('./utils')
-
-function clickRemark(){
-    var ele = text('如有忌口过敏请填写到这儿').findOne(10000)
-    var bds = ele.bounds()
-
-    var x = bds.left
-    var y = bds.bottom
-    // 定义脚本内容
-    var openRemarkShell = `su
-    sendevent /dev/input/event4 0 0 0
-    sendevent /dev/input/event4 3 57 486
-    sendevent /dev/input/event4 1 330 1
-    sendevent /dev/input/event4 1 325 1
-    sendevent /dev/input/event4 3 53 ${x + randomInt(10, 15)}
-    sendevent /dev/input/event4 3 54 ${y - randomInt(10, 15)}
-    sendevent /dev/input/event4 0 0 0
-    sendevent /dev/input/event4 3 57 -1
-    sendevent /dev/input/event4 1 330 0
-    sendevent /dev/input/event4 1 325 0
-    sleep ${randomInt(10, 20)/100}
-    sendevent /dev/input/event4 0 0 0
-    sleep ${randomInt(50, 60)/100}
-    sendevent /dev/input/event4 0 0 0
-    sendevent /dev/input/event4 3 57 486
-    sendevent /dev/input/event4 1 330 1
-    sendevent /dev/input/event4 1 325 1
-    sendevent /dev/input/event4 3 53 ${x + randomInt(10, 15)}
-    sendevent /dev/input/event4 3 54 ${y - randomInt(10, 15)}
-    sendevent /dev/input/event4 0 0 0
-    sendevent /dev/input/event4 3 57 -1
-    sendevent /dev/input/event4 1 330 0
-    sendevent /dev/input/event4 1 325 0
-    sleep ${randomInt(10, 20)/100}
-    sendevent /dev/input/event4 0 0 0
-    sleep ${randomInt(50, 60)/100}
-    sendevent /dev/input/event4 0 0 0
-    sendevent /dev/input/event4 3 57 486
-    sendevent /dev/input/event4 1 330 1
-    sendevent /dev/input/event4 1 325 1
-    sendevent /dev/input/event4 3 53 ${x + randomInt(10, 15)}
-    sendevent /dev/input/event4 3 54 ${y - randomInt(10, 15)}
-    sendevent /dev/input/event4 0 0 0
-    sendevent /dev/input/event4 3 57 -1
-    sendevent /dev/input/event4 1 330 0
-    sendevent /dev/input/event4 1 325 0
-    sleep ${randomInt(10, 20)/100}
-    sendevent /dev/input/event4 0 0 0
-    sleep ${randomInt(50, 60)/100}
-    exit
-    exit
-    `
-    var result = shell(openRemarkShell, true);
-    toast('打开备注结果: ' + result.code)
-}
-
-function writeNotes(notes, sleepTime, callTimes){
-    if (!notes){
-        console.info('备注为空')
-        sleep(sleepTime)
-        return
-    }
-    var parentEditText = className("android.widget.EditText").textContains("60字以内").findOne(4000);
-    if (parentEditText) {
-        console.info('parentEditText focusable ' + parentEditText.focusable()) 
-        // 获取父控件的子控件列表
-        var childEditText = parentEditText.parent().find(className("android.widget.EditText"));
-
-        // 过滤下一级子控件
-        for (var i = 0; i < childEditText.size(); i++) {
-            var child = childEditText.get(i);
-            if (child.focusable()) {
-                // 你可以在这里对找到的子控件进行进一步操作，例如点击
-                toast('找到下一级子控件 focusable ' + child.focusable() + ' index: ' + i) 
-                child.click();
-                sleep(1000)
-                toast("找到下一级子控件 focused: " + child.focused())
-                child.setText(notes)
-                break
-            }
-        }
-        sleep(randomInt(50, 80) * 10)
-        className("android.widget.TextView").text("完成").findOne(4000).click();
-        sleep(randomInt(50, 80) * 10)
-        className("android.widget.TextView").text("保存").findOne(4000).click();
-        sleep(randomInt(sleepTime-100, sleepTime+100))
-    } else {
-        callTimes = callTimes + 1
-        if (callTimes > 3){
-            console.error('无法定位到备注弹窗控件, 尝试' + callTimes  + '失败')
-            return
-        }
-        pressSleep('店内就餐', 2000)
-        console.info("未找到包含 '60字以内' 的 EditText 控件 callTimes" + callTimes);
-        writeNotes(notes, sleepTime, callTimes)
-    }
-}
+const {pressSleep, pressXY, randomInt, actionSleep, isNumeric, isExists} = require('./utils')
 
 function _textClickEvent(textContent, sleepTime){
     console.info('textContent: ' + textContent)
@@ -104,8 +8,7 @@ function _textClickEvent(textContent, sleepTime){
     } else {
         var x = ele.bounds().centerX() 
         var y = ele.bounds().centerY() 
-        // clickEvent(x, y, sleepTime)
-        click(x, y)
+        pressXY(x, y, 200, sleepTime)
     }
     return !ele ? false : true
 }
@@ -212,7 +115,7 @@ function mstandTOMenu(payload){
             msg.msg = '无法定位门店输入框'
             return false
         } else {
-            text('请输入门店名称').findOnce().click()
+            pressSleep('请输入门店名称', 200)
         }
 
         for (let index = 0; index < 4; index++) {
@@ -222,7 +125,7 @@ function mstandTOMenu(payload){
                 var shopEle = className('android.widget.TextView').textContains(shopName).findOne(3000)
                 if (shopEle) {
                     sleep(300)
-                    click(shopEle.bounds().centerX(), shopEle.bounds().centerY())
+                    click(shopEle.bounds().centerX(), shopEle.bounds().centerY)
                     break
                 } else {
                     console.log('无法定位商店, 重试次数: ' + index);  
@@ -325,10 +228,29 @@ function mstandSelectDrinks(payload){
             "shopFailList": []
         }
     }
+    function toItemDetail(item){
+        pressSleep(item.categroy, 400)
+        swipTimes = 5
+        while (!!swipTimes){
+            var centerY = text(item.productName).findOne(1000).bounds().centerY()
+            console.log(centerY);
+            if (800 < centerY &&  centerY <  2000){
+                console.log(`centerY : ${centerY}; productName: ${productName}`);
+                pressSleep(productName)
+                break
+            } else {
+                autoSwipe(400, 1800, 400, 500, 400, 8000)
+            }
+        }
+        if (!!swipTimes){
+            return true 
+        } else {
+            throw new Error('无法定位到商品: ' + productName)   
+        }
+    }
+
     if (text('自提').findOne(5000)){
         console.log('到达商品选购页面..')
-        // _textClickEvent('自提', 300)
-        // _textClickEvent('自提', 300)
         pressSleep('自提', 300)
         pressSleep('自提', 300)
     }
@@ -347,7 +269,7 @@ function mstandSelectDrinks(payload){
         console.info('productName: ' + shop.productName)
         var pnEle = text(shop.productName).findOne(3000)
         if (pnEle){
-            text(shop.productName).findOne(3000).click()
+            toItemDetail(shop)
             sleep(500)
         } else {
             msg.status = 14
@@ -357,18 +279,18 @@ function mstandSelectDrinks(payload){
         }
         // 可能因为弹窗导致选购商品失败, 确认是否进入商品详情页面
         if (!(text('规格').findOne(2000))){
-            // _textClickEvent('自提', 300)
-            // _textClickEvent('自提', 500)
             pressSleep('自提', 300)
             pressSleep('自提', 300)
-            text(shop.productName).findOne(2000).click()
+            toItemDetail(shop)
             sleep(400)
         }
         // autoSwipe(500, 1200, 520, 600, 300, 500)
         shop.feature.forEach( feat => {
+            text('规格').findOne(2000)
+            autoSwipe(400, 1300, 400, 500, 300, 300)
             var featEle = textContains(feat).findOne(1000)
             if (featEle){
-                featEle.click()
+                pressSleep(feat)
             } else {
                 console.log(`没有选中饮料属性: ${feat}`);
             }
@@ -403,10 +325,10 @@ function mstandSelectDrinks(payload){
 }
 
 function _payment(isTest){
-    text('确认下单').findOne(3000).click()
+    pressSleep('确认下单', 300)
     if (text('确定门店').findOne(3000)) {
         console.log('已定位到确认门店.. 请确认点击');
-        text('确定门店').findOne(2000).click()
+        pressSleep('确定门店', 500)
         sleep(400)
         if (isTest == true){
             console.log('测试支付...');
@@ -421,6 +343,7 @@ function _payment(isTest){
             if (textContains('余额支付').findOne(2000)){
                 amount = parseFloat(textContains('余额支付').findOne(2000).text())
             }   
+            console.log(`余额: ${balance}, 支付: ${amount}`);
             if (balance && balance < amount){
                 console.log(`余额不足, 余额: ${balance}, 需支付: ${amount}`);
                 return {'status': 17, "msg": "余额不足, 转人工"}
@@ -473,16 +396,15 @@ function _newWriteNotes(notes){
     var counter = 0
     text('如有忌口过敏请填写到这儿').findOne(3000)
     while (text('如有忌口过敏请填写到这儿').findOne(300)) {
-        text('如有忌口过敏请填写到这儿').findOnce().click()
         setClip(notes);
         sleep(300)
-        press(600, 1000, 300) // 点击输入框
+        autoSwipe(400, 1300, 400, 500, 300, 500)    // 滑动到底部
+        pressXY(700, 1950, 200, 500)                // 点击备注输入框
+        press(600, 1000, 300)                       // 点击输入法输入框
         var finish = text('完成').findOne(5000) 
-        click(device.width/2, finish.bounds().bottom + 80)  // 点击输入法剪贴板上备注
-        sleep(200)
-        finish.click()      // 点击完成
-        sleep(300)
-        pressXY(523, 1750, 500, 300)  // 点击备注框'保存'按钮
+        pressXY(device.width/2, finish.bounds().bottom + 80, 200, 300)  // 点击输入法剪贴板上备注
+        pressSleep('完成', 400)
+        pressXY(523, 1750, 200, 600)  // 点击备注框'保存'按钮
         counter++
         if (counter > 3){
             return false
@@ -499,7 +421,7 @@ function _clickOrderType(orderType){
         // 默认店内就餐
         return 
     } else if (orderType == "打包带走"){
-        text('打包带走').findOne(2000).click()
+        pressSleep(orderType)
     } else {
         console.log(`orderTYpe 参数错误: ${orderType}`);
     }
@@ -515,7 +437,7 @@ function toPayPage(){
         descClick('返回', 100)
         if (text('去结算').findOne(2000)){
             sleep(200)
-            text('去结算').findOne(2000).click()
+            pressSleep('去结算', 400)
         } else {
             throw new Error('无法定位确认下单, 点击返回后, 无法定位去结算')
         }
@@ -577,7 +499,5 @@ module.exports = {
     mstand: mstand,
     mstandTOMenu: mstandTOMenu,
     mstandSelectDrinks: mstandSelectDrinks,
-    mstandPayment: mstandPayment,
-    clickRemark: clickRemark,
-    writeNotes: writeNotes,
+    mstandPayment: mstandPayment
 }
