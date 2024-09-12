@@ -103,7 +103,8 @@ function clickIdSleep(resourceId, sleepTime) {
 function pressSleep(textToClick, sleepTime) {
     // 通过文本定位元素
     // toast(textToClick);
-    var ele = text(textToClick).findOne(8000);
+    sleepTime = sleepTime ? sleepTime : 200
+    var ele = text(textToClick).findOne(4000);
     if (ele === null) {
         toast("未找到文本: " + textToClick);
         sleep(sleepTime)
@@ -114,6 +115,31 @@ function pressSleep(textToClick, sleepTime) {
         var x = bounds.centerX();
         var y = bounds.centerY();
         // 在元素中心点长按0.5秒
+        toast('x:' + x + ';y: ' + y)
+        press(x, y, 200);
+        sleep(sleepTime); // 休眠指定时间
+        return true
+    }
+}
+;
+
+
+function pressContainsSleep(textSub, sleepTime) {
+    // 通过文本定位元素
+    // toast(textToClick);
+    sleepTime = sleepTime ? sleepTime : 200
+    var ele = textContains(textSub).findOne(4000);
+    if (ele === null) {
+        toast(`未找包含 "${textSub}" 文本控件`);
+        sleep(sleepTime)
+        return false
+    } else {
+        var bounds = ele.bounds(); // 获取元素的边界
+        // 计算元素的中心点
+        var x = bounds.centerX();
+        var y = bounds.centerY();
+        // 在元素中心点长按0.5秒
+        toast('x:' + x + ';y: ' + y)
         press(x, y, 200);
         sleep(sleepTime); // 休眠指定时间
         return true
@@ -287,5 +313,6 @@ module.exports = {
     swithcScreenOn: swithcScreenOn,
     isExists, isExists,
     clockFloaty: clockFloaty,
+    pressContainsSleep: pressContainsSleep,
     shotPath: shotPath
 };
