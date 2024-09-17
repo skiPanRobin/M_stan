@@ -1,32 +1,40 @@
-const { autoSwipe, pressSleep, clickEvent, pressContainsSleep, pressXY } = require("./utils");
+// const { autoSwipe, pressSleep, clickEvent, pressContainsSleep, pressXY } = require("./utils");
+
 
 // const { takeScreenShot, shotPath } = require('./M_stan/utils')
+const {openWechat} = require('./wechat')
+const {mstand} = require('./mstan')
+// const { pressXY, pressSleep } = require('./utils')
 var payload = {
     "id": "1",
     "city": "北京市",
+    // "city": "深圳市",
     "notes": "今天七夕节",
     "appName": "M Stand",
     "shopList": [
         {
             "feature": [
-                "标杯（冷）354ml",
+                "标杯（冰）354ml",
                 "加份浓度",
-                "少冰",
-                "少糖"
             ],
-            "category": "奶咖",
+            "category": "果咖",
             "quantity": 1,
-            "productName": "椰香拿铁"
+            "productName": "冰摇香橙美式"
         }
     ],
+
     "shopName": "北京喜隆多店",
-    "wechatNo": 1,
+    // "shopName": "深圳湾万象城店",
+    "wechatNo": 2,
     "wechatName": "巴巴爸爸的咖啡厅",
     "orderType": "打包带走",
     "isTest": true
 }
-// console.log(device.getIMEI());
-// console.log(shell("service call iphonesubinfo 1", true));
+// descContains('“工作微信”').findOne(100).click()
+openWechat(payload)
+mstand(payload)
+// mstandSelectDrinks(payload)
+// pressSleep('去下单', 100)
 
 
 
@@ -74,62 +82,62 @@ var payload = {
 // swipe(400, 800, 410, 400, 400)
 // sleep(300)
 // click(ele.bounds().centerX(), ele.bounds().centerY())
-var productName = '拿铁'
-var categroy = '黑咖'
+// var productName = '拿铁'
+// var categroy = '黑咖'
 
-pressSleep(categroy, 500)
-while (true){
-    var centerY = text(productName).findOne(1000).bounds().centerY()
-    console.log(centerY);
-    if (800 < centerY &&  centerY <  2000){
-        console.log(text(productName).findOne(1000).bounds().centerY());
-        pressSleep(productName)
-        break
-    } else {
-        autoSwipe(400, 1800, 400, 500, 600, 1000)
-    }
-}
+// pressSleep(categroy, 500)
+// while (true){
+//     var centerY = text(productName).findOne(1000).bounds().centerY()
+//     console.log(centerY);
+//     if (800 < centerY &&  centerY <  2000){
+//         console.log(text(productName).findOne(1000).bounds().centerY());
+//         pressSleep(productName)
+//         break
+//     } else {
+//         autoSwipe(400, 1800, 400, 500, 600, 1000)
+//     }
+// }
 
-text('规格').findOne(2000)
-autoSwipe(400, 1300, 400, 500, 300, 300)
-var ele = text('标杯（热）295').findOne(100)
-pressContainsSleep('标杯（热）295')
-pressContainsSleep('加份浓度')
-pressContainsSleep('燕麦奶')
-pressSleep('加入购物车')
-function toastXY(str){
-    var ele = text(str).findOne(1000)
-    if (ele) {
-        var bounds = ele.bounds()
-        console.log(`X: ${bounds.centerX()}; Y: ${bounds.centerY()}`)
-    } else {
-        toast('定位不到: ', str)
-    }
-}
+// text('规格').findOne(2000)
+// autoSwipe(400, 1300, 400, 500, 300, 300)
+// var ele = text('标杯（热）295').findOne(100)
+// pressContainsSleep('标杯（热）295')
+// pressContainsSleep('加份浓度')
+// pressContainsSleep('燕麦奶')
+// pressSleep('加入购物车')
+// function toastXY(str){
+//     var ele = text(str).findOne(1000)
+//     if (ele) {
+//         var bounds = ele.bounds()
+//         console.log(`X: ${bounds.centerX()}; Y: ${bounds.centerY()}`)
+//     } else {
+//         toast('定位不到: ', str)
+//     }
+// }
 
 
 // _newWriteNotes('能下单吗')
 // console.log(text('如有忌口过敏请填写到这儿').findOne(3000).click());
 // toastXY('备注')
-pressSleep('去结算', 500)
-var 下单ele = text('确认下单').findOne(2000)
-if (下单ele){
-    var bounds = 下单ele.bounds()
-}
-var notes = '不加咖啡'
-if (!!notes) {
-    setClip(notes);
-    sleep(300)
-    autoSwipe(400, 1300, 400, 500, 300, 500)    // 滑动到底部
-    pressXY(700, 1950, 200, 500)                // 点击备注输入框
-    press(600, 1000, 300)                       // 点击输入法输入框
-    var finish = text('完成').findOne(5000) 
-    click(device.width/2, finish.bounds().bottom + 80)  // 点击输入法剪贴板上备注
-    sleep(200)
-    pressSleep('完成', 400)
-}
+// pressSleep('去结算', 500)
+// var 下单ele = text('确认下单').findOne(2000)
+// if (下单ele){
+//     var bounds = 下单ele.bounds()
+// }
+// var notes = '不加咖啡'
+// if (!!notes) {
+//     setClip(notes);
+//     sleep(300)
+//     autoSwipe(400, 1300, 400, 500, 300, 500)    // 滑动到底部
+//     pressXY(700, 1950, 200, 500)                // 点击备注输入框
+//     press(600, 1000, 300)                       // 点击输入法输入框
+//     var finish = text('完成').findOne(5000) 
+//     click(device.width/2, finish.bounds().bottom + 80)  // 点击输入法剪贴板上备注
+//     sleep(200)
+//     pressSleep('完成', 400)
+// }
 
-pressXY(523, 1750, 200, 600)  // 点击备注框'保存'按钮
-pressXY(bounds.centerX(), bounds.centerY(), 200, 500)   // 点击确认下单
-pressSleep('确定门店', 500)
+// pressXY(523, 1750, 200, 600)  // 点击备注框'保存'按钮
+// pressXY(bounds.centerX(), bounds.centerY(), 200, 500)   // 点击确认下单
+// pressSleep('确定门店', 500)
 
