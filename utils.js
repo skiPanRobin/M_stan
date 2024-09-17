@@ -103,7 +103,7 @@ function clickIdSleep(resourceId, sleepTime) {
 function pressSleep(textToClick, sleepTime) {
     // 通过文本定位元素
     // toast(textToClick);
-    sleepTime = sleepTime ? sleepTime : 200
+    sleepTime = sleepTime === undefined ? 200 : sleepTime
     var ele = text(textToClick).findOne(4000);
     if (ele === null) {
         toast("未找到文本: " + textToClick);
@@ -116,7 +116,7 @@ function pressSleep(textToClick, sleepTime) {
         var y = bounds.centerY();
         // 在元素中心点长按0.5秒
         toast('x:' + x + ';y: ' + y)
-        press(x, y, 200);
+        press(x, y, 150);
         sleep(sleepTime); // 休眠指定时间
         return true
     }
@@ -127,7 +127,7 @@ function pressSleep(textToClick, sleepTime) {
 function pressContainsSleep(textSub, sleepTime) {
     // 通过文本定位元素
     // toast(textToClick);
-    sleepTime = sleepTime ? sleepTime : 200
+    sleepTime = sleepTime === undefined ? 200 : sleepTime
     var ele = textContains(textSub).findOne(4000);
     if (ele === null) {
         toast(`未找包含 "${textSub}" 文本控件`);
@@ -140,7 +140,7 @@ function pressContainsSleep(textSub, sleepTime) {
         var y = bounds.centerY();
         // 在元素中心点长按0.5秒
         toast('x:' + x + ';y: ' + y)
-        press(x, y, 200);
+        press(x, y, 150);
         sleep(sleepTime); // 休眠指定时间
         return true
     }
