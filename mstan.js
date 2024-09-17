@@ -1,4 +1,4 @@
-const {pressSleep, pressXY, randomInt, actionSleep, isNumeric, isExists} = require('./utils')
+const {pressSleep, pressContainsSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists} = require('./utils')
 
 function _textClickEvent(textContent, sleepTime){
     console.info('textContent: ' + textContent)
@@ -98,8 +98,24 @@ function mstandTOMenu(payload){
         }
         pressSleep('上海市', 500)
         if (text(cityName).findOne(2000)){
-            sleep(300)
-            pressSleep(cityName, 300)
+            var cnt = 10
+            while (!!cnt){
+                var cityBounds = text(cityName).findOne(100).bounds()
+                console.log(cityBounds.centerX(), cityBounds.centerY());
+                if (cityBounds.centerY() < 200){
+                    autoSwipe(450, 400, 460, 1603, 400, 500)
+                } else if (cityBounds.centerY() > 2230){
+                    autoSwipe(460, 1603, 450, 400, 400, 500)
+                } else {
+                    click(cityBounds.centerX(), cityBounds.centerY())
+                    sleep(400)
+                    break
+                }
+                cnt--
+            }
+            if (cnt == 0) {
+                throw new Error('无法定位城市')
+            }
         }else {
             msg.status = 11
             msg.msg = `无法定位城市: ${cityName}`
@@ -115,17 +131,17 @@ function mstandTOMenu(payload){
             msg.msg = '无法定位门店输入框'
             return false
         } else {
-            pressSleep('请输入门店名称', 200)
+            pressSleep('请输入门店名称', 500)
         }
 
         for (let index = 0; index < 4; index++) {
             var ele = textContains(shopName).findOne(500)
-            if (ele) {
+            if (ele && ele.bounds().centerY() < 2000) {
                 sleep(sleepTime)
                 var shopEle = className('android.widget.TextView').textContains(shopName).findOne(3000)
                 if (shopEle) {
                     sleep(300)
-                    click(shopEle.bounds().centerX(), shopEle.bounds().centerY)
+                    click(shopEle.bounds().centerX(), shopEle.bounds().centerY())
                     break
                 } else {
                     console.log('无法定位商店, 重试次数: ' + index);  
@@ -202,14 +218,15 @@ function mstandTOMenu(payload){
     
     // pressSleep('手动选择', 1500)
     switch (true) {
-        case (selectCity(payload.city, 900) === false):
+        case (selectCity(payload.city, 500) === false):
             break;
-        case (selectShop(payload.shopName, 1300) === false):
+        case (selectShop(payload.shopName, 500) === false):
             break;
         default:
             break;
     }
-    // pressSleep('去下单', 2500)
+    // pressSleep('去下单', 500)
+    console.log('去下单...');
     return msg
 }
 
@@ -229,26 +246,31 @@ function mstandSelectDrinks(payload){
         }
     }
     function toItemDetail(item){
-        pressSleep(item.categroy, 400)
+        console.log('toItemDetail');
+        console.log(item.category + '==>' + item.productName)
+        pressSleep(item.category, 800)
         swipTimes = 5
         while (!!swipTimes){
-            var centerY = text(item.productName).findOne(1000).bounds().centerY()
-            console.log(centerY);
-            if (800 < centerY &&  centerY <  2000){
-                console.log(`centerY : ${centerY}; productName: ${productName}`);
-                pressSleep(productName)
+            var cy = text(item.productName).findOne(1000).bounds().centerY()
+            console.log(cy);
+            swipTimes--
+            if (cy >= 800 &&  cy <=  2000){
+                console.log(`centerY : ${cy}; productName: ${item.productName}`);
+                pressSleep(item.productName)
                 break
+            } else if(cy < 800 ) {
+                autoSwipe(800, 800, 800, 1800, 500, 500)   // 手指往下滑
             } else {
-                autoSwipe(400, 1800, 400, 500, 400, 8000)
+                autoSwipe(650, 1800, 650, 800, 500, 500)    // 手指往上滑
             }
         }
         if (!!swipTimes){
             return true 
         } else {
-            throw new Error('无法定位到商品: ' + productName)   
+            throw new Error('无法定位到商品: ' + item.productName)   
         }
     }
-
+    console.log('"自提检测"');
     if (text('自提').findOne(5000)){
         console.log('到达商品选购页面..')
         pressSleep('自提', 300)
@@ -265,7 +287,7 @@ function mstandSelectDrinks(payload){
     }
     var shopList = payload.shopList
     for (let shop of shopList){
-        console.info('shop: '+ shop)
+        console.info('category:  '+ shop.category)
         console.info('productName: ' + shop.productName)
         var pnEle = text(shop.productName).findOne(3000)
         if (pnEle){
@@ -275,6 +297,7 @@ function mstandSelectDrinks(payload){
             msg.status = 14
             msg.msg = '商品列表中无法定位到商品'
             msg.payload.shopFailList.push(shop)
+            console.error(msg);
             break
         }
         // 可能因为弹窗导致选购商品失败, 确认是否进入商品详情页面
@@ -290,7 +313,7 @@ function mstandSelectDrinks(payload){
             autoSwipe(400, 1300, 400, 500, 300, 300)
             var featEle = textContains(feat).findOne(1000)
             if (featEle){
-                pressSleep(feat)
+                pressContainsSleep(feat, 100)
             } else {
                 console.log(`没有选中饮料属性: ${feat}`);
             }
@@ -325,30 +348,40 @@ function mstandSelectDrinks(payload){
 }
 
 function _payment(isTest){
+    function matchMoney(str){
+        if (!!str && typeof(str) === 'string'){
+            var _ = str.match(/[.\d]+/)
+            return !!_? parseFloat(_[0]): 0
+        }
+        return 0
+    }
+
     pressSleep('确认下单', 300)
     if (text('确定门店').findOne(3000)) {
         console.log('已定位到确认门店.. 请确认点击');
         pressSleep('确定门店', 500)
         sleep(400)
-        if (isTest == true){
-            console.log('测试支付...');
-            return {'status': 0, "msg": "测试支付"}
-        }
         if (textContains('余额支付').findOne(3000)){
             var balance = 0
             var amount = 0
-            if (textContains('可用余额').findOne(3000)){
-                balance = parseFloat(textContains('可用余额').findOne(3000).text())
+            if (textContains('储值余额').findOne(3000)){
+                balance = matchMoney(textContains('储值余额').findOne(3000).text())
             }
             if (textContains('余额支付').findOne(2000)){
-                amount = parseFloat(textContains('余额支付').findOne(2000).text())
+                amount = matchMoney(textContains('余额支付').findOne(2000).text())
             }   
-            console.log(`余额: ${balance}, 支付: ${amount}`);
+            console.log(`账户余额: ${balance}, 需支付: ${amount}`);
+            console.log('余额是否充足：' + !( balance && balance < amount));
             if (balance && balance < amount){
                 console.log(`余额不足, 余额: ${balance}, 需支付: ${amount}`);
                 return {'status': 17, "msg": "余额不足, 转人工"}
             } else  {
-                textContains('余额支付').findOne(2000).click()
+                if (isTest == true){
+                    console.log('测试支付...');
+                    return {'status': 0, "msg": "测试支付"}
+                } else {
+                    pressContainsSleep('余额支付', 100)
+                }
             }
         } else {
             return {"status": 18, "msg": "没有进入到余额支付页面"}
@@ -397,8 +430,7 @@ function _newWriteNotes(notes){
     text('如有忌口过敏请填写到这儿').findOne(3000)
     while (text('如有忌口过敏请填写到这儿').findOne(300)) {
         setClip(notes);
-        sleep(300)
-        autoSwipe(400, 1300, 400, 500, 300, 500)    // 滑动到底部
+        autoSwipe(400, 1900, 400, 500, 400, 600)    // 滑动到底部
         pressXY(700, 1950, 200, 500)                // 点击备注输入框
         press(600, 1000, 300)                       // 点击输入法输入框
         var finish = text('完成').findOne(5000) 
@@ -421,7 +453,7 @@ function _clickOrderType(orderType){
         // 默认店内就餐
         return 
     } else if (orderType == "打包带走"){
-        pressSleep(orderType)
+        pressSleep(orderType, 200)
     } else {
         console.log(`orderTYpe 参数错误: ${orderType}`);
     }
@@ -463,13 +495,12 @@ function mstandPayment(payload){
         }
     }
     toPayPage()
+    _clickOrderType(payload.orderType)
     switch (true) {
         case (!_newWriteNotes(payload.notes)):
             msg.status = 16
             msg.msg = "备注输入失败"
             break;
-        case (true):
-            _clickOrderType(payload.orderType)
         case (true):
             var result  = _payment(payload.isTest)
             msg.status = result.status
