@@ -18,7 +18,7 @@ function _openWechat(payload){
         if (desc(wechatText).findOne(2000)){
             descClick(wechatText, 500)
             break
-        } else if (descContains(`"${wechatText}"`).findOne(1000)) {
+        } else if (descContains(`“${wechatText}”`).findOne(1000)) {
             descClick(`"${wechatText}"`, 500)
         } else {
             console.error(`打开微信失败, ` + JSON.stringify(payload))
