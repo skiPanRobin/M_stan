@@ -3,12 +3,12 @@
 
 // const { takeScreenShot, shotPath } = require('./M_stan/utils')
 const {openWechat} = require('./wechat')
-const {mstand} = require('./mstan')
-// const { pressXY, pressSleep } = require('./utils')
+const {mstand, mstandPayment} = require('./mstan')
+const { pressXY, pressSleep,autoSwipe, WIDTH } = require('./utils')
 var payload = {
     "id": "1",
-    "city": "北京市",
-    // "city": "深圳市",
+    // "city": "北京市",
+    "city": "深圳市",
     "notes": "今天七夕节",
     "appName": "M Stand",
     "shopList": [
@@ -23,20 +23,24 @@ var payload = {
         }
     ],
 
-    "shopName": "北京喜隆多店",
+    "shopName": "深圳科兴科学园店",
     // "shopName": "深圳湾万象城店",
     "wechatNo": 2,
     "wechatName": "巴巴爸爸的咖啡厅",
+    // "wechatName": "阿呆的大哥",
     "orderType": "打包带走",
     "isTest": true
 }
 // descContains('“工作微信”').findOne(100).click()
+// autoSwipe(500, 420, 520, 1880, 400, 100)
 openWechat(payload)
 mstand(payload)
 // mstandSelectDrinks(payload)
+// mstandPayment(payload)
 // pressSleep('去下单', 100)
 
-
+// var remarksInput = text('如有忌口过敏请填写到这儿').findOne(3000)
+// console.log(remarksInput.bounds().centerY());
 
 // console.log(getAppName('com.mstand.autox'));
 // console.log(getPackageName('微信'))
