@@ -4,6 +4,7 @@ var HEIGHT = 2340
 var width = device.width;
 var height = device.height;
 if (WIDTH == width && height == HEIGHT) {
+    console.log('不需要重置屏幕宽高');
 } else {
     setScreenMetrics(WIDTH, HEIGHT)
 }
@@ -36,12 +37,16 @@ function swithcScreenOn(isTest){
         counter ++;
     } 
     if (device.isScreenOn()){
-        console.log('正常点亮屏幕 ' + counter);
-        device.keepScreenOn(60*1000)
-        device.setBrightnessMode(0)
-        sleep(100)
+        device.keepScreenOn(3 * 60*1000)
+        if (device.getBrightnessMode()!==0){
+            device.setBrightnessMode(0)
+        }
         var brightInt = !!isTest === true? 30 : 1
-        device.setBrightness(brightInt)
+        if (device.getBrightness() !== brightInt){
+            sleep(500)
+            device.setBrightness(brightInt)
+        }
+        
     }
     return status_
 }
@@ -195,22 +200,14 @@ function inputAndSubmit(inputText, findText, sleepTime) {
     }
 };
 
-function transX(x){
-    return x * width / WIDTH
-}
-
-function transY(y){
-    return y * height / HEIGHT
-}
-
 function pressXY(x, y, pt, sleepTime){
-    press(transX(x), transY(y), pt)
+    press(x, y, pt)
     sleep(sleepTime)
 };
 
 function autoSwipe(sx, sy, ex, ey, duration, sleepTime){
     // 自适应手机屏幕分辨率
-    swipe(transX(sx), transY(sy), transX(ex), transY(ey), duration)
+    swipe(sx, sy, ex, ey, duration)
     sleep(sleepTime)
 }
 
@@ -314,5 +311,6 @@ module.exports = {
     isExists, isExists,
     clockFloaty: clockFloaty,
     pressContainsSleep: pressContainsSleep,
-    shotPath: shotPath
+    shotPath: shotPath,
+    WIDTH: WIDTH
 };
