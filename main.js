@@ -19,11 +19,11 @@ var retryAttempts = 0;
 var maxRetryAttempts = 99999; // 设置最大重试次数
 var heartbeatInterval = 20000; 
 var pongTime = new Date()
-var isReconnecting = false
 var isScreenOning = false
 var taskQueue = []
 var isTaskRunning = false
 var doTaskEndDate = new Date()
+var screenOnDate = new Date()
 var restart = false
 
 // 执行下一个任务
@@ -138,12 +138,6 @@ function startWebSocket(){
             heartBeatId = null
             isClose = false;
             retryAttempts = 0;
-            if (isReconnecting === true){
-                toast('服务重连成功')
-                console.log('服务重连成功');
-                
-            }
-            isReconnecting = false;
             startHeartbeat(webSocket);
         },
         onMessage: function (webSocket, msg) { 
@@ -199,7 +193,7 @@ function startWebSocket(){
             // device.cancelKeepingAwake();
         },
         onFailure: function (webSocket, t, response) {
-            console.log("onFailure 错误: " + t);
+            console.log("onFailure 错误: " + t );
             attemptReconnect()
         }
     };
@@ -208,27 +202,22 @@ function startWebSocket(){
 }
 
 function attemptReconnect() {
-    if (isReconnecting == true) {
-        console.log('已经尝试重启中...')
-        return
-    } else{
-        isReconnecting = true
-        console.log('正在尝试重启...')
-    }
-    retryAttempts++;
-    try {
-        unbindUid(cid)
-    } catch (error) {
+    console.log('正在尝试重启...')
+    if (retryAttempts != 0){
+        try {
+            unbindUid(cid)
+        } catch (error) {
+
+        }
     }
     if (retryAttempts <= maxRetryAttempts) {
         console.log("重试连接, 尝试次数: " + retryAttempts);
         setTimeout(startWebSocket, 3000); // 延迟3秒后重试连接
-        sleep(6000)
     } else {
         console.log("已达到最大重试次数，停止重试。");
         isClose = true
     }
-    isReconnecting = false
+    retryAttempts++;
 }
 
 startWebSocket(); // 初次启动
@@ -255,30 +244,6 @@ function setWindow(){
 var window = setWindow()
 
 // 防止主线程退出
-const screenOnId = setInterval(() => {
-    console.log('检查屏幕是否点亮');
-    if (isTaskRunning === false && isScreenOning === false) {
-        isScreenOning = true
-        try {
-            swithcScreenOn()
-            app.launchPackage('com.tencent.mm')
-            sleep(1000)
-            if (currentPackage() !== 'com.tencent.mm'){
-                toast('未能打开微信')
-            } {
-                toast('正常打开微信')
-            }
-            backToDesk()
-        } catch (error) {
-            console.log(error.message);
-        }
-    } else {
-        console.log('正在执行任务...');
-    }
-    isScreenOning = false
-}, 1000 * 60 * 2);
-
-// 防止主线程退出
 const windowInterId = setInterval(() => {
     var date = new Date()
     var timeString = date.toTimeString().substring(0, 8);
@@ -287,16 +252,22 @@ const windowInterId = setInterval(() => {
             var showText = isTaskRunning? ' ': `${timeString} Last Pong ${lastPong}` 
             window.time.setText(showText);
     });
+    if  (isTaskRunning === false && restart === false && (date - screenOnDate) > 60 * 1000){
+        // 每60s检查一次屏幕是否开启
+        swithcScreenOn()
+        screenOnDate = new Date()
+    }
     // 2 * 3600 * 1000
     if ((date - doTaskEndDate) > 2 * 3600 * 1000 && isTaskRunning === false && restart === false){ 
         // 超过2个小时没执行任务, 则重启/关闭(22:30以后)关闭任务
         restart = true
-        swithcScreenOn();   // 需要点亮屏幕才能启动
         launchPackage('com.autox.startmstandauto');
     }
+    if (timeString >= '22:30:00' || timeString <= "05:00:00"){
+        console.log('22:30至05:00自动关闭应用');
+        isClose = true
+    }
     if (isClose){
-        clearInterval(screenOnId)
-        console.log("退出屏幕定时点亮!!!")
         clearInterval(windowInterId)
         console.log("退出时钟悬浮窗!!!");
         clearInterval(heartBeatId)

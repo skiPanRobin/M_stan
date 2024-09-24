@@ -61,7 +61,8 @@ var  payload = {
 mstandSelectDrinks(payload)
 // pressSleep('去下单', 100)
 
-
+// var remarksInput = text('如有忌口过敏请填写到这儿').findOne(3000)
+// console.log(remarksInput.bounds().centerY());
 
 // console.log(getAppName('com.mstand.autox'));
 // console.log(getPackageName('微信'))

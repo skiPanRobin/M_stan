@@ -1,4 +1,4 @@
-const {pressSleep, pressContainsSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists} = require('./utils')
+const {pressSleep, pressContainsSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, clickSleep} = require('./utils')
 
 function _textClickEvent(textContent, sleepTime){
     console.info('textContent: ' + textContent)
@@ -130,10 +130,7 @@ function mstandTOMenu(payload){
             msg.status = 11
             msg.msg = '无法定位门店输入框'
             return false
-        } else {
-            pressSleep('请输入门店名称', 500)
-        }
-
+        } 
         for (let index = 0; index < 4; index++) {
             var ele = textContains(shopName).findOne(500)
             if (ele && ele.bounds().centerY() < 2000) {
@@ -147,8 +144,9 @@ function mstandTOMenu(payload){
                     console.log('无法定位商店, 重试次数: ' + index);  
                 }                
             } else {
+                pressSleep('请输入门店名称', 500)
                 var inputEle = text('请输入门店名称').findOne(1000)
-                inputEle? inputEle.setText(shopName) : console.log('如法定位, 重试次数: ' + index)
+                inputEle? inputEle.setText(shopName) : console.log('无法定位, 重试次数: ' + index)
             }
         }
         if (!text('自提').findOne(3000)) {
@@ -427,20 +425,33 @@ function _newWriteNotes(notes){
         return true
     }
     var counter = 0
-    text('如有忌口过敏请填写到这儿').findOne(3000)
+    autoSwipe(400, 1900, 400, 500, 400, 800)    // 滑动到底部
+    text('如有忌口过敏请填写到这儿').findOne(2000)
     while (text('如有忌口过敏请填写到这儿').findOne(300)) {
-        setClip(notes);
-        autoSwipe(400, 1900, 400, 500, 400, 600)    // 滑动到底部
-        pressXY(700, 1950, 200, 500)                // 点击备注输入框
-        press(600, 1000, 300)                       // 点击输入法输入框
-        var finish = text('完成').findOne(5000) 
-        pressXY(device.width/2, finish.bounds().bottom + 80, 200, 300)  // 点击输入法剪贴板上备注
-        pressSleep('完成', 400)
-        pressXY(523, 1750, 200, 600)  // 点击备注框'保存'按钮
         counter++
         if (counter > 3){
             return false
         }
+        var bounds = text('如有忌口过敏请填写到这儿').findOne(300).bounds()
+        setClip(notes);
+        if (bounds.centerY() > 1700 && bounds.centerY() < 2150) {
+            console.log('获取备注控件编辑点击');
+            click(bounds.centerX(), bounds.centerY())
+            sleep(800)
+        } else {
+            console.log('获取备注控件失败' + bounds.centerY());
+            pressXY(700, 1950, 200, 800)                // 点击备注输入框
+        }
+        pressXY(600, 1000, 200, 500)                       // 点击输入法输入框
+        var finish = text('完成').findOne(1000) 
+        if (!finish) {
+            // 输入框未弹出
+            console.log('输入框未正常弹出');
+            continue
+        }
+        pressXY(WIDTH/2, finish.bounds().bottom + 80, 200, 300)  // 点击输入法剪贴板上备注
+        pressSleep('完成', 400)
+        pressXY(523, 1750, 200, 500)  // 点击备注框'保存'按钮
     }
     return true
 }

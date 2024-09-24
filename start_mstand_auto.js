@@ -10,7 +10,7 @@ function getCloseTimeSec(){
 function getCurrentTimeSec(){
     // 当前时间
     var now = new Date()
-    return now.getHours * 3600 + now.getMinutes * 60 + now.getSeconds()
+    return now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()
 }
 
 
@@ -74,6 +74,7 @@ console.log('强制关闭mstandauto, code: ' + forceRes.code);
 sleep(1000)
 var [laterTime, earlierTime] = getCloseTimeSec()
 var currentTimeSec = getCurrentTimeSec()
+console.log(`currentTimeSec： ${currentTimeSec}, earlierTime： ${earlierTime}, laterTime: ${laterTime}`);
 if ( currentTimeSec >= laterTime || currentTimeSec <= earlierTime ){
     toast('MStandAuto关闭, 等待定时任务重启')
 } else {
