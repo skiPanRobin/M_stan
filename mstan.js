@@ -76,6 +76,73 @@ function _clearShopCar(){
     return {'status': status_, 'msg': '清空购物车失败, 请人工检查'}
 }
 
+/**
+ * 选择优惠券
+ * @param {Object} coupons          - json对象
+ * @param {number} coupons.total    - 使用优惠券张数
+ * @param {string} coupons.titleSub - 所使用优惠券的标题
+*/
+function useCoupons(coupons){
+    if (!!coupons === false){
+        console.error('缺少参数 coupons')
+        return
+    }
+    autoSwipe(400, 1900, 400, 500, 400, 800)    // 滑动到底部
+    var total = coupons.total ? coupons.total: 0
+    var titleSub = coupons.titleSub ? coupons.titleSub : '单杯标杯饮品兑换券'
+    console.log(titleSub + total);
+    if (!!total === false){
+        console.log('不使用优惠券');
+        return 
+    } else {
+        console.log(`尝试使用 ${total} 张 "${titleSub}" 优惠券`);
+    }
+    var couponsEle = textContains('张可用').findOne(500)
+    if(couponsEle){
+        var userfulCoupons = parseInt(couponsEle.text())
+        if(userfulCoupons > 0){    
+            console.log(`${userfulCoupons}张可用`);
+        } else {
+            console.log('无优惠券可以使用');
+            return 
+        }
+    } else {
+        console.log('无优惠券可以使用');
+        return false
+    }
+    // 点击进入优惠券
+    pressXY(505, 1390, 150, 500)
+    if(textContains('单杯标杯饮品兑换券').findOne(8000)){
+        console.log('定位成功');
+        var couponEles = textContains('单杯标杯饮品兑换券').find()
+        console.log('优惠券控件数: ' + couponEles.length);
+        
+        for (let index = 0; index < total; index++) {
+            var ele_index  = index * 2
+            console.log('点击一次优惠券, ele_index: ' + ele_index);
+            if (ele_index >= couponEles.length){
+                console.error('超额使用优惠券');
+                break
+            } else {
+                var bound = couponEles[ele_index].bounds()
+                if (bound.centerY() > 2050){
+                    // 优惠券超出屏幕范围时, 重新获取
+                    autoSwipe(532, 1530, 536, 523, 400, 500)
+                    couponEles = textContains('单杯标杯饮品兑换券').find()
+                    bound = couponEles[ele_index].bounds()
+                }
+                pressXY(bound.centerX(), bound.centerY(), 150, 500)
+                console.log(bound.centerX(), bound.centerY());
+                
+            }
+        }
+    } else {
+        console.log('没有相关优惠券: ' + titleSub);
+    }
+    if (text('选择优惠').findOne(1000)){
+        actionSleep(back, 500)
+    }
+}
 
 function mstandTOMenu(payload){
     var msg = {
@@ -305,10 +372,18 @@ function mstandSelectDrinks(payload){
             toItemDetail(shop)
             sleep(400)
         }
-        // autoSwipe(500, 1200, 520, 600, 300, 500)
+        // 当商品缺货时, 加入购物车不能点击, 页面保持在商品选购页. "规格" 只会出现在选购页面
+        if (!text('规格').findOne(2000)){
+            console.error('添加失败' + shop);
+            msg.status = 14      // 商品添加失败
+            msg.msg = '商品选购失败'
+            msg.payload.shopFailList.push(shop)
+            break
+        }
+        autoSwipe(400, 1300, 400, 500, 300, 500)
         shop.feature.forEach( feat => {
-            text('规格').findOne(2000)
-            autoSwipe(400, 1300, 400, 500, 300, 300)
+            // text('规格').findOne(2000)
+            // autoSwipe(400, 1300, 400, 500, 300, 300)
             var featEle = textContains(feat).findOne(1000)
             if (featEle){
                 pressContainsSleep(feat, 100)
@@ -330,10 +405,8 @@ function mstandSelectDrinks(payload){
                 break;
             case isExists('规格', 400, 400):
                 break;
-            case isExists('规格', 400, 400):
-                break;
             default:
-                console.log('添加失败' + shop);
+                console.error('添加失败' + shop);
                 msg.status = 15      // 商品添加失败
                 msg.msg = '商品选购失败'
                 msg.payload.shopFailList.push(shop)
@@ -425,7 +498,6 @@ function _newWriteNotes(notes){
         return true
     }
     var counter = 0
-    autoSwipe(400, 1900, 400, 500, 400, 800)    // 滑动到底部
     text('如有忌口过敏请填写到这儿').findOne(2000)
     while (text('如有忌口过敏请填写到这儿').findOne(300)) {
         counter++
@@ -507,6 +579,7 @@ function mstandPayment(payload){
     }
     toPayPage()
     _clickOrderType(payload.orderType)
+    useCoupons(payload.coupons)
     switch (true) {
         case (!_newWriteNotes(payload.notes)):
             msg.status = 16
