@@ -14,9 +14,10 @@ function _textClickEvent(textContent, sleepTime){
 }
 
 
-function _checkUpdateApp(){
-    if (text('同意')){
-        pressSleep('同意')
+function _checkUpdateApp(whileCnt){
+    if (whileCnt>=4){
+        // pressSleep('同意')
+        pressXY(306, 1623, 200, 1000)
     }
     if(text('小程序更新提示').findOnce()){
         console.log('小程序更新中...')
@@ -280,11 +281,11 @@ function mstandTOMenu(payload){
                         break
                     }
                 }
-                if(_checkUpdateApp() === true){
+                if(_checkUpdateApp(whileCnt) === true){
                     if (!text('首页').findOne(10000)){
                         throw new Error('更新小程序出错,请人工确认')
                     }
-                }else{
+                }else if(text("手动选择").findOne(400)){
                     currentStep = 2
                 }
                 break
@@ -424,11 +425,12 @@ function mstandSelectDrinks(payload){
         shop.feature.forEach( feat => {
             // text('规格').findOne(2000)
             // autoSwipe(400, 1300, 400, 500, 300, 300)
-            var featEle = textContains(feat).findOne(1000)
+            var featEle = textContains(feat).findOne(2000)
             if (featEle){
                 pressContainsSleep(feat, 100)
             } else {
                 console.log(`没有选中饮料属性: ${feat}`);
+                toast(`没有选中饮料属性: ${feat}`)
             }
             if (feat.includes('杯')){
                 // 冷/热杯切换时, 商品可能会切换属性,如是加冰相关选项变动, 需要等待页面加载
