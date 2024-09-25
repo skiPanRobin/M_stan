@@ -13,6 +13,32 @@ function _textClickEvent(textContent, sleepTime){
     return !ele ? false : true
 }
 
+
+function _checkUpdateApp(){
+    if (text('同意')){
+        pressSleep('同意')
+    }
+    if(text('小程序更新提示').findOnce()){
+        console.log('小程序更新中...')
+        var button确定 = className('android.widget.Button').text('确定').findOne(500)
+        if (button确定){
+            click(button确定.bounds().centerX(), button确定.bounds().centerY())
+        } else {
+            click(777, 1310)
+        }
+        var button知道了 = className('android.widget.Button').text('知道了').findOne(2000)
+        if (button知道了){
+            click(button知道了.bounds().centerX(), button知道了.bounds().centerY())
+        } else {
+            click(555, 1280)
+        }
+        return true
+    } else {
+        console.log('不需要跟新小程序');
+        return false
+    } 
+}
+
 /**
  * @param quantity -饮料数量
 */
@@ -75,7 +101,11 @@ function _clearShopCar(){
     }
     return {'status': status_, 'msg': '清空购物车失败, 请人工检查'}
 }
-
+function _toPayBottom(payload){
+    if (payload.notes || (payload.coupons && !!payload.coupons.total===true)){
+        autoSwipe(400, 1900, 400, 500, 400, 800)    // 滑动到底部
+    }
+}
 /**
  * 选择优惠券
  * @param {Object} coupons          - json对象
@@ -87,7 +117,6 @@ function useCoupons(coupons){
         console.error('缺少参数 coupons')
         return
     }
-    autoSwipe(400, 1900, 400, 500, 400, 800)    // 滑动到底部
     var total = coupons.total ? coupons.total: 0
     var titleSub = coupons.titleSub ? coupons.titleSub : '单杯标杯饮品兑换券'
     console.log(titleSub + total);
@@ -192,31 +221,33 @@ function mstandTOMenu(payload){
         return true
     }
     
-    function selectShop(shopName, sleepTime){
+    function selectShop(shopName){
         if (!text('请输入门店名称').findOne(5000)){
             msg.status = 11
             msg.msg = '无法定位门店输入框'
             return false
         } 
-        for (let index = 0; index < 4; index++) {
+        for (let index = 0; index < 8; index++) {
             var ele = textContains(shopName).findOne(500)
-            if (ele && ele.bounds().centerY() < 2000) {
-                sleep(sleepTime)
+            console.log(ele? `"${shopName}"位置: ${ele.bounds().centerY()}; index:${index}`: `页面中未出现"${shopName}"节点, index: ${index}`);
+            if (ele && ele.bounds().centerY() < 2100) {
                 var shopEle = className('android.widget.TextView').textContains(shopName).findOne(3000)
                 if (shopEle) {
-                    sleep(300)
                     click(shopEle.bounds().centerX(), shopEle.bounds().centerY())
                     break
                 } else {
                     console.log('无法定位商店, 重试次数: ' + index);  
                 }                
             } else {
-                pressSleep('请输入门店名称', 500)
-                var inputEle = text('请输入门店名称').findOne(1000)
-                inputEle? inputEle.setText(shopName) : console.log('无法定位, 重试次数: ' + index)
+                if (text('请输入门店名称').findOne(1000)){
+                    pressSleep('请输入门店名称', 500)
+                    var inputEle = text('请输入门店名称').findOne(1000)
+                    inputEle? inputEle.setText(shopName) : console.log('无法定位, 重试次数: ' + index)
+                } 
             }
         }
-        if (!text('自提').findOne(3000)) {
+        console.log('完成选择');
+        if (!text('自提').findOne(8000)) {
             msg.status = 12
             msg.msg = `无法定位到门店: ${shopName}`
             return false
@@ -228,11 +259,15 @@ function mstandTOMenu(payload){
     text('首页').findOne(5000)
     var currentStep = 1
     var whileCnt = 0
-
+    var toShopCnt = 0
     // 网络问题可能导致页面无法加载
     while (currentStep < 3) {
         console.log('currentStep: ' + currentStep);
-        
+        if (toShopCnt > 3) {
+            throw new Error('无法到达"选择城市"界面,请人工处理')
+        } else {
+            toShopCnt ++
+        }
         switch (currentStep){
             case 1:
                 whileCnt = 0
@@ -241,19 +276,25 @@ function mstandTOMenu(payload){
                     pressXY(300, 300, 100, 300)    //  消除弹窗
                     pressXY(300, 1250, 100, 500);  //   门店自取
                     whileCnt++
-                    if (whileCnt >= 10) {
+                    if (whileCnt >= 5) {
                         break
                     }
                 }
-                currentStep = 2
+                if(_checkUpdateApp() === true){
+                    if (!text('首页').findOne(10000)){
+                        throw new Error('更新小程序出错,请人工确认')
+                    }
+                }else{
+                    currentStep = 2
+                }
                 break
             case 2: 
-                whileCnt = 0
                 if (text('选择门店').findOne(1000)){
                     // 页面可能会直接跳转到选择城市导致错误
                     toast('定位到 "选择门店"')
                     actionSleep(back, 500)
                 }
+                whileCnt = 0
                 while (!text('选择门店').findOne(200)) {
                     if (text('手动选择').findOne(500)){
                         toast("点击手动选择")
@@ -285,12 +326,11 @@ function mstandTOMenu(payload){
     switch (true) {
         case (selectCity(payload.city, 500) === false):
             break;
-        case (selectShop(payload.shopName, 500) === false):
+        case (selectShop(payload.shopName) === false):
             break;
         default:
             break;
     }
-    // pressSleep('去下单', 500)
     console.log('去下单...');
     return msg
 }
@@ -426,7 +466,7 @@ function _payment(isTest){
         }
         return 0
     }
-
+    autoSwipe(400, 500, 400, 1900, 400, 800)
     pressSleep('确认下单', 300)
     if (text('确定门店').findOne(3000)) {
         console.log('已定位到确认门店.. 请确认点击');
@@ -579,6 +619,7 @@ function mstandPayment(payload){
     }
     toPayPage()
     _clickOrderType(payload.orderType)
+    _toPayBottom(payload)
     useCoupons(payload.coupons)
     switch (true) {
         case (!_newWriteNotes(payload.notes)):
