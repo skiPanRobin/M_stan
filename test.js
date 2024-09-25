@@ -35,14 +35,14 @@ const { pressXY, pressSleep } = require('./utils')
 
 var  payload = {
     "id": "1230",
-    "city": "杭州市",
-    "notes": "",
+    "city": "深圳市",
+    "notes": "多加点胡椒",
     "isTest": true,
     "appName": "M Stand",
     "shopList": [
         {
             "feature": [
-                "标杯（冷）354ml",
+                "大杯（热）354ml",
                 "正常浓度",
                 "少糖"
             ],
@@ -55,7 +55,7 @@ var  payload = {
         "total": 1,     // INT ; 默认值 0 不适用优惠券, 1 使用1张...
         "titleSub": "单杯标杯饮品兑换券"    // 优惠券标题
     },
-    "shopName": "杭州来福士店",
+    "shopName": "深圳湾万象城店",
     "wechatNo": 1,
     "orderType": "店内就餐",
     "wechatName": "阿呆的大哥"
@@ -71,6 +71,10 @@ var  payload = {
 console.log(openWechat(payload));
 
 console.log(mstand(payload));
+
+// console.log(text('同意').findOne(100).text());
+
+
 
 // textContains('张可用').findOne(500)
 // var couponsEle = textContains('张可用').findOne(500)
