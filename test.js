@@ -33,29 +33,51 @@ const { pressXY, pressSleep } = require('./utils')
 //     "isTest": true
 // }
 
-var  payload = {
-    "id": "1230",
-    "city": "深圳市",
-    "notes": "多加点胡椒",
-    "isTest": true,
+// var  payload = {
+//     "id": "1230",
+//     "city": "深圳市",
+//     "notes": "多加点胡椒",
+//     "isTest": true,
+//     "appName": "M Stand",
+//     "shopList": [
+//         {
+//             "feature": [
+//                 "大杯（热）354ml",
+//                 "正常浓度",
+//                 "少糖"
+//             ],
+//             "category": "奶咖",
+//             "quantity": 1,
+//             "productName": "香烤坚果拿铁"
+//         }
+//     ],
+//     "coupons": {
+//         "total": 1,     // INT ; 默认值 0 不适用优惠券, 1 使用1张...
+//         "titleSub": "单杯标杯饮品兑换券"    // 优惠券标题
+//     },
+//     "shopName": "深圳湾万象城店",
+//     "wechatNo": 1,
+//     "orderType": "店内就餐",
+//     "wechatName": "阿呆的大哥"
+// }
+
+var payload = {
+    "id": "1257",
+    "city": "北京市",
+    "notes": "",
+    "isTest": false,
     "appName": "M Stand",
-    "shopList": [
-        {
-            "feature": [
-                "大杯（热）354ml",
-                "正常浓度",
-                "少糖"
-            ],
-            "category": "奶咖",
-            "quantity": 1,
-            "productName": "香烤坚果拿铁"
-        }
-    ],
     "coupons": {
-        "total": 1,     // INT ; 默认值 0 不适用优惠券, 1 使用1张...
-        "titleSub": "单杯标杯饮品兑换券"    // 优惠券标题
+        "total": 1,
+        "titleSub": "单杯标杯饮品兑换券"
     },
-    "shopName": "深圳湾万象城店",
+    "shopList": [{
+        "feature": ["标杯（冰）354ml", "少冰"],
+        "category": "零咖特饮",
+        "quantity": 1,
+        "productName": "青麦草"
+    }],
+    "shopName": "北京乐成中心店",
     "wechatNo": 1,
     "orderType": "店内就餐",
     "wechatName": "阿呆的大哥"

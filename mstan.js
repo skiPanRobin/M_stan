@@ -113,7 +113,7 @@ function _toPayBottom(payload){
  * @param {number} coupons.total    - 使用优惠券张数
  * @param {string} coupons.titleSub - 所使用优惠券的标题
 */
-function useCoupons(coupons){
+function _useCoupons(coupons){
     if (!!coupons === false){
         console.error('缺少参数 coupons')
         return
@@ -439,13 +439,10 @@ function mstandSelectDrinks(payload){
         })
         _addQuantities(shop.quantity)
         pressSleep('加入购物车', 200)
-        // 当商品缺货时, 加入购物车不能点击, 页面保持在商品选购页. "规格" 只会出现在选购页面
+        // 当商品缺货时, 加入购物车不能点击, 页面保持在商品详情选购页. "规格" 只会出现在商品详情选购页面
         switch (false) {
-            case isExists('规格', 400, 400):
-                break;
-            case isExists('规格', 400, 400):
-                break;
-            case isExists('规格', 400, 400):
+            // 点击加入购物车, 到选购页面可能需要1s到2s页面才能加载完全
+            case !!text('规格').findOne(800):
                 break;
             default:
                 console.error('添加失败' + shop);
@@ -622,7 +619,7 @@ function mstandPayment(payload){
     toPayPage()
     _clickOrderType(payload.orderType)
     _toPayBottom(payload)
-    useCoupons(payload.coupons)
+    _useCoupons(payload.coupons)
     switch (true) {
         case (!_newWriteNotes(payload.notes)):
             msg.status = 16
