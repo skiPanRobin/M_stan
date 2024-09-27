@@ -108,10 +108,11 @@ function clickIdSleep(resourceId, sleepTime) {
 function pressSleep(textToClick, sleepTime) {
     // 通过文本定位元素
     // toast(textToClick);
+    console.log(`添加到购物车: ${textToClick}`);
     sleepTime = sleepTime === undefined ? 200 : sleepTime
-    var ele = text(textToClick).findOne(4000);
+    var ele = text(textToClick).findOne(6000);
     if (ele === null) {
-        toast("未找到文本: " + textToClick);
+        console.log("未找到文本: " + textToClick);
         sleep(sleepTime)
         return false
     } else {
