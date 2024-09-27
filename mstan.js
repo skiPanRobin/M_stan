@@ -44,6 +44,9 @@ function _checkUpdateApp(whileCnt){
  * @param quantity -饮料数量
 */
 function _addQuantities(quantity){
+    if (quantity<=1) {
+        return
+    }
     var siblings = text('¥').findOne(5000).parent().children()
     for (let index = 0; index < siblings.length; index++) {
         var element = siblings[index];
@@ -429,8 +432,20 @@ function mstandSelectDrinks(payload){
             if (featEle){
                 pressContainsSleep(feat, 100)
             } else {
-                console.log(`没有选中饮料属性: ${feat}`);
-                toast(`没有选中饮料属性: ${feat}`)
+                if(feat.includes('冷') || feat.includes('冰')){
+                    var start = feat.slice(0, 3)
+                    var end = feat.slice(-6)
+                    var regStr = "^" + start + "[冷冰]{1}" + end + '$'
+                    featEle = textMatches(regStr).findOne(2000)
+                    if (featEle){
+                        click(featEle.bounds().centerX(), featEle.bounds().centerY())
+                    } else {
+                        console.log(`没有匹配到:${feat}`);
+                    }
+                } else {
+                    console.log(`没有选中饮料属性: ${feat}`);
+                    toast(`没有选中饮料属性: ${feat}`)
+                }
             }
             if (feat.includes('杯')){
                 // 冷/热杯切换时, 商品可能会切换属性,如是加冰相关选项变动, 需要等待页面加载
@@ -442,7 +457,15 @@ function mstandSelectDrinks(payload){
         // 当商品缺货时, 加入购物车不能点击, 页面保持在商品详情选购页. "规格" 只会出现在商品详情选购页面
         switch (false) {
             // 点击加入购物车, 到选购页面可能需要1s到2s页面才能加载完全
-            case !!text('规格').findOne(800):
+            case isExists("规格", 500, 500):
+                break;
+            case isExists("规格", 500, 500):
+                break;
+            case isExists("规格", 500, 500):
+                break;
+            case isExists("规格", 500, 500):
+                break;
+            case isExists("规格", 500, 500):
                 break;
             default:
                 console.error('添加失败' + shop);
