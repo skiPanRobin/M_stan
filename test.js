@@ -68,15 +68,30 @@ var payload = {
     "isTest": true,
     "appName": "M Stand",
     "coupons": {
-        "total": 1,
+        "total": 2,
         "titleSub": "单杯标杯饮品兑换券"
     },
-    "shopList": [{
-        "feature": ["标杯（冷）354ml", "正常浓度"],
-        "category": "果咖",
-        "quantity": 1,
-        "productName": "冰摇香橙美式"
-    }],
+    "shopList": [
+        {
+            "feature": ["标杯（冷）354ml", "正常浓度"],
+            "category": "果咖",
+            "quantity": 1,
+            "productName": "冰摇香橙美式"
+        },
+        {
+            "feature": ["标杯（冷）354ml", "正常浓度"],
+            "category": "果咖",
+            "quantity": 1,
+            "productName": "冰摇黄杏美式"
+        },
+        {
+            "feature": ["标杯（冷）354ml", "正常浓度"],
+            "category": "果咖",
+            "quantity": 1,
+            "productName": "话梅气泡美式"
+        }
+
+    ],
     "shopName": "深圳东海缤纷天地店",
     "wechatNo": 1,
     "orderType": "店内就餐",

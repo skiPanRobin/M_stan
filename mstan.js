@@ -1,4 +1,4 @@
-const {pressSleep, pressContainsSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, clickSleep} = require('./utils')
+const {pressSleep, pressContainsSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, ocrLoctionXY, getScreenImg} = require('./utils')
 
 function _textClickEvent(textContent, sleepTime){
     console.info('textContent: ' + textContent)
@@ -15,10 +15,6 @@ function _textClickEvent(textContent, sleepTime){
 
 
 function _checkUpdateApp(whileCnt){
-    if (whileCnt>=4){
-        // pressSleep('同意')
-        pressXY(306, 1623, 200, 1000)
-    }
     if(text('小程序更新提示').findOnce()){
         console.log('小程序更新中...')
         var button确定 = className('android.widget.Button').text('确定').findOne(500)
@@ -33,11 +29,13 @@ function _checkUpdateApp(whileCnt){
         } else {
             click(555, 1280)
         }
-        return true
     } else {
         console.log('不需要跟新小程序');
-        return false
     } 
+    if (whileCnt>=10){
+        // pressSleep('同意')
+        pressXY(306, 1623, 200, 1000)
+    }
 }
 
 /**
@@ -145,9 +143,9 @@ function _useCoupons(coupons){
     }
     // 点击进入优惠券
     pressXY(505, 1390, 150, 500)
-    if(textContains('单杯标杯饮品兑换券').findOne(8000)){
+    if(textContains(titleSub).findOne(8000)){
         console.log('定位成功');
-        var couponEles = textContains('单杯标杯饮品兑换券').find()
+        var couponEles = textContains(titleSub).find()
         console.log('优惠券控件数: ' + couponEles.length);
         
         for (let index = 0; index < total; index++) {
@@ -161,7 +159,7 @@ function _useCoupons(coupons){
                 if (bound.centerY() > 2050){
                     // 优惠券超出屏幕范围时, 重新获取
                     autoSwipe(532, 1530, 536, 523, 400, 500)
-                    couponEles = textContains('单杯标杯饮品兑换券').find()
+                    couponEles = textContains(titleSub).find()
                     bound = couponEles[ele_index].bounds()
                 }
                 pressXY(bound.centerX(), bound.centerY(), 150, 500)
@@ -254,7 +252,7 @@ function mstandTOMenu(payload){
         if (!text('自提').findOne(8000)) {
             msg.status = 12
             msg.msg = `无法定位到门店: ${shopName}`
-            return false
+            return false 
         } else {
             return true
         }
@@ -265,6 +263,7 @@ function mstandTOMenu(payload){
     var whileCnt = 0
     var toShopCnt = 0
     // 网络问题可能导致页面无法加载
+    var xy门店自取 = [190, 1120, 450 , 1230]
     while (currentStep < 3) {
         console.log('currentStep: ' + currentStep);
         if (toShopCnt > 3) {
@@ -276,11 +275,16 @@ function mstandTOMenu(payload){
             case 1:
                 whileCnt = 0
                 while (!text("手动选择").findOne(400)){
-                    pressXY(300, 300, 100, 300)    //  消除弹窗
-                    pressXY(300, 300, 100, 300)    //  消除弹窗
-                    pressXY(300, 1250, 100, 500);  //   门店自取
+                    pressXY(300, 300, 100, 500)    //  消除弹窗
+                    pressXY(300, 300, 100, 500)    //  消除弹窗
+
+                    var img = getScreenImg()
+                    var [cx, cy]  = ocrLoctionXY(img, xy门店自取, '门店自取')
+                    if (cx && cy){
+                        pressXY(cx, cy, 100, 500);  //   门店自取
+                    }
                     whileCnt++
-                    if (whileCnt >= 5) {
+                    if (whileCnt >= 10) {
                         break
                     }
                 }
@@ -308,7 +312,7 @@ function mstandTOMenu(payload){
                     }                    
                     sleep(500)
                     whileCnt++
-                    if (whileCnt >= 5) {
+                    if (whileCnt >= 10) {
                         break
                     }
                 }
@@ -398,7 +402,7 @@ function mstandSelectDrinks(payload){
     for (let shop of shopList){
         console.info('category:  '+ shop.category)
         console.info('productName: ' + shop.productName)
-        var pnEle = text(shop.productName).findOne(3000)
+        var pnEle = text(shop.productName).findOne(8000)
         if (pnEle){
             toItemDetail(shop)
             sleep(500)
@@ -517,6 +521,10 @@ function _payment(isTest){
                 }
             }
         } else {
+            if (isTest == true){
+                console.log('测试支付...');
+                return {'status': 0, "msg": "测试支付"}
+            }
             return {"status": 18, "msg": "没有进入到余额支付页面"}
         }
         for (let index = 0; index < 3; index++) {
