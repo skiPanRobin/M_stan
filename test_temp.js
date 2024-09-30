@@ -1,63 +1,47 @@
-// auto.waitFor();
-// // images.requestScreenCapture()
-// const {takeScreenShot} = require('./utils')
-// var xy门店自取 = [190, 1120, 450 , 1230]
-// var ex异常判断 = [320, 700, 800, 1600]
-// // var xy首页 = [130, 2000, 250, 2200]
-// function getScreenImg(){
-//     var path = '/sdcard/DCIM/test.png'
-//     takeScreenShot(path)
-//     sleep(1000)
-//     return images.read(path)
-// }
+const { autoSwipe,getScreenImg,ocrLoctionXY } = require("./utils");
 
-
-// function ocrLoctionXY(img, xy, checkText){
-
-//     var clipImg = images.clip(img, xy[0], xy[1], xy[2] - xy[0], xy[3]-xy[1])
-    
-    
-//     var gimg = images.grayscale(clipImg)
-//     // console.log(1);
-//     var gimg = images.threshold(gimg, 140, 255, "BINARY")
-//     // console.log(2)
-//     var res = paddle.ocr(clipImg)
-//     console.log(3)
-//     for (let index = 0; index < res.length; index++) {
-//         const ocrResult = res[index];
-//         if (ocrResult.text==checkText){
-//             console.log(`定位 "${checkText}" 成功`);
-//             return [xy[0] + ocrResult.bounds.centerX(), xy[1] + ocrResult.bounds.centerY()]
-//         }
-        
-//     }
-//     console.log(`定位 "${checkText}" 失败`);
-//     return [0, 0]   
-// }
-// var img = getScreenImg()
-// var [cx, cy]  = ocrLoctionXY(img, xy门店自取, '门店自取')
-// // var [cx, cy]  = ocrLoctionXY(img, xy首页, '首页')
-// console.log(`cx: ${cx}, cy:${cy}`);
-// // click(cx, cy)
-// // img.recycle()
-var total = 2
-var select = 0
-var eles = text('确定').findOne(100).parent().children()
-console.log(eles.length);
-
-for (let index = 0; index < eles.length && select <= total; index++) {
-
-    var element = eles[index];
-    console.log(!! element.children().findOne(textContains('单杯标杯饮品兑换券')));
-    
-    if (!! element.children().findOne(textContains('单杯标杯饮品兑换券'))){
-        click(element.bounds().centerX(), element.bounds().centerY())   
-        // sleep(600)
-        console.log(`${element.bounds().centerX()}` + ', '+`${element.bounds().centerY()}`);
-        sleep(1000)
-        select ++ 
+function test01(total){
+    var select = 0
+    var eles = text('确定').findOne(100).parent().children()
+    console.log(eles.length);
+    for (let index = 0; index < eles.length && select < total; index++) {
+        var element = eles[index];
+        // console.log(!! element.children().findOne(textContains('单杯标杯饮品兑换券')));
+        if (!! element.children().findOne(textContains('单杯标杯饮品兑换券'))){
+            for (let j = 0; j < 4; j++) {
+                if ( element.bounds().centerY() > 0 && element.bounds().centerY() < 2050 ){
+                    click(element.bounds().centerX(), element.bounds().centerY())   
+                    console.log(`${element.bounds().centerX()}` + ', '+`${element.bounds().centerY()}`);
+                    sleep(1000)
+                    select ++ 
+                    break
+                } else if (element.bounds().centerY() > 2050){
+                    autoSwipe(511, 1702, 529, 530, 500, 1000)
+                    eles = text('确定').findOne(100).parent().children()
+                    element = eles[index];
+                    continue
+                } else if(element.bounds().centerY() < 0){
+                    autoSwipe(511, 530, 529, 1702, 500, 1000)
+                    eles = text('确定').findOne(100).parent().children()
+                    element = eles[index];
+                    continue
+                }
+            }
+        }
     }
-    // log(index + eles.length + total)
-}
+};
 
-;
+var xy优惠券 = [50, 200,700, 1500]
+var img = getScreenImg()
+var[x, y] = ocrLoctionXY(img, xy优惠券, "单杯标杯饮品兑换券")
+
+// var gimg = images.grayscale(img)
+// var gimg = images.threshold(gimg, 140, 255, "BINARY")
+// var res = paddle.ocr(img)
+// for (let index = 0; index < res.length; index++) {
+//     var element = res[index];
+//     console.log(element.text);
+    
+// }
+
+// textContains('单杯标杯饮品兑换券').findOne(2000).click()

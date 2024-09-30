@@ -33,6 +33,7 @@ function ocrLoctionXY(img, xy, checkText){
         
     }
     console.log(`定位 "${checkText}" 失败`);
+    img.recycle()
     return [0, 0]   
 }
 
