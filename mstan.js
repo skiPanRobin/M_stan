@@ -1,4 +1,4 @@
-const {pressSleep, pressContainsSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, clickSleep} = require('./utils')
+const {pressSleep, pressContainsSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, ocrLoctionXY, getScreenImg} = require('./utils')
 
 function _textClickEvent(textContent, sleepTime){
     console.info('textContent: ' + textContent)
@@ -15,10 +15,6 @@ function _textClickEvent(textContent, sleepTime){
 
 
 function _checkUpdateApp(whileCnt){
-    if (whileCnt>=4){
-        // pressSleep('同意')
-        pressXY(306, 1623, 200, 1000)
-    }
     if(text('小程序更新提示').findOnce()){
         console.log('小程序更新中...')
         var button确定 = className('android.widget.Button').text('确定').findOne(500)
@@ -33,17 +29,22 @@ function _checkUpdateApp(whileCnt){
         } else {
             click(555, 1280)
         }
-        return true
     } else {
         console.log('不需要跟新小程序');
-        return false
     } 
+    if (whileCnt>=10){
+        // pressSleep('同意')
+        pressXY(306, 1623, 200, 1000)
+    }
 }
 
 /**
  * @param quantity -饮料数量
 */
 function _addQuantities(quantity){
+    if (quantity<=1) {
+        return
+    }
     var siblings = text('¥').findOne(5000).parent().children()
     for (let index = 0; index < siblings.length; index++) {
         var element = siblings[index];
@@ -113,7 +114,7 @@ function _toPayBottom(payload){
  * @param {number} coupons.total    - 使用优惠券张数
  * @param {string} coupons.titleSub - 所使用优惠券的标题
 */
-function useCoupons(coupons){
+function _useCoupons(coupons){
     if (!!coupons === false){
         console.error('缺少参数 coupons')
         return
@@ -142,9 +143,9 @@ function useCoupons(coupons){
     }
     // 点击进入优惠券
     pressXY(505, 1390, 150, 500)
-    if(textContains('单杯标杯饮品兑换券').findOne(8000)){
+    if(textContains(titleSub).findOne(8000)){
         console.log('定位成功');
-        var couponEles = textContains('单杯标杯饮品兑换券').find()
+        var couponEles = textContains(titleSub).find()
         console.log('优惠券控件数: ' + couponEles.length);
         
         for (let index = 0; index < total; index++) {
@@ -158,7 +159,7 @@ function useCoupons(coupons){
                 if (bound.centerY() > 2050){
                     // 优惠券超出屏幕范围时, 重新获取
                     autoSwipe(532, 1530, 536, 523, 400, 500)
-                    couponEles = textContains('单杯标杯饮品兑换券').find()
+                    couponEles = textContains(titleSub).find()
                     bound = couponEles[ele_index].bounds()
                 }
                 pressXY(bound.centerX(), bound.centerY(), 150, 500)
@@ -251,7 +252,7 @@ function mstandTOMenu(payload){
         if (!text('自提').findOne(8000)) {
             msg.status = 12
             msg.msg = `无法定位到门店: ${shopName}`
-            return false
+            return false 
         } else {
             return true
         }
@@ -262,6 +263,7 @@ function mstandTOMenu(payload){
     var whileCnt = 0
     var toShopCnt = 0
     // 网络问题可能导致页面无法加载
+    var xy门店自取 = [190, 1120, 450 , 1230]
     while (currentStep < 3) {
         console.log('currentStep: ' + currentStep);
         if (toShopCnt > 3) {
@@ -273,11 +275,16 @@ function mstandTOMenu(payload){
             case 1:
                 whileCnt = 0
                 while (!text("手动选择").findOne(400)){
-                    pressXY(300, 300, 100, 300)    //  消除弹窗
-                    pressXY(300, 300, 100, 300)    //  消除弹窗
-                    pressXY(300, 1250, 100, 500);  //   门店自取
+                    pressXY(300, 300, 100, 500)    //  消除弹窗
+                    pressXY(300, 300, 100, 500)    //  消除弹窗
+
+                    var img = getScreenImg()
+                    var [cx, cy]  = ocrLoctionXY(img, xy门店自取, '门店自取')
+                    if (cx && cy){
+                        pressXY(cx, cy, 100, 500);  //   门店自取
+                    }
                     whileCnt++
-                    if (whileCnt >= 5) {
+                    if (whileCnt >= 10) {
                         break
                     }
                 }
@@ -305,7 +312,7 @@ function mstandTOMenu(payload){
                     }                    
                     sleep(500)
                     whileCnt++
-                    if (whileCnt >= 5) {
+                    if (whileCnt >= 10) {
                         break
                     }
                 }
@@ -395,7 +402,7 @@ function mstandSelectDrinks(payload){
     for (let shop of shopList){
         console.info('category:  '+ shop.category)
         console.info('productName: ' + shop.productName)
-        var pnEle = text(shop.productName).findOne(3000)
+        var pnEle = text(shop.productName).findOne(8000)
         if (pnEle){
             toItemDetail(shop)
             sleep(500)
@@ -429,8 +436,20 @@ function mstandSelectDrinks(payload){
             if (featEle){
                 pressContainsSleep(feat, 100)
             } else {
-                console.log(`没有选中饮料属性: ${feat}`);
-                toast(`没有选中饮料属性: ${feat}`)
+                if(feat.includes('冷') || feat.includes('冰')){
+                    var start = feat.slice(0, 3)
+                    var end = feat.slice(-6)
+                    var regStr = "^" + start + "[冷冰]{1}" + end + '$'
+                    featEle = textMatches(regStr).findOne(2000)
+                    if (featEle){
+                        click(featEle.bounds().centerX(), featEle.bounds().centerY())
+                    } else {
+                        console.log(`没有匹配到:${feat}`);
+                    }
+                } else {
+                    console.log(`没有选中饮料属性: ${feat}`);
+                    toast(`没有选中饮料属性: ${feat}`)
+                }
             }
             if (feat.includes('杯')){
                 // 冷/热杯切换时, 商品可能会切换属性,如是加冰相关选项变动, 需要等待页面加载
@@ -439,13 +458,18 @@ function mstandSelectDrinks(payload){
         })
         _addQuantities(shop.quantity)
         pressSleep('加入购物车', 200)
-        // 当商品缺货时, 加入购物车不能点击, 页面保持在商品选购页. "规格" 只会出现在选购页面
+        // 当商品缺货时, 加入购物车不能点击, 页面保持在商品详情选购页. "规格" 只会出现在商品详情选购页面
         switch (false) {
-            case isExists('规格', 400, 400):
+            // 点击加入购物车, 到选购页面可能需要1s到2s页面才能加载完全
+            case isExists("规格", 500, 500):
                 break;
-            case isExists('规格', 400, 400):
+            case isExists("规格", 500, 500):
                 break;
-            case isExists('规格', 400, 400):
+            case isExists("规格", 500, 500):
+                break;
+            case isExists("规格", 500, 500):
+                break;
+            case isExists("规格", 500, 500):
                 break;
             default:
                 console.error('添加失败' + shop);
@@ -497,6 +521,10 @@ function _payment(isTest){
                 }
             }
         } else {
+            if (isTest == true){
+                console.log('测试支付...');
+                return {'status': 0, "msg": "测试支付"}
+            }
             return {"status": 18, "msg": "没有进入到余额支付页面"}
         }
         for (let index = 0; index < 3; index++) {
@@ -622,7 +650,7 @@ function mstandPayment(payload){
     toPayPage()
     _clickOrderType(payload.orderType)
     _toPayBottom(payload)
-    useCoupons(payload.coupons)
+    _useCoupons(payload.coupons)
     switch (true) {
         case (!_newWriteNotes(payload.notes)):
             msg.status = 16

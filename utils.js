@@ -9,6 +9,33 @@ if (WIDTH == width && height == HEIGHT) {
     setScreenMetrics(WIDTH, HEIGHT)
 }
 var shotPath = "/sdcard/Pictures/screenshot.png";
+var ocrImgPath = '/sdcard/DCIM/test.png'
+
+function getScreenImg(){
+    takeScreenShot(ocrImgPath)
+    sleep(500)
+    return images.read(ocrImgPath)
+}
+
+function ocrLoctionXY(img, xy, checkText){
+    var clipImg = images.clip(img, xy[0], xy[1], xy[2] - xy[0], xy[3]-xy[1])
+    
+    
+    var gimg = images.grayscale(clipImg)
+    var gimg = images.threshold(gimg, 140, 255, "BINARY")
+    var res = paddle.ocr(clipImg)
+    for (let index = 0; index < res.length; index++) {
+        const ocrResult = res[index];
+        if (ocrResult.text==checkText){
+            console.log(`定位 "${checkText}" 成功`);
+            return [xy[0] + ocrResult.bounds.centerX(), xy[1] + ocrResult.bounds.centerY()]
+        }
+        
+    }
+    console.log(`定位 "${checkText}" 失败`);
+    img.recycle()
+    return [0, 0]   
+}
 
 
 function randomInt(min, max){
@@ -108,10 +135,11 @@ function clickIdSleep(resourceId, sleepTime) {
 function pressSleep(textToClick, sleepTime) {
     // 通过文本定位元素
     // toast(textToClick);
+    console.log(`添加到购物车: ${textToClick}`);
     sleepTime = sleepTime === undefined ? 200 : sleepTime
-    var ele = text(textToClick).findOne(4000);
+    var ele = text(textToClick).findOne(6000);
     if (ele === null) {
-        toast("未找到文本: " + textToClick);
+        console.log("未找到文本: " + textToClick);
         sleep(sleepTime)
         return false
     } else {
@@ -311,6 +339,8 @@ module.exports = {
     isExists, isExists,
     clockFloaty: clockFloaty,
     pressContainsSleep: pressContainsSleep,
+    getScreenImg: getScreenImg,
+    ocrLoctionXY: ocrLoctionXY,
     shotPath: shotPath,
     WIDTH: WIDTH
 };
