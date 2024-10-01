@@ -355,7 +355,7 @@ function mstandSelectDrinks(payload){
         console.log('toItemDetail');
         console.log(item.category + '==>' + item.productName)
         pressSleep(item.category, 800)
-        swipTimes = 5
+        swipTimes = 8
         while (!!swipTimes){
             var cy = text(item.productName).findOne(1000).bounds().centerY()
             console.log(cy);
