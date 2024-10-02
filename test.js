@@ -68,7 +68,7 @@ var payload = {
     "isTest": true,
     "appName": "M Stand",
     "coupons": {
-        "total": 2,
+        "total": 3,
         "titleSub": "单杯标杯饮品兑换券"
     },
     "shopList": [

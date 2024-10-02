@@ -14,6 +14,60 @@ function _textClickEvent(textContent, sleepTime){
 }
 
 
+function _selectCoupons(coupons){
+    var titleSub = coupons.titleSub;
+    var total = coupons.total
+    try {
+        var eles = textContains(titleSub).findOne(100).parent().parent().children()
+    } catch (error) {
+        console.error(error.message);
+        console.log();
+        
+    }
+    var indexsCoupons = []
+    for (let index = 0; index < eles.length; index++) {
+        let element = eles[index];
+        if (element.children().findOne(textContains(titleSub))){
+            console.log(`${titleSub} && ${index}`);
+            indexsCoupons.push(index)
+        }
+        if (indexsCoupons.length === total){
+            break   
+        }
+    }
+    console.log(indexsCoupons);
+    var swipCnt = 0
+    var couponsTotal = eles.length - 2
+    for (let index = 0; index < indexsCoupons.length; index++) {
+        let ic = indexsCoupons[index];
+        console.log(`indexsCoupons: ${ic}; couponsTotal: ${couponsTotal}; swipCnt: ${swipCnt}`);
+        if (ic + 1 > (couponsTotal - 5)){
+            var last = couponsTotal - (ic + 1)
+            while (ic > 5){
+                ic = (ic + 1) - 5 * swipCnt
+                autoSwipe(500, 2050, 510, 180, 1000,  1000)
+                swipCnt = swipCnt + 1
+            }
+            var couponY = 1800 - last * 362
+            click(500, couponY)
+            console.log(`1 ** x: 500, y: ${couponY}; last: ${last}; couponsTotal: ${couponsTotal}`);
+            sleep(1000)
+            continue
+        }
+        ic = (ic + 1) - 5 * swipCnt
+        while (ic > 5){
+            autoSwipe(500, 2050, 510, 180, 1000, 1000)
+            swipCnt = swipCnt + 1
+            ic = ic - 5
+            log(`: ${ic}`)
+        }
+        var couponY = 400 + 362 * (ic -1)
+        click(500, couponY)
+        console.log(`2. x: 500, y: ${couponY}; last: ${last}; couponsTotal: ${couponsTotal}`);
+        sleep(1000)
+    }
+}
+
 function _checkUpdateApp(whileCnt){
     if(text('小程序更新提示').findOnce()){
         console.log('小程序更新中...')
@@ -144,29 +198,7 @@ function _useCoupons(coupons){
     // 点击进入优惠券
     pressXY(505, 1390, 150, 500)
     if(textContains(titleSub).findOne(8000)){
-        console.log('定位成功');
-        var couponEles = textContains(titleSub).find()
-        console.log('优惠券控件数: ' + couponEles.length);
-        
-        for (let index = 0; index < total; index++) {
-            var ele_index  = index * 2
-            console.log('点击一次优惠券, ele_index: ' + ele_index);
-            if (ele_index >= couponEles.length){
-                console.error('超额使用优惠券');
-                break
-            } else {
-                var bound = couponEles[ele_index].bounds()
-                if (bound.centerY() > 2050){
-                    // 优惠券超出屏幕范围时, 重新获取
-                    autoSwipe(532, 1530, 536, 523, 400, 500)
-                    couponEles = textContains(titleSub).find()
-                    bound = couponEles[ele_index].bounds()
-                }
-                pressXY(bound.centerX(), bound.centerY(), 150, 500)
-                console.log(bound.centerX(), bound.centerY());
-                
-            }
-        }
+        _selectCoupons(coupons)
     } else {
         console.log('没有相关优惠券: ' + titleSub);
     }
@@ -408,7 +440,7 @@ function mstandSelectDrinks(payload){
             sleep(500)
         } else {
             msg.status = 14
-            msg.msg = '商品列表中无法定位到商品'
+            msg.msg = `商品无法定位: ${shop.productName}`
             msg.payload.shopFailList.push(shop)
             console.error(msg);
             break
@@ -424,7 +456,7 @@ function mstandSelectDrinks(payload){
         if (!text('规格').findOne(2000)){
             console.error('添加失败' + shop);
             msg.status = 14      // 商品添加失败
-            msg.msg = '商品选购失败'
+            msg.msg = `商品选购失败: ${shop.productName}`
             msg.payload.shopFailList.push(shop)
             break
         }
@@ -474,7 +506,7 @@ function mstandSelectDrinks(payload){
             default:
                 console.error('添加失败' + shop);
                 msg.status = 15      // 商品添加失败
-                msg.msg = '商品选购失败'
+                msg.msg = `商品选购失败: ${shop.category}`
                 msg.payload.shopFailList.push(shop)
                 actionSleep(back, 500)  // 回到饮品列表页
                 break;
