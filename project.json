@@ -6,6 +6,10 @@
       {
         "form": "/storage/emulated/0/脚本/M_stan",
         "to": "/project"
+      },
+      {
+        "form": "file:///android_asset/models",
+        "to": "/models"
       }
     ],
     "buildDir": "build",
@@ -21,10 +25,10 @@
     ],
     "encrypt-code": false,
     "launchConfig": {
-      "displaySplash": true,
+      "displaySplash": false,
       "hideAccessibilityServices": false,
       "hideLauncher": false,
-      "hideLogs": true,
+      "hideLogs": false,
       "stableMode": true,
       "volumeUpcontrol": false,
       "permissions": [
@@ -36,6 +40,14 @@
       "splashText": "Powered by Autoxjs.com"
     },
     "libs": [
+      "libopencv_java4.so",
+      "libc++_shared.so",
+      "libc++_shared.so",
+      "libpaddle_light_api_shared.so",
+      "libhiai.so",
+      "libhiai_ir.so",
+      "libhiai_ir_build.so",
+      "libNative.so",
       "libjackpal-androidterm5.so",
       "libjackpal-termexec2.so"
     ],
@@ -51,5 +63,5 @@
     },
     "sourcePath": "/storage/emulated/0/脚本/M_stan/main.js",
     "versionCode": 6,
-    "versionName": "6.0.1"
+    "versionName": "6.2.1"
   }
