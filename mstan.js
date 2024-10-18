@@ -1,4 +1,4 @@
-const {pressSleep, pressContainsSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, ocrLoctionXY, getScreenImg} = require('./utils')
+const {pressSleep, pressContainsSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, ocrLoctionXY, getScreenImg, clickEvent} = require('./utils')
 
 function _textClickEvent(textContent, sleepTime){
     console.info('textContent: ' + textContent)
@@ -196,7 +196,8 @@ function _useCoupons(coupons){
         return false
     }
     // 点击进入优惠券
-    pressXY(505, 1390, 150, 500)
+    // pressXY(505, 1390, 150, 500) 
+    clickEvent(505, 1390, 800)
     if(textContains(titleSub).findOne(8000)){
         _selectCoupons(coupons)
     } else {
