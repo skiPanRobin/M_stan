@@ -17,10 +17,12 @@ function getScreenImg(){
     return images.read(ocrImgPath)
 }
 
+/**
+ * 识别指定区域内文字, 返回中心坐标
+ * 
+*/
 function ocrLoctionXY(img, xy, checkText){
     var clipImg = images.clip(img, xy[0], xy[1], xy[2] - xy[0], xy[3]-xy[1])
-    
-    
     var gimg = images.grayscale(clipImg)
     var gimg = images.threshold(gimg, 140, 255, "BINARY")
     var res = paddle.ocr(clipImg)
