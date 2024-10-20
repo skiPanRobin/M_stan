@@ -27,10 +27,12 @@ function ocrLoctionXY(img, xy, checkText){
     var gimg = images.threshold(gimg, 140, 255, "BINARY")
     var res = paddle.ocr(clipImg)
     for (let index = 0; index < res.length; index++) {
-        const ocrResult = res[index];
+        var ocrResult = res[index];
         if (ocrResult.text==checkText){
             console.log(`定位 "${checkText}" 成功`);
             return [xy[0] + ocrResult.bounds.centerX(), xy[1] + ocrResult.bounds.centerY()]
+        } else {
+            toast(`ocrResult text: ${ocrResult.text}, not match`)
         }
         
     }

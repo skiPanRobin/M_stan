@@ -1,66 +1,9 @@
 // const { autoSwipe, pressSleep, clickEvent, pressContainsSleep, pressXY } = require("./utils");
 
-
-// const { takeScreenShot, shotPath } = require('./M_stan/utils')
 const {openWechat} = require('./wechat')
 const {mstand} = require('./mstan');
 const wechat = require('./wechat');
 // const { pressXY, actionSleep, autoSwipe } = require('./utils')
-// const { pressXY, pressSleep } = require('./utils')
-// var payload = {
-//     "id": "1",
-//     "city": "北京市",
-//     // "city": "深圳市",
-//     "notes": "今天七夕节",
-//     "appName": "M Stand",
-//     "shopList": [
-//         {
-//             "feature": [
-//                 "大杯（热）354ml",
-//                 "正常浓度",
-//                 "少糖"
-//             ],
-//             "category": "奶咖",
-//             "quantity": 1,
-//             "productName": "香烤坚果拿铁"
-//         }
-//     ],
-
-//     "shopName": "北京喜隆多店",
-//     // "shopName": "深圳湾万象城店",
-//     "wechatNo": 1,
-//     "wechatName": "阿呆的大哥",
-//     "orderType": "打包带走",
-//     "isTest": true
-// }
-
-// var  payload = {
-//     "id": "1230",
-//     "city": "深圳市",
-//     "notes": "多加点胡椒",
-//     "isTest": true,
-//     "appName": "M Stand",
-//     "shopList": [
-//         {
-//             "feature": [
-//                 "大杯（热）354ml",
-//                 "正常浓度",
-//                 "少糖"
-//             ],
-//             "category": "奶咖",
-//             "quantity": 1,
-//             "productName": "香烤坚果拿铁"
-//         }
-//     ],
-//     "coupons": {
-//         "total": 1,     // INT ; 默认值 0 不适用优惠券, 1 使用1张...
-//         "titleSub": "单杯标杯饮品兑换券"    // 优惠券标题
-//     },
-//     "shopName": "深圳湾万象城店",
-//     "wechatNo": 1,
-//     "orderType": "店内就餐",
-//     "wechatName": "阿呆的大哥"
-// }
 
 var payload = {
     "id": "1259",
@@ -98,8 +41,7 @@ var payload = {
     "orderType": "店内就餐",
     "wechatName": "New Vest"
 }
-// mstandSelectDrinks(payload)
-// mstandPayment(payload)
+
 console.log(openWechat(payload));
 console.log(mstand(payload));
 

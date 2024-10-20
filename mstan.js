@@ -359,10 +359,6 @@ function mstandTOMenu(payload){
                 break
         }
     }
-
-    // 关闭推荐弹窗
-    
-    
     // pressSleep('手动选择', 1500)
     switch (true) {
         case (selectCity(payload.city, 500) === false):
@@ -696,7 +692,13 @@ function mstandPayment(payload){
             break
         default:
             break;
-    }    
+    }  
+    var img = getScreenImg()
+    if (!ocrLoctionXY(img, [450, 300, 650, 400], "已下单")[0]){
+        msg.status = 19
+        msg.msg = payload.isTest == true ? '测试任务不支付': '支付可能失败,未检测到"已下单"'
+        toast(msg.msg)
+    }
     return msg
 }
 
