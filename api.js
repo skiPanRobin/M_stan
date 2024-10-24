@@ -1,4 +1,5 @@
-const {api} = require('./config')
+const {getApiConf} = require('./config')
+var apiConfig = getApiConf()
 var androidId = shell('settings get secure android_id', true).result
 const uid = $crypto.digest(androidId, "MD5", {output: 'toString'})    // "fb257b0c1044b5042d4ed7ede37ea1e2"
 
@@ -7,7 +8,7 @@ const uid = $crypto.digest(androidId, "MD5", {output: 'toString'})    // "fb257b
  * @param {string} shotPath -截图路径
 */
 function postScreenOss(shotPath){
-    var res = http.postMultipart(api.apiUplaodFile , {
+    var res = http.postMultipart(apiConfig.apiUplaodFile , {
         file: open(shotPath)
     }); 
     let jsonResponse = res.body.json()
@@ -35,7 +36,7 @@ function updaloadPayPic(online_path, msg){
             "shopList": []
         }
     }
-    var res = http.postJson(api.apiMsg, json)
+    var res = http.postJson(apiConfig.apiMsg, json)
     console.info('updaload pic res: ' + res.body.string())
 }
 
@@ -54,7 +55,7 @@ function updaloadPayPic(online_path, msg){
  * @param {Object[]} errorMsg.payload.shopList
 */
 function uploadErrorStatus(errorMsg){
-    var url = api.apiMsg
+    var url = apiConfig.apiMsg
     var json = {
         "uid": "system",
         "creator": uid, //微信账号uid  目前写死
@@ -83,7 +84,7 @@ function updateDeviceStatus(payloadId, status){
             "msg": status === 0 ? '设备空闲' : status === 1? "设备忙碌": "任务完成", // 下单失败的提示
         }
     }
-    var res = http.postJson(api.apiMsg, json)
+    var res = http.postJson(apiConfig.apiMsg, json)
     console.info('updateDeviceStatus: ' + res.body.string())
 }
 
@@ -98,7 +99,7 @@ function bindUid(cid){
         "terminal": "mini" //目前写死 终端类型  mini小程序  pc 电脑端 app 移动端
     }
     console.log("registMessage " + JSON.stringify(registMessage))
-    var r = http.postJson(api.apiBind, registMessage)
+    var r = http.postJson(apiConfig.apiBind, registMessage)
     console.log("bindUid " + r.body.string())
 }
 
@@ -107,7 +108,7 @@ function unbindUid(cid){
         "cid": cid,
         "uid": uid, //微信账号uid  目前写
     }
-    var r = http.postJson(api.apiUnbind, registMessage)
+    var r = http.postJson(apiConfig.apiUnbind, registMessage)
     console.log('unbindUid: '+ r.body.string())
 }
 
@@ -118,5 +119,6 @@ module.exports = {
     uploadErrorStatus: uploadErrorStatus,
     updateDeviceStatus: updateDeviceStatus,
     bindUid: bindUid,
-    unbindUid: unbindUid
+    unbindUid: unbindUid,
+    apiConfig: apiConfig
 };

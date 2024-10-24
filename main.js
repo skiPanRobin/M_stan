@@ -1,16 +1,15 @@
 // 导入 okhttp 库
 importPackage(Packages["okhttp3"]); //导入包
-const {api} = require('./config')
 const { openWechat } = require('./wechat');
 const { mstand } = require('./mstan');
 const { backToDesk, swithcScreenOn, shotPath, takeScreenShot, randomInt } = require('./utils')
-const { postScreenOss, updaloadPayPic, uploadErrorStatus, updateDeviceStatus, bindUid, unbindUid } = require('./api')
+const { postScreenOss, updaloadPayPic, uploadErrorStatus, updateDeviceStatus, bindUid, unbindUid, apiConfig } = require('./api')
 
 // 创建 OkHttpClient 实例
 var client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
 
 // 创建 WebSocket 请求
-var request = new Request.Builder().url(api.apiWss).build(); //vscode 插件的ip地址
+var request = new Request.Builder().url(apiConfig.apiWss).build(); //vscode 插件的ip地址
 // 全局变量，用于跟踪当前任务状态
 var cid = null;
 var heartBeatId = null
