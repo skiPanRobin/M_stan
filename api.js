@@ -1,5 +1,4 @@
-const {getApiConf} = require('./config')
-var apiConfig = getApiConf()
+const {apiConfig} = require('./config')
 var androidId = shell('settings get secure android_id', true).result
 const uid = $crypto.digest(androidId, "MD5", {output: 'toString'})    // "fb257b0c1044b5042d4ed7ede37ea1e2"
 

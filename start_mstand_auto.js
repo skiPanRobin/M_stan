@@ -1,7 +1,7 @@
 auto();
 toast('uid见剪贴板')
 
-const {apiConfig} = require('./api')
+const {apiConfig} = require('./config')
 function getCloseTimeSec(){
     // 22:30 - 5: 00 自动关闭程序
     return [22 * 3600 + 30 * 60, 5 * 3600 + 30 *60]

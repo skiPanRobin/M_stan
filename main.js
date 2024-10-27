@@ -3,7 +3,8 @@ importPackage(Packages["okhttp3"]); //导入包
 const { openWechat } = require('./wechat');
 const { mstand } = require('./mstan');
 const { backToDesk, swithcScreenOn, shotPath, takeScreenShot, randomInt } = require('./utils')
-const { postScreenOss, updaloadPayPic, uploadErrorStatus, updateDeviceStatus, bindUid, unbindUid, apiConfig } = require('./api')
+const { postScreenOss, updaloadPayPic, uploadErrorStatus, updateDeviceStatus, bindUid, unbindUid } = require('./api')
+const {apiConfig} = require('./config')
 
 // 创建 OkHttpClient 实例
 var client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
