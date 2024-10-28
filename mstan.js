@@ -140,7 +140,6 @@ function _toPayBottom(payload){
             break
         } else {
             console.log(`订单按钮未出现`);
-            autoSwipe(400, 1900, 400, 300, 400, 800)
         }
         
     }
