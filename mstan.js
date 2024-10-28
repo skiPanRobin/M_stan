@@ -131,13 +131,16 @@ function _toPayBottom(payload){
     for (let index = 0; index < 3; index++) {
         if (payload.notes || (payload.coupons && !!payload.coupons.total===true)){
             autoSwipe(400, 1900, 400, 300, 400, 800)    // 滑动到底部
+        } else {
+            console.log('不需要使用优惠券和输入备注');
+            break
         }
         var ele订单 = text('订单备注').findOne(1000)
         if (!!ele订单 && ele订单.bounds().centerY() > 0 && ele订单.bounds().centerY() < 2100) {
             break
         } else {
-            console.log(`订单按钮未出现, x: ${ele订单.bounds().centerX()}, y: ${ele订单.bounds().centerY()}`);
-            
+            console.log(`订单按钮未出现`);
+            autoSwipe(400, 1900, 400, 300, 400, 800)
         }
         
     }
