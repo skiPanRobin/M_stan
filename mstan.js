@@ -19,19 +19,37 @@ function _selectCoupons(coupons){
     var total = coupons.total
     var tickts = textContains(titleSub).find()
     total = total < tickts.length? total : tickts
+    console.log(`coupons total: ${total}; titleSub: ${tickts.length}`);
     for (let index = 0; index < total; index++) {
         for (let j = 0; j < 5; j++) {
             var ele = textContains(titleSub).find()[index]
-            if (ele.bounds().centerY() > 2050){
-                autoSwipe(500, 2000, 502, 300, 800, 800)
+            console.log(`ele bounds X: ${ele.bounds().centerX()}, Y: ${ele.bounds().centerY()}, i: ${index}, j:${j}`);
+            
+            if (ele.bounds().centerY() > 2000){
+                autoSwipe(500, 1900, 502, 400, 600, 1000)
                 continue
             } else if (ele.bounds().centerY()  < 400){
-                autoSwipe(500, 300, 502, 2000, 800, 800)
+                autoSwipe(500, 400, 502, 1900, 600, 1000)
                 continue
             } else {
                 var eles2 = ele.parent().children()
-                pressXY(eles2[eles2.length - 1].bounds().centerX(), eles2[eles2.length - 1].bounds().centerY(), 200, 899)
-                break
+                var isSelected = false
+                for (let index = 0; index < eles2.length; index++) {
+                    var element = eles2[index];
+                    if (
+                        element.text() == '' ||
+                        (element.bounds().width() == element.bounds().height() && element.bounds().width() == 42) ||
+                        (element.bounds().width() == 78 && element.bounds().height() == 60)
+                    ){
+                        console.log(`X: ${element.bounds().centerX()}, Y: ${element.bounds().centerY()}`);
+                        pressXY(element.bounds().centerX(), element.bounds().centerY(), 150, 1000)
+                        isSelected = true
+                        break   
+                    } 
+                }
+                if (isSelected === true){
+                    break
+                }
             }
         }
     }
@@ -126,15 +144,10 @@ function _clearShopCar(){
     }
     return {'status': status_, 'msg': '清空购物车失败, 请人工检查'}
 }
-function _toPayBottom(payload){
+function _toPayBottom(){
     sleep(1000)
     for (let index = 0; index < 3; index++) {
-        if (payload.notes || (payload.coupons && !!payload.coupons.total===true)){
-            autoSwipe(400, 1900, 400, 300, 400, 800)    // 滑动到底部
-        } else {
-            console.log('不需要使用优惠券和输入备注');
-            break
-        }
+        autoSwipe(400, 1900, 400, 300, 400, 800)    // 滑动到底部
         var ele订单 = text('订单备注').findOne(1000)
         if (!!ele订单 && ele订单.bounds().centerY() > 0 && ele订单.bounds().centerY() < 2100) {
             break
@@ -178,19 +191,24 @@ function _useCoupons(coupons){
         console.log('无优惠券可以使用');
         return false
     }
-    // 点击进入优惠券
-    // pressXY(505, 1390, 150, 500) 
-    // clickEvent(couponsEle.bounds().centerX(), couponsEle.bounds().centerY(), 800)
-    couponsEle.click()
-    pressXY(couponsEle.bounds().centerX(), couponsEle.bounds().centerY(), 200, 800)
-    if(textContains(titleSub).findOne(8000)){
-        _selectCoupons(coupons)
-    } else {
-        console.log('没有相关优惠券: ' + titleSub);
-    }
-    if (text('可使用').findOne(1000)){
+    var isSelected = false
+    for (let index = 0; index < 5; index++) {
+        pressXY(couponsEle.bounds().centerX(), couponsEle.bounds().centerY(), 200, 800)
+        if(textContains(titleSub).findOne(4000)){
+            _selectCoupons(coupons)
+            isSelected = true
+        } else {
+            console.log('没有相关优惠券: ' + titleSub);
+        }
+        // if (text('可使用').findOne(1000) || !text('优惠券').findOne(200)){
+        //     actionSleep(back, 500)
+        // } 
         actionSleep(back, 500)
+        if (isSelected === true){
+            break
+        }
     }
+
 }
 
 function mstandTOMenu(payload){
@@ -680,7 +698,7 @@ function mstandPayment(payload){
     }
     toPayPage()
     _clickOrderType(payload.orderType)
-    _toPayBottom(payload)
+    _toPayBottom()
     _useCoupons(payload.coupons)
     switch (true) {
         case (!_newWriteNotes(payload.notes)):
@@ -722,5 +740,6 @@ module.exports = {
     mstand: mstand,
     mstandTOMenu: mstandTOMenu,
     mstandSelectDrinks: mstandSelectDrinks,
-    mstandPayment: mstandPayment
+    mstandPayment: mstandPayment,
+    _useCoupons: _useCoupons
 }
