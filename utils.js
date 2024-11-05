@@ -11,6 +11,14 @@ if (WIDTH == width && height == HEIGHT) {
 var shotPath = "/sdcard/Pictures/screenshot.png";
 var ocrImgPath = '/sdcard/DCIM/test.png'
 
+const pathMap = {
+    "shotPath": shotPath,
+    "ocrImgPath": ocrImgPath,
+    'dirPath': '/sdcard/',
+    "tempFile": 'heartbeat_temp.txt',
+    "heartbeatFile": 'heartbeat.txt'
+}
+
 function getScreenImg(){
     takeScreenShot(ocrImgPath)
     sleep(500)
@@ -346,5 +354,6 @@ module.exports = {
     getScreenImg: getScreenImg,
     ocrLoctionXY: ocrLoctionXY,
     shotPath: shotPath,
+    pathMap: pathMap,
     WIDTH: WIDTH
 };
