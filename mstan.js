@@ -17,8 +17,10 @@ function _textClickEvent(textContent, sleepTime){
 function _selectCoupons(coupons){
     var titleSub = coupons.titleSub;
     var total = coupons.total
+    sleep(1500)
     var tickts = textContains(titleSub).find()
-    total = total < tickts.length? total : tickts
+    total = total < tickts.length? total : tickts.length
+    toast(`coupons total: ${total}; titleSub: ${tickts.length}`)
     console.log(`coupons total: ${total}; titleSub: ${tickts.length}`);
     for (let index = 0; index < total; index++) {
         for (let j = 0; j < 5; j++) {
