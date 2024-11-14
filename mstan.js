@@ -17,7 +17,7 @@ function _textClickEvent(textContent, sleepTime){
 function _selectCoupons(coupons){
     var titleSub = coupons.titleSub;
     var total = coupons.total
-    sleep(1500)
+    sleep(800)
     var tickts = textContains(titleSub).find()
     total = total < tickts.length? total : tickts.length
     toast(`coupons total: ${total}; titleSub: ${tickts.length}`)
@@ -34,17 +34,16 @@ function _selectCoupons(coupons){
                 autoSwipe(500, 400, 502, 1900, 600, 1000)
                 continue
             } else {
-                var eles2 = ele.parent().children()
+                var elesiblings = ele.parent().find(className('android.widget.Image'))
                 var isSelected = false
-                for (let index = 0; index < eles2.length; index++) {
-                    var element = eles2[index];
-                    if (
-                        element.text() == '' ||
-                        (element.bounds().width() == element.bounds().height() && element.bounds().width() == 42) ||
-                        (element.bounds().width() == 78 && element.bounds().height() == 60)
-                    ){
-                        console.log(`X: ${element.bounds().centerX()}, Y: ${element.bounds().centerY()}`);
-                        pressXY(element.bounds().centerX(), element.bounds().centerY(), 150, 1000)
+                
+                for (let z = 0; z < elesiblings.length; z++) {
+                    var element = elesiblings[z];
+                    var bounds = element.bounds()
+                    console.log(`X: ${bounds.centerX()}, Y: ${bounds.centerY()}`);
+                    if ((bounds.centerX() > 850 && bounds.width() < 100) || elesiblings.length==1){
+                        click(bounds.centerX(), bounds.centerY())
+                        sleep(800)
                         isSelected = true
                         break   
                     } 
@@ -527,7 +526,7 @@ function _payment(isTest){
         return 0
     }
     if (text('余额支付').find().length == 1){
-        console.log(text('余额支付').findOne().bounds().centerY());
+        console.log('余额支付: ', text('余额支付').findOne().bounds().centerY());
         pressXY(990, text('余额支付').findOne().bounds().centerY(), 200, 500)
     }
     var 支付bottoms = text('待支付').findOne(1000).parent().children().find(text('余额支付'))

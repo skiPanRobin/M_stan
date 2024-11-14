@@ -1,7 +1,16 @@
 auto();
 toast('uid见剪贴板')
 
-const {apiConfig} = require('./config')
+function _getHost(code){
+    const hostMapping = {
+        "love": "lovexiaohuli.com",
+        "big": 'bigdiscount.cn'
+    } 
+    return hostMapping[code]
+}
+
+var host = _getHost('love')
+var apiMsg = `https://pay.${host}/ws/sendtoUid`
 function getCloseTimeSec(){
     // 22:30 - 5: 00 自动关闭程序
     return [22 * 3600 + 30 * 60, 5 * 3600 + 30 *60]
@@ -54,7 +63,7 @@ const uid = $crypto.digest(androidId, "MD5", {output: 'toString'})
 console.log('uid: ' + uid);
 setClip(uid)
 console.log('发送关闭MStandAuto命令, uid: ' + uid + ' android id: ' + androidId);
-r = http.postJson(apiConfig.apiMsg, {
+r = http.postJson(apiMsg, {
     "uid": uid,
     "type": "goToPay",
     "data": {
