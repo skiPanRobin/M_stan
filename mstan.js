@@ -1,4 +1,4 @@
-const {pressSleep, pressContainsSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, ocrLoctionXY, getScreenImg, clickEvent} = require('./utils')
+const {pressSleep, pressContainsSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, ocrLoctionXY, getScreenImg, randomInt, descClick} = require('./utils')
 
 function _textClickEvent(textContent, sleepTime){
     console.info('textContent: ' + textContent)
@@ -17,54 +17,42 @@ function _textClickEvent(textContent, sleepTime){
 function _selectCoupons(coupons){
     var titleSub = coupons.titleSub;
     var total = coupons.total
-    try {
-        var eles = textContains(titleSub).findOne(100).parent().parent().children()
-    } catch (error) {
-        console.error(error.message);
-        console.log();
-        
-    }
-    var indexsCoupons = []
-    for (let index = 0; index < eles.length; index++) {
-        let element = eles[index];
-        if (element.children().findOne(textContains(titleSub))){
-            console.log(`${titleSub} && ${index}`);
-            indexsCoupons.push(index)
-        }
-        if (indexsCoupons.length === total){
-            break   
-        }
-    }
-    console.log(indexsCoupons);
-    var swipCnt = 0
-    var couponsTotal = eles.length - 2
-    for (let index = 0; index < indexsCoupons.length; index++) {
-        let ic = indexsCoupons[index];
-        console.log(`indexsCoupons: ${ic}; couponsTotal: ${couponsTotal}; swipCnt: ${swipCnt}`);
-        if (ic + 1 > (couponsTotal - 5)){
-            var last = couponsTotal - (ic + 1)
-            while (ic > 5){
-                ic = (ic + 1) - 5 * swipCnt
-                autoSwipe(500, 2050, 510, 180, 1000,  1000)
-                swipCnt = swipCnt + 1
+    sleep(800)
+    var tickts = textContains(titleSub).find()
+    total = total < tickts.length? total : tickts.length
+    toast(`coupons total: ${total}; titleSub: ${tickts.length}`)
+    console.log(`coupons total: ${total}; titleSub: ${tickts.length}`);
+    for (let index = 0; index < total; index++) {
+        for (let j = 0; j < 5; j++) {
+            var ele = textContains(titleSub).find()[index]
+            console.log(`ele bounds X: ${ele.bounds().centerX()}, Y: ${ele.bounds().centerY()}, i: ${index}, j:${j}`);
+            
+            if (ele.bounds().centerY() > 2000){
+                autoSwipe(500, 1900, 502, 400, 600, 1000)
+                continue
+            } else if (ele.bounds().centerY()  < 400){
+                autoSwipe(500, 400, 502, 1900, 600, 1000)
+                continue
+            } else {
+                var elesiblings = ele.parent().find(className('android.widget.Image'))
+                var isSelected = false
+                
+                for (let z = 0; z < elesiblings.length; z++) {
+                    var element = elesiblings[z];
+                    var bounds = element.bounds()
+                    console.log(`X: ${bounds.centerX()}, Y: ${bounds.centerY()}`);
+                    if ((bounds.centerX() > 850 && bounds.width() < 100) || elesiblings.length==1){
+                        click(bounds.centerX(), bounds.centerY())
+                        sleep(800)
+                        isSelected = true
+                        break   
+                    } 
+                }
+                if (isSelected === true){
+                    break
+                }
             }
-            var couponY = 1800 - last * 362
-            click(500, couponY)
-            console.log(`1 ** x: 500, y: ${couponY}; last: ${last}; couponsTotal: ${couponsTotal}`);
-            sleep(1000)
-            continue
         }
-        ic = (ic + 1) - 5 * swipCnt
-        while (ic > 5){
-            autoSwipe(500, 2050, 510, 180, 1000, 1000)
-            swipCnt = swipCnt + 1
-            ic = ic - 5
-            log(`: ${ic}`)
-        }
-        var couponY = 400 + 362 * (ic -1)
-        click(500, couponY)
-        console.log(`2. x: 500, y: ${couponY}; last: ${last}; couponsTotal: ${couponsTotal}`);
-        sleep(1000)
     }
 }
 
@@ -157,10 +145,19 @@ function _clearShopCar(){
     }
     return {'status': status_, 'msg': '清空购物车失败, 请人工检查'}
 }
-function _toPayBottom(payload){
-    if (payload.notes || (payload.coupons && !!payload.coupons.total===true)){
-        autoSwipe(400, 1900, 400, 500, 400, 800)    // 滑动到底部
+function _toPayBottom(){
+    sleep(1000)
+    for (let index = 0; index < 3; index++) {
+        autoSwipe(400, 1900, 400, 300, 400, 800)    // 滑动到底部
+        var ele订单 = text('订单备注').findOne(1000)
+        if (!!ele订单 && ele订单.bounds().centerY() > 0 && ele订单.bounds().centerY() < 2100) {
+            break
+        } else {
+            console.log(`订单按钮未出现`);
+        }
+        
     }
+    
 }
 /**
  * 选择优惠券
@@ -195,17 +192,24 @@ function _useCoupons(coupons){
         console.log('无优惠券可以使用');
         return false
     }
-    // 点击进入优惠券
-    // pressXY(505, 1390, 150, 500) 
-    clickEvent(505, 1390, 800)
-    if(textContains(titleSub).findOne(8000)){
-        _selectCoupons(coupons)
-    } else {
-        console.log('没有相关优惠券: ' + titleSub);
-    }
-    if (text('选择优惠').findOne(1000)){
+    var isSelected = false
+    for (let index = 0; index < 5; index++) {
+        pressXY(couponsEle.bounds().centerX(), couponsEle.bounds().centerY(), 200, 800)
+        if(textContains(titleSub).findOne(4000)){
+            _selectCoupons(coupons)
+            isSelected = true
+        } else {
+            console.log('没有相关优惠券: ' + titleSub);
+        }
+        // if (text('可使用').findOne(1000) || !text('优惠券').findOne(200)){
+        //     actionSleep(back, 500)
+        // } 
         actionSleep(back, 500)
+        if (isSelected === true){
+            break
+        }
     }
+
 }
 
 function mstandTOMenu(payload){
@@ -521,41 +525,54 @@ function _payment(isTest){
         }
         return 0
     }
-    autoSwipe(400, 500, 400, 1900, 400, 800)
-    pressSleep('确认下单', 300)
+    if (text('余额支付').find().length == 1){
+        console.log('余额支付: ', text('余额支付').findOne().bounds().centerY());
+        pressXY(990, text('余额支付').findOne().bounds().centerY(), 200, 500)
+    }
+    var 支付bottoms = text('待支付').findOne(1000).parent().children().find(text('余额支付'))
+    if (支付bottoms){
+        console.log(支付bottoms[0].bounds().centerX(), 支付bottoms[0].bounds().centerY(), 200, 500);
+        pressXY(支付bottoms[0].bounds().centerX(), 支付bottoms[0].bounds().centerY(), 200, 500)
+    } else {
+        console.log('支付bottom定位失败');
+    }
     if (text('确定门店').findOne(3000)) {
         console.log('已定位到确认门店.. 请确认点击');
-        pressSleep('确定门店', 500)
-        sleep(400)
-        if (textContains('余额支付').findOne(3000)){
-            var balance = 0
-            var amount = 0
-            if (textContains('储值余额').findOne(3000)){
-                balance = matchMoney(textContains('储值余额').findOne(3000).text())
-            }
-            if (textContains('余额支付').findOne(2000)){
-                amount = matchMoney(textContains('余额支付').findOne(2000).text())
-            }   
-            console.log(`账户余额: ${balance}, 需支付: ${amount}`);
-            console.log('余额是否充足：' + !( balance && balance < amount));
-            if (balance && balance < amount){
-                console.log(`余额不足, 余额: ${balance}, 需支付: ${amount}`);
-                return {'status': 17, "msg": "余额不足, 转人工"}
-            } else  {
-                if (isTest == true){
-                    console.log('测试支付...');
-                    return {'status': 0, "msg": "测试支付"}
-                } else {
-                    pressContainsSleep('余额支付', 100)
-                }
-            }
+        if (isTest == true){
+            return {"status": 19, "msg": "测试任务"}
         } else {
-            if (isTest == true){
-                console.log('测试支付...');
-                return {'status': 0, "msg": "测试支付"}
-            }
-            return {"status": 18, "msg": "没有进入到余额支付页面"}
+            pressSleep('确定门店', 500)
         }
+        
+        // if (textContains('余额支付').findOne(3000)){
+        //     var balance = 0
+        //     var amount = 0
+        //     if (textContains('储值余额').findOne(3000)){
+        //         balance = matchMoney(textContains('储值余额').findOne(3000).text())
+        //     }
+        //     if (textContains('余额支付').findOne(2000)){
+        //         amount = matchMoney(textContains('余额支付').findOne(2000).text())
+        //     }   
+        //     console.log(`账户余额: ${balance}, 需支付: ${amount}`);
+        //     console.log('余额是否充足：' + !( balance && balance < amount));
+        //     if (balance && balance < amount){
+        //         console.log(`余额不足, 余额: ${balance}, 需支付: ${amount}`);
+        //         return {'status': 17, "msg": "余额不足, 转人工"}
+        //     } else  {
+        //         if (isTest == true){
+        //             console.log('测试支付...');
+        //             return {'status': 0, "msg": "测试支付"}
+        //         } else {
+        //             pressContainsSleep('余额支付', 100)
+        //         }
+        //     }
+        // } else {
+        //     if (isTest == true){
+        //         console.log('测试支付...');
+        //         return {'status': 0, "msg": "测试支付"}
+        //     }
+        //     return {"status": 18, "msg": "没有进入到余额支付页面"}
+        // }
         for (let index = 0; index < 3; index++) {
             if (!text('查看卡券').findOne(1000)){
                 console.log('查看卡券 没定位到');
@@ -597,17 +614,17 @@ function _newWriteNotes(notes){
         return true
     }
     var counter = 0
-    text('如有忌口过敏请填写到这儿').findOne(2000)
-    while (text('如有忌口过敏请填写到这儿').findOne(300)) {
+    text('订单备注').findOne(2000)
+    while (text('口味、包装、配送等要求').findOne(300)) {
         counter++
         if (counter > 3){
             return false
         }
-        var bounds = text('如有忌口过敏请填写到这儿').findOne(300).bounds()
+        var bounds = text('订单备注').findOne(300).bounds()
         setClip(notes);
         if (bounds.centerY() > 1700 && bounds.centerY() < 2150) {
             console.log('获取备注控件编辑点击');
-            click(bounds.centerX(), bounds.centerY())
+            click(randomInt(700, 850), bounds.centerY())
             sleep(800)
         } else {
             console.log('获取备注控件失败' + bounds.centerY());
@@ -620,9 +637,13 @@ function _newWriteNotes(notes){
             console.log('输入框未正常弹出');
             continue
         }
-        pressXY(WIDTH/2, finish.bounds().bottom + 80, 200, 300)  // 点击输入法剪贴板上备注
+        pressXY(WIDTH/2.2, finish.bounds().bottom + 80, 200, 300)  // 点击输入法剪贴板上备注
         pressSleep('完成', 400)
-        pressXY(523, 1750, 200, 500)  // 点击备注框'保存'按钮
+        var img = getScreenImg()
+        var [x保存, y保存] = ocrLoctionXY(img, [470, 1410, 600, 1770], '保存')
+        console.log(`点击"保存", x: ${x保存}, y: ${y保存}`);
+        pressXY(x保存, y保存, 200, 500)  // 点击备注框'保存'按钮
+        // pressSleep('保存', 400)
     }
     return true
 }
@@ -646,7 +667,7 @@ function toPayPage(){
         throw new Error('“去结算”无法点击')
     }
     var testCnt = 0
-    while ((!!text('确认下单').findOne(2000) === false) && (!!text('去结算').findOne(1000) === false)){
+    while ((!!text('会员折扣').findOne(2000) === false) && (!!text('去结算').findOne(1000) === false)){
         testCnt ++ 
         descClick('返回', 100)
         if (text('去结算').findOne(2000)){
@@ -678,7 +699,7 @@ function mstandPayment(payload){
     }
     toPayPage()
     _clickOrderType(payload.orderType)
-    _toPayBottom(payload)
+    _toPayBottom()
     _useCoupons(payload.coupons)
     switch (true) {
         case (!_newWriteNotes(payload.notes)):
@@ -720,5 +741,6 @@ module.exports = {
     mstand: mstand,
     mstandTOMenu: mstandTOMenu,
     mstandSelectDrinks: mstandSelectDrinks,
-    mstandPayment: mstandPayment
+    mstandPayment: mstandPayment,
+    _useCoupons: _useCoupons
 }

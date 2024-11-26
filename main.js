@@ -1,16 +1,16 @@
 // 导入 okhttp 库
 importPackage(Packages["okhttp3"]); //导入包
-const {api} = require('./config')
 const { openWechat } = require('./wechat');
 const { mstand } = require('./mstan');
-const { backToDesk, swithcScreenOn, shotPath, takeScreenShot, randomInt } = require('./utils')
+const { backToDesk, swithcScreenOn, shotPath, takeScreenShot, randomInt, pathMap } = require('./utils')
 const { postScreenOss, updaloadPayPic, uploadErrorStatus, updateDeviceStatus, bindUid, unbindUid } = require('./api')
+const {apiConfig} = require('./config')
 
 // 创建 OkHttpClient 实例
 var client = new OkHttpClient.Builder().retryOnConnectionFailure(true).build();
 
 // 创建 WebSocket 请求
-var request = new Request.Builder().url(api.apiWss).build(); //vscode 插件的ip地址
+var request = new Request.Builder().url(apiConfig.apiWss).build(); //vscode 插件的ip地址
 // 全局变量，用于跟踪当前任务状态
 var cid = null;
 var heartBeatId = null
@@ -256,6 +256,14 @@ const windowInterId = setInterval(() => {
         // 每60s检查一次屏幕是否开启
         swithcScreenOn()
         screenOnDate = new Date()
+        var timestamp = screenOnDate.getTime();
+        files.write(pathMap.dirPath + pathMap.tempFile, timestamp);
+        try {
+            files.rename(pathMap.dirPath + pathMap.tempFile, pathMap.heartbeatFile);  // 用临时文件替换原文件
+        } catch (error) {
+            console.error(error);
+        }
+        console.log(`recorded ping timestamp ${timestamp} to "${pathMap.dirPath + pathMap.heartbeatFile}"`);
     }
     // 2 * 3600 * 1000
     if ((date - doTaskEndDate) > 2 * 3600 * 1000 && isTaskRunning === false && restart === false){ 
