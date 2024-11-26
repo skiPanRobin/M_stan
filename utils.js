@@ -29,18 +29,19 @@ function getScreenImg(){
  * 识别指定区域内文字, 返回中心坐标
  * 
 */
-function ocrLoctionXY(img, xy, checkText){
+function ocrLoctionXY(img, xy, checkText, isLike){
     var clipImg = images.clip(img, xy[0], xy[1], xy[2] - xy[0], xy[3]-xy[1])
     var gimg = images.grayscale(clipImg)
     var gimg = images.threshold(gimg, 140, 255, "BINARY")
     var res = paddle.ocr(clipImg)
     for (let index = 0; index < res.length; index++) {
         var ocrResult = res[index];
-        if (ocrResult.text==checkText){
+        if (ocrResult.text==checkText || (isLike == true && checkText.includes(ocrResult.text.substring(1, 4)))){
             console.log(`定位 "${checkText}" 成功`);
+            img.recycle()
             return [xy[0] + ocrResult.bounds.centerX(), xy[1] + ocrResult.bounds.centerY()]
         } else {
-            toast(`ocrResult text: ${ocrResult.text}, not match`)
+            console.log(`ocrResult text: ${ocrResult.text}, not match, substring: ${ocrResult.text.substring(1, 4)}`)
         }
         
     }
