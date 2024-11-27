@@ -18,38 +18,98 @@ const pathMap = {
     "tempFile": 'heartbeat_temp.txt',
     "heartbeatFile": 'heartbeat.txt'
 }
-
-function getScreenImg(){
+const imgClips = {
+    'xy常用城市': [50, 580, 900, 680] ,
+    'xy门店选择': [200, 500, 450, 620],
+    'xy咖啡类目' :[30, 730, 250, 2000],
+    'xy咖啡列表': [550, 730, 700, 2100],
+    'xy咖啡属性_温度': [50, 450, 750, 1350],    // 选择咖啡温度
+    'xy咖啡属性_其他': [50, 700, 850, 1800]     // 剔除温度选择
+}
+/**
+ * 
+ * @param {number} quality -图片质量 0 - 100
+ * @returns 
+ */
+function getScreenImg(quality){
     takeScreenShot(ocrImgPath)
-    sleep(500)
+    quality = quality? quality: 10
+    var img = images.read(ocrImgPath)
+    images.save(img, ocrImgPath, 'jpg', quality)
+    img.recycle()
     return images.read(ocrImgPath)
 }
 
+function getOcrObj(xy, holdLimit, quality) {
+    var img = getScreenImg(quality)
+    var gimg = images.threshold(
+        images.grayscale(                                                       // 二值化
+            images.clip(img, xy[0], xy[1], xy[2] - xy[0], xy[3]-xy[1])),        // 剪切
+        holdLimit,                                                              // 二值化分界值
+        255,                                                                    // 二值化上届
+        "BINARY"
+    )
+    gimg.saveTo('/sdcard/DCIM/temp.jpg')
+    var ocrObj = paddle.ocr(gimg)
+    img.recycle()
+    gimg.recycle()
+    return ocrObj
+}
+
 /**
- * 识别指定区域内文字, 返回中心坐标
  * 
-*/
-function ocrLoctionXY(img, xy, checkText, isLike){
-    var clipImg = images.clip(img, xy[0], xy[1], xy[2] - xy[0], xy[3]-xy[1])
-    var gimg = images.grayscale(clipImg)
-    var gimg = images.threshold(gimg, 140, 255, "BINARY")
-    var res = paddle.ocr(clipImg)
-    for (let index = 0; index < res.length; index++) {
-        var ocrResult = res[index];
-        if (ocrResult.text==checkText || (isLike == true && checkText.includes(ocrResult.text.substring(1, 4)))){
+ * @param {*} xy                - 选定图片区域的左上/右下坐标 [x1, y1, x2, y2]
+ * @param {string} checkText    - 检测的文字
+ * @param {boolean} isLike      - 是否模糊匹配, 默认: 否
+ * @param {number} holdLimit    - 二值化分界值, 默认: 100
+ * @param {number} quality      - 图片质量, 默认 10, 传值范围0-100
+ * @returns 
+ */
+function ocrLoctionXY(xy, checkText, isLike, holdLimit, quality){
+    holdLimit = holdLimit? holdLimit: 100
+    isLike = isLike? isLike: false
+    var ocrObj = getOcrObj(xy, holdLimit, quality)
+    
+    for (let index = 0; index < ocrObj.length; index++) {
+        var ocrResult = ocrObj[index];
+        // console.log(`ocrResult text: ${ocrResult.text}, checkText: ${checkText}, substring: ${ocrResult.text.substring(1, 4)}`)
+        if (ocrResult.text==checkText || (isLike == true && ocrResult.text.length >= 2 && checkText.includes(ocrResult.text.substring(0, 4)))){
             console.log(`定位 "${checkText}" 成功`);
-            img.recycle()
             return [xy[0] + ocrResult.bounds.centerX(), xy[1] + ocrResult.bounds.centerY()]
         } else {
-            console.log(`ocrResult text: ${ocrResult.text}, not match, substring: ${ocrResult.text.substring(1, 4)}`)
+            console.log(`ocrResult text: ${ocrResult.text}, not match: ${checkText}, substring: ${ocrResult.text.substring(0, 4)}`)
         }
-        
     }
     console.log(`定位 "${checkText}" 失败`);
-    img.recycle()
     return [0, 0]   
 }
 
+
+function ocrClickS(xy, checkTextArray, isLike, holdLimit, sleep){
+    holdLimit = holdLimit? holdLimit: 60
+    isLike = isLike? isLike: false
+    sleep = sleep? sleep: 300
+    var ocrObj = getOcrObj(xy, holdLimit)
+    var ocrSeccess = false
+    for (let i = 0; i < checkTextArray.length; i++) {
+        var checkText = checkTextArray[i];
+        for (let index = 0; index < ocrObj.length; index++) {
+            var ocrResult = ocrObj[index];
+            if (ocrResult.text==checkText || (isLike == true && checkText.includes(ocrResult.text.substring(0, 4)))){
+                console.log(`定位 "${checkText}" 成功`);
+                var [cx, cy] = [xy[0] + ocrResult.bounds.centerX(), xy[1] + ocrResult.bounds.centerY()]
+                pressXY(cx, cy, 100, sleep);  //   门店自取
+                ocrSeccess = true
+                break
+            } else {
+                console.log(`ocrResult text: ${ocrResult.text}, not match: ${checkText}, substring: ${ocrResult.text.substring(0, 4)}`)
+            }
+            
+        }
+        
+    }
+    return ocrSeccess
+}
 
 function randomInt(min, max){
     min = Math.ceil(min)
@@ -148,7 +208,7 @@ function clickIdSleep(resourceId, sleepTime) {
 function pressSleep(textToClick, sleepTime) {
     // 通过文本定位元素
     // toast(textToClick);
-    console.log(`添加到购物车: ${textToClick}`);
+    
     sleepTime = sleepTime === undefined ? 200 : sleepTime
     var ele = text(textToClick).findOne(6000);
     if (ele === null) {
@@ -354,6 +414,8 @@ module.exports = {
     pressContainsSleep: pressContainsSleep,
     getScreenImg: getScreenImg,
     ocrLoctionXY: ocrLoctionXY,
+    ocrClickS: ocrClickS,
+    imgClips: imgClips,
     shotPath: shotPath,
     pathMap: pathMap,
     WIDTH: WIDTH

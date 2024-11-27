@@ -1,4 +1,8 @@
-const {pressSleep, pressContainsSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, ocrLoctionXY, getScreenImg, randomInt, descClick} = require('./utils')
+const {
+    pressSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, randomInt, descClick,
+    ocrLoctionXY, ocrClickS, imgClips
+
+} = require('./utils')
 
 function _textClickEvent(textContent, sleepTime){
     console.info('textContent: ' + textContent)
@@ -193,7 +197,7 @@ function _useCoupons(coupons){
         return false
     }
     var isSelected = false
-    for (let index = 0; index < 5; index++) {
+    for (let index = 0; index < 3; index++) {
         pressXY(couponsEle.bounds().centerX(), couponsEle.bounds().centerY(), 200, 800)
         if(textContains(titleSub).findOne(4000)){
             _selectCoupons(coupons)
@@ -232,6 +236,11 @@ function mstandTOMenu(payload){
             return true
         }
         pressSleep('上海市', 500)
+        var [x, y] = ocrLoctionXY(imgClips.xy常用城市, cityName)
+        if (x > 0){
+            pressXY(x, y, 150, 500)
+            return
+        }
         if (text(cityName).findOne(2000)){
             var cnt = 10
             while (!!cnt){
@@ -267,10 +276,9 @@ function mstandTOMenu(payload){
             return false
         } 
         for (let index = 0; index < 8; index++) {
-            var ele = textContains(shopName).findOne(500)
-            console.log(ele? `"${shopName}"位置: ${ele.bounds().centerY()}; index:${index}`: `页面中未出现"${shopName}"节点, index: ${index}`);
-            if (ele && ele.bounds().centerY() < 2100) {
-                var shopEle = className('android.widget.TextView').textContains(shopName).findOne(3000)
+            var ele = text(shopName).findOne(1000)
+            if (ele) {
+                var shopEle = className('android.widget.TextView').text(shopName).findOne(3000)
                 if (shopEle) {
                     click(shopEle.bounds().centerX(), shopEle.bounds().centerY())
                     break
@@ -314,9 +322,7 @@ function mstandTOMenu(payload){
                 while (!text("手动选择").findOne(400)){
                     pressXY(300, 300, 100, 500)    //  消除弹窗
                     pressXY(300, 300, 100, 500)    //  消除弹窗
-
-                    var img = getScreenImg()
-                    var [cx, cy]  = ocrLoctionXY(img, xy门店自取, '门店自取')
+                    var [cx, cy]  = ocrLoctionXY(xy门店自取, '门店自取')
                     if (cx && cy){
                         pressXY(cx, cy, 100, 500);  //   门店自取
                     }
@@ -394,20 +400,21 @@ function mstandSelectDrinks(payload){
     function toItemDetail(item){
         console.log('toItemDetail');
         console.log(item.category + '==>' + item.productName)
-        pressSleep(item.category, 800)
-        swipTimes = 8
+        var [categoryX, categoryY] = ocrLoctionXY(imgClips.xy咖啡类目, item.category, false, 180)
+        pressXY(categoryX, categoryY, 150, 800)
+        swipTimes = 10
         while (!!swipTimes){
-            var cy = text(item.productName).findOne(1000).bounds().centerY()
-            console.log(cy);
+            var [productX, productY] = ocrLoctionXY(imgClips.xy咖啡列表, item.productName, true)
+            console.log(`productX: ${productX}, productY: ${productY}`);
             swipTimes--
-            if (cy >= 800 &&  cy <=  2000){
-                console.log(`centerY : ${cy}; productName: ${item.productName}`);
-                pressSleep(item.productName)
+            if (productY >= 800 &&  productY <=  2070){
+                console.log(`centerY : ${productY}; productName: ${item.productName}`);
+                pressXY(productX, productY, 150, 1000)
                 break
-            } else if(cy < 800 ) {
-                autoSwipe(800, 800, 800, 1800, 500, 500)   // 手指往下滑
+            } else if(productY < 800 ) {
+                autoSwipe(850, 1800, 850, 800, 500, 500)    // 手指往上滑
             } else {
-                autoSwipe(650, 1800, 650, 800, 500, 500)    // 手指往上滑
+                autoSwipe(800, 800, 800, 1800, 500, 500)   // 手指往下滑
             }
         }
         if (!!swipTimes){
@@ -435,60 +442,41 @@ function mstandSelectDrinks(payload){
     for (let shop of shopList){
         console.info('category:  '+ shop.category)
         console.info('productName: ' + shop.productName)
-        var pnEle = text(shop.productName).findOne(8000)
-        if (pnEle){
-            toItemDetail(shop)
-            sleep(500)
-        } else {
-            msg.status = 14
-            msg.msg = `商品无法定位: ${shop.productName}`
-            msg.payload.shopFailList.push(shop)
-            console.error(msg);
-            break
-        }
+        toItemDetail(shop)
         // 可能因为弹窗导致选购商品失败, 确认是否进入商品详情页面
-        if (!(text('规格').findOne(2000))){
+        if (!(textContains('规格').findOne(2000))){
             pressSleep('自提', 300)
             pressSleep('自提', 300)
             toItemDetail(shop)
             sleep(400)
         }
         // 当商品缺货时, 加入购物车不能点击, 页面保持在商品选购页. "规格" 只会出现在选购页面
-        if (!text('规格').findOne(2000)){
+        if (!textContains('规格').findOne(2000)){
             console.error('添加失败' + shop);
             msg.status = 14      // 商品添加失败
             msg.msg = `商品选购失败: ${shop.productName}`
             msg.payload.shopFailList.push(shop)
             break
         }
-        autoSwipe(400, 1300, 400, 500, 300, 500)
+        autoSwipe(400, 1300, 400, 500, 300, 500)    // 滑动到咖啡属性页底部
+        var featureElse = []
+
         shop.feature.forEach( feat => {
-            // text('规格').findOne(2000)
-            // autoSwipe(400, 1300, 400, 500, 300, 300)
-            var featEle = textContains(feat).findOne(2000)
-            if (featEle){
-                pressContainsSleep(feat, 100)
-            } else {
-                if(feat.includes('冷') || feat.includes('冰')){
-                    var start = feat.slice(0, 3)
-                    var end = feat.slice(-6)
-                    var regStr = "^" + start + "[冷冰]{1}" + end + '$'
-                    featEle = textMatches(regStr).findOne(2000)
-                    if (featEle){
-                        click(featEle.bounds().centerX(), featEle.bounds().centerY())
-                    } else {
-                        console.log(`没有匹配到:${feat}`);
-                    }
+            if(feat.includes('杯')){
+                var [temX, temY] = ocrLoctionXY(imgClips.xy咖啡属性_温度, feat, true)
+                if  (temX == 0) {
+                    log.error(`无法定位咖啡温度, 关键字: ${feat}`)
                 } else {
-                    console.log(`没有选中饮料属性: ${feat}`);
-                    toast(`没有选中饮料属性: ${feat}`)
+                    // 冷/热杯切换时, 商品可能会切换属性,如是加冰相关选项变动, 需要等待页面加载
+                    pressXY(temX, temY, 150, 1000)
                 }
-            }
-            if (feat.includes('杯')){
-                // 冷/热杯切换时, 商品可能会切换属性,如是加冰相关选项变动, 需要等待页面加载
-                sleep(500)
+            } else{
+                featureElse.push(feat)
             }
         })
+        if (!ocrClickS(imgClips.xy咖啡属性_其他, featureElse, true, 100, 200)){
+            console.warn(`ocr click feat fail, feats: ${featureElse}`)
+        }
         _addQuantities(shop.quantity)
         pressSleep('加入购物车', 200)
         // 当商品缺货时, 加入购物车不能点击, 页面保持在商品详情选购页. "规格" 只会出现在商品详情选购页面
@@ -639,8 +627,7 @@ function _newWriteNotes(notes){
         }
         pressXY(WIDTH/2.2, finish.bounds().bottom + 80, 200, 300)  // 点击输入法剪贴板上备注
         pressSleep('完成', 400)
-        var img = getScreenImg()
-        var [x保存, y保存] = ocrLoctionXY(img, [470, 1410, 600, 1770], '保存')
+        var [x保存, y保存] = ocrLoctionXY([470, 1410, 600, 1770], '保存')
         console.log(`点击"保存", x: ${x保存}, y: ${y保存}`);
         pressXY(x保存, y保存, 200, 500)  // 点击备注框'保存'按钮
         // pressSleep('保存', 400)
@@ -714,12 +701,12 @@ function mstandPayment(payload){
         default:
             break;
     }  
-    var img = getScreenImg()
-    if (!ocrLoctionXY(img, [450, 300, 650, 400], "已下单")[0]){
+    if (!ocrLoctionXY([450, 300, 650, 400], "已下单")[0]){
         msg.status = 19
         msg.msg = payload.isTest == true ? '测试任务不支付': '支付可能失败,未检测到"已下单"'
         toast(msg.msg)
     }
+    img.recycle()
     return msg
 }
 
