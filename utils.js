@@ -415,6 +415,7 @@ module.exports = {
     getScreenImg: getScreenImg,
     ocrLoctionXY: ocrLoctionXY,
     ocrClickS: ocrClickS,
+    getOcrObj: getOcrObj,
     imgClips: imgClips,
     shotPath: shotPath,
     pathMap: pathMap,

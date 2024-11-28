@@ -706,7 +706,6 @@ function mstandPayment(payload){
         msg.msg = payload.isTest == true ? '测试任务不支付': '支付可能失败,未检测到"已下单"'
         toast(msg.msg)
     }
-    img.recycle()
     return msg
 }
 
