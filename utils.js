@@ -22,9 +22,10 @@ const imgClips = {
     'xy常用城市': [50, 580, 900, 680] ,
     'xy门店选择': [200, 500, 450, 620],
     'xy咖啡类目' :[30, 730, 250, 2000],
-    'xy咖啡列表': [550, 730, 700, 2100],
-    'xy咖啡属性_温度': [50, 450, 750, 1350],    // 选择咖啡温度
-    'xy咖啡属性_其他': [50, 700, 850, 1800]     // 剔除温度选择
+    'xy咖啡列表': [550, 730, 1000, 2100],
+    'xy咖啡属性_温度': [50, 450, 750, 1450],    // 选择咖啡温度
+    'xy咖啡属性_其他': [50, 700, 950, 1950],    // 剔除温度选择
+    'xy清空购物车': [770, 1900, 1000, 2050]
 }
 /**
  * 
@@ -73,11 +74,12 @@ function ocrLoctionXY(xy, checkText, isLike, holdLimit, quality){
     for (let index = 0; index < ocrObj.length; index++) {
         var ocrResult = ocrObj[index];
         // console.log(`ocrResult text: ${ocrResult.text}, checkText: ${checkText}, substring: ${ocrResult.text.substring(1, 4)}`)
-        if (ocrResult.text==checkText || (isLike == true && ocrResult.text.length >= 2 && checkText.includes(ocrResult.text.substring(0, 4)))){
+        if (ocrResult.text==checkText || (isLike == true && ocrResult.text.length >= 7 && checkText.includes(ocrResult.text.substring(0, 8)))){
             console.log(`定位 "${checkText}" 成功`);
             return [xy[0] + ocrResult.bounds.centerX(), xy[1] + ocrResult.bounds.centerY()]
         } else {
-            console.log(`ocrResult text: ${ocrResult.text}, not match: ${checkText}, substring: ${ocrResult.text.substring(0, 4)}`)
+            // console.log(`ocrResult text: ${ocrResult.text}, not match: ${checkText}, substring: ${ocrResult.text.substring(0, 8)}`)
+            continue
         }
     }
     console.log(`定位 "${checkText}" 失败`);
@@ -90,9 +92,10 @@ function ocrClickS(xy, checkTextArray, isLike, holdLimit, sleep){
     isLike = isLike? isLike: false
     sleep = sleep? sleep: 300
     var ocrObj = getOcrObj(xy, holdLimit)
-    var ocrSeccess = false
+
     for (let i = 0; i < checkTextArray.length; i++) {
         var checkText = checkTextArray[i];
+        var ocrSeccess = false
         for (let index = 0; index < ocrObj.length; index++) {
             var ocrResult = ocrObj[index];
             if (ocrResult.text==checkText || (isLike == true && checkText.includes(ocrResult.text.substring(0, 4)))){
@@ -104,11 +107,12 @@ function ocrClickS(xy, checkTextArray, isLike, holdLimit, sleep){
             } else {
                 console.log(`ocrResult text: ${ocrResult.text}, not match: ${checkText}, substring: ${ocrResult.text.substring(0, 4)}`)
             }
-            
+        }   
+        if (ocrSeccess === false) { // 无法定位 checkText 字符串
+            return checkText
         }
-        
     }
-    return ocrSeccess
+    return true
 }
 
 function randomInt(min, max){

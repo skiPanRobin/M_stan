@@ -1,6 +1,6 @@
 const {
     pressSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, randomInt, descClick,
-    ocrLoctionXY, ocrClickS, imgClips
+    ocrLoctionXY, ocrClickS, getOcrObj, imgClips
 
 } = require('./utils')
 
@@ -17,46 +17,52 @@ function _textClickEvent(textContent, sleepTime){
     return !ele ? false : true
 }
 
+function _ocrCoupons(couponText, total, tailCoupons){
+    var xy优惠券 = [350, 350, 600, 2020]
+    var x点击区 = 965
+    var y点击区_偏移量 = 75
+    var ocrObj优惠券 = getOcrObj(xy优惠券, 100)
+    for (let index = 0; index < ocrObj优惠券.length; index++) {
+        var ocrResult = ocrObj优惠券[index];
+        if (total <= 0 ){
+            break
+        }
+        if (couponText.includes(ocrResult.text.substring(0, 4))){
+            console.log(`定位 "${couponText}" 成功`);
+            var [cx, cy] = [x点击区, xy优惠券[1] + ocrResult.bounds.centerY() + y点击区_偏移量]
+            if (tailCoupons == undefined){
+                pressXY(cx, cy, 100, 1000);  //   门店自取
+            } else if(cy > 2000 - tailCoupons * 400) {
+                pressXY(cx, cy, 100, 1000);  //   门店自取
+            }
+            
+            --total
+        } else {
+            console.log(`ocrResult text: ${ocrResult.text}, not match: ${couponText}, substring: ${ocrResult.text.substring(0, 4)}`)
+        }
+    }
+    return total
+}
 
-function _selectCoupons(coupons){
+function _selectCoupons(coupons, userfulCoupons){
     var titleSub = coupons.titleSub;
     var total = coupons.total
+    var tailCoupons = userfulCoupons % 5
     sleep(800)
-    var tickts = textContains(titleSub).find()
-    total = total < tickts.length? total : tickts.length
-    toast(`coupons total: ${total}; titleSub: ${tickts.length}`)
-    console.log(`coupons total: ${total}; titleSub: ${tickts.length}`);
-    for (let index = 0; index < total; index++) {
-        for (let j = 0; j < 5; j++) {
-            var ele = textContains(titleSub).find()[index]
-            console.log(`ele bounds X: ${ele.bounds().centerX()}, Y: ${ele.bounds().centerY()}, i: ${index}, j:${j}`);
-            
-            if (ele.bounds().centerY() > 2000){
-                autoSwipe(500, 1900, 502, 400, 600, 1000)
-                continue
-            } else if (ele.bounds().centerY()  < 400){
-                autoSwipe(500, 400, 502, 1900, 600, 1000)
-                continue
-            } else {
-                var elesiblings = ele.parent().find(className('android.widget.Image'))
-                var isSelected = false
-                
-                for (let z = 0; z < elesiblings.length; z++) {
-                    var element = elesiblings[z];
-                    var bounds = element.bounds()
-                    console.log(`X: ${bounds.centerX()}, Y: ${bounds.centerY()}`);
-                    if ((bounds.centerX() > 850 && bounds.width() < 100) || elesiblings.length==1){
-                        click(bounds.centerX(), bounds.centerY())
-                        sleep(800)
-                        isSelected = true
-                        break   
-                    } 
-                }
-                if (isSelected === true){
-                    break
-                }
-            }
+    console.log(`需使用: ${total}; 总计: ${userfulCoupons}, 需翻页次数: ${Math.floor(userfulCoupons/5)}`);
+    for (let index = 0; index < Math.floor(userfulCoupons/5); index++) {
+        total = _ocrCoupons(titleSub, total)    // 选择优惠券
+        if (total<=0){
+            return
+        } else {
+            autoSwipe(500, 1900, 502, 400, 600, 1000)
         }
+    }
+    if (total>0 && userfulCoupons <= 5) {
+        _ocrCoupons(titleSub, total)
+    }
+    if (total > 0 && userfulCoupons > 5 && tailCoupons > 0){
+        _ocrCoupons(titleSub, total, tailCoupons)
     }
 }
 
@@ -120,34 +126,38 @@ function _addQuantities(quantity){
  * 清空购物车
 */
 function _clearShopCar(){
+    console.log('准备清空购物车...');
     var 已选购 =  textMatches(/^[已未]选购\d{0,2}[件]{0,1}商品$/).findOne(2000)
     var b自提 = text('自提').findOne(2000).bounds()
     if (!已选购){ return {"status": 0, "msg": ""}}
     var b已选购 = 已选购.bounds()
-    click(b已选购.centerX(), b已选购.centerY())
-    sleep(400)
-    click(b自提.centerX(), b自提.centerY())
-    sleep(300)
-    click(b已选购.centerX(), b已选购.centerY())
-    sleep(400)
-    var status_ = 13
+    pressXY(b已选购.centerX(), b已选购.centerY(), 150, 700)
+    pressXY(b自提.centerX(), b自提.centerY(), 150, 600)
+    pressXY(b已选购.centerX(), b已选购.centerY(), 150, 800)
+    var cntClear = 13
     while (textContains('最多可添加').findOne(300)){
-        status_ = 0
         var ele最多 = textContains('最多可添加').findOne(300)
         if (!ele最多){break}
         var ele = ele最多.parent().children()[3].children()[0]
         var children = ele.children()
+        if (children.length == 0){
+            // 商品多余两种时, for循环可能无法删除购物车种商品, 添加如下方法
+            pressXY(843, 1993, 150, 500)
+            continue   
+        }
         for (let index = 0; index < children.length; index++) {
             var element = children[index];
-            if (isNumeric(element.text())) {
+            if (!!element && isNumeric(element.text())) {
                 // console.log(`杯数 ${element.text()}, 下标: ${index}`);
-                click(children[index - 1].bounds().centerX(), children[index - 1].bounds().centerY())
-                sleep(300)
+                pressXY(children[index - 1].bounds().centerX(), children[index - 1].bounds().centerY(), 150, 800)
                 break
             } 
         }
+        cntClear --
+        if (cntClear <= 0 ){break}
     }
-    return {'status': status_, 'msg': '清空购物车失败, 请人工检查'}
+
+    return {'status': cntClear > 0 ? 0 : 13, 'msg': '清空购物车失败, 请人工检查'}
 }
 function _toPayBottom(){
     sleep(1000)
@@ -200,14 +210,11 @@ function _useCoupons(coupons){
     for (let index = 0; index < 3; index++) {
         pressXY(couponsEle.bounds().centerX(), couponsEle.bounds().centerY(), 200, 800)
         if(textContains(titleSub).findOne(4000)){
-            _selectCoupons(coupons)
+            _selectCoupons(coupons, userfulCoupons)
             isSelected = true
         } else {
             console.log('没有相关优惠券: ' + titleSub);
         }
-        // if (text('可使用').findOne(1000) || !text('优惠券').findOne(200)){
-        //     actionSleep(back, 500)
-        // } 
         actionSleep(back, 500)
         if (isSelected === true){
             break
@@ -463,19 +470,23 @@ function mstandSelectDrinks(payload){
 
         shop.feature.forEach( feat => {
             if(feat.includes('杯')){
-                var [temX, temY] = ocrLoctionXY(imgClips.xy咖啡属性_温度, feat, true)
+                var [temX, temY] = ocrLoctionXY(imgClips.xy咖啡属性_温度, feat, true, 120, 20)
                 if  (temX == 0) {
-                    log.error(`无法定位咖啡温度, 关键字: ${feat}`)
+                    console.error(`无法定位咖啡温度, 关键字: ${feat}`)
+
                 } else {
                     // 冷/热杯切换时, 商品可能会切换属性,如是加冰相关选项变动, 需要等待页面加载
                     pressXY(temX, temY, 150, 1000)
+                    autoSwipe(400, 1300, 400, 500, 300, 800)    // 滑动到咖啡属性页底部
                 }
             } else{
                 featureElse.push(feat)
             }
         })
-        if (!ocrClickS(imgClips.xy咖啡属性_其他, featureElse, true, 100, 200)){
+        var ocrsRes = ocrClickS(imgClips.xy咖啡属性_其他, featureElse, true, 100, 200)
+        if ( ocrsRes !== true){
             console.warn(`ocr click feat fail, feats: ${featureElse}`)
+            throw new Error(`"${shop.productName}"无法选择"${ocrsRes}"`)
         }
         _addQuantities(shop.quantity)
         pressSleep('加入购物车', 200)
@@ -495,7 +506,7 @@ function mstandSelectDrinks(payload){
             default:
                 console.error('添加失败' + shop);
                 msg.status = 15      // 商品添加失败
-                msg.msg = `商品选购失败: ${shop.category}`
+                msg.msg = `商品选购失败: ${shop.productName}`
                 msg.payload.shopFailList.push(shop)
                 actionSleep(back, 500)  // 回到饮品列表页
                 break;
@@ -531,36 +542,6 @@ function _payment(isTest){
         } else {
             pressSleep('确定门店', 500)
         }
-        
-        // if (textContains('余额支付').findOne(3000)){
-        //     var balance = 0
-        //     var amount = 0
-        //     if (textContains('储值余额').findOne(3000)){
-        //         balance = matchMoney(textContains('储值余额').findOne(3000).text())
-        //     }
-        //     if (textContains('余额支付').findOne(2000)){
-        //         amount = matchMoney(textContains('余额支付').findOne(2000).text())
-        //     }   
-        //     console.log(`账户余额: ${balance}, 需支付: ${amount}`);
-        //     console.log('余额是否充足：' + !( balance && balance < amount));
-        //     if (balance && balance < amount){
-        //         console.log(`余额不足, 余额: ${balance}, 需支付: ${amount}`);
-        //         return {'status': 17, "msg": "余额不足, 转人工"}
-        //     } else  {
-        //         if (isTest == true){
-        //             console.log('测试支付...');
-        //             return {'status': 0, "msg": "测试支付"}
-        //         } else {
-        //             pressContainsSleep('余额支付', 100)
-        //         }
-        //     }
-        // } else {
-        //     if (isTest == true){
-        //         console.log('测试支付...');
-        //         return {'status': 0, "msg": "测试支付"}
-        //     }
-        //     return {"status": 18, "msg": "没有进入到余额支付页面"}
-        // }
         for (let index = 0; index < 3; index++) {
             if (!text('查看卡券').findOne(1000)){
                 console.log('查看卡券 没定位到');

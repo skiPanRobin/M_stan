@@ -80,7 +80,7 @@ function updateDeviceStatus(payloadId, status){
             "id": payloadId,   //订单id
             "type": 'deviceStatus',
             "status": status,       // 返回设备是否忙碌
-            "msg": status === 0 ? '设备空闲' : status === 1? "设备忙碌": "任务完成", // 下单失败的提示
+            "msg": status === 0 ? '任务开始执行' : status === 1? "任务成功接收": "任务执行完毕"     // 下单失败的提示
         }
     }
     var res = http.postJson(apiConfig.apiMsg, json)

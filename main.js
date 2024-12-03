@@ -165,6 +165,7 @@ function startWebSocket(){
                     break;
                 case "goToPay":    
                     // processTask(message.payload)
+                    updateDeviceStatus(message.payload.id, 1)       // 成功接收任务
                     taskQueue.push(message.payload)
                     toast("任务队列长度: " + taskQueue.length)
                     executeNextTask();
@@ -271,7 +272,7 @@ const windowInterId = setInterval(() => {
         restart = true
         launchPackage('com.autox.startmstandauto');
     }
-    if (timeString >= '22:10:00' || timeString <= "05:00:00"){
+    if (timeString >= '22:30:00' || timeString <= "05:00:00"){
         console.log('22:30至05:00自动关闭应用');
         isClose = true
     }
