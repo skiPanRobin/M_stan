@@ -419,9 +419,9 @@ function mstandSelectDrinks(payload){
                 pressXY(productX, productY, 150, 1000)
                 break
             } else if(productY < 800 ) {
-                autoSwipe(850, 1800, 850, 800, 500, 500)    // 手指往上滑
+                autoSwipe(850, 1700, 850, 800, 500, 500)    // 手指往上滑
             } else {
-                autoSwipe(800, 800, 800, 1800, 500, 500)   // 手指往下滑
+                autoSwipe(800, 800, 800, 1700, 500, 500)   // 手指往下滑
             }
         }
         if (!!swipTimes){
@@ -553,21 +553,25 @@ function _payment(isTest){
             }
         }
         // 关闭查看卡券
-        while (text('查看卡券').findOne(500)) {
+        if (text('查看卡券').findOne(500)) {
             console.log('查看卡券 已定位到')
             var ele = textContains('关注 M Stand').findOne(3000)
-            ele ? pressSleep('关注 M Stand', 300): console.log('关注 M Stand 无法定位');
+            if (ele){
+                pressSleep('关注 M Stand', 300)
+            } else {
+                console.log('关注 M Stand 无法定位')
+                click(820, 371)
+            }
+            sleep(500)
         }
-        while (text('查看卡券').findOne(500)){
+        if (text('查看卡券').findOne(500)){
             console.log('再次定位到卡券');
-            click(250, 250);
-            sleep(1000)
+            pressXY(250, 250, 150, 1000)
         }
-        if (textContains('关注 M Stand').findOne(500)){
-            pressSleep('关注 M Stand', 300)
+        if (textContains('关注 M Stand').findOne(800)){
+            pressSleep('关注 M Stand', 500)
         } {
-            console.log();
-            click(820, 371)
+            pressXY(820, 371, 150, 800)
         }
         return {"status": 0, "msg": ""}
     } else {
@@ -682,7 +686,7 @@ function mstandPayment(payload){
         default:
             break;
     }  
-    if (!ocrLoctionXY([450, 300, 650, 400], "已下单")[0]){
+    if (!ocrLoctionXY([400, 300, 700, 500], "已下单", false, 120, 20)[0]){
         msg.status = 19
         msg.msg = payload.isTest == true ? '测试任务不支付': '支付可能失败,未检测到"已下单"'
         toast(msg.msg)

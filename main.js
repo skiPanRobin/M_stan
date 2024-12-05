@@ -86,9 +86,11 @@ function _executeTask(payload) {
         errorMsg = mstand(payload)
     }
     if (errorMsg.status != 0){
+        console.log('doing uploadErrorStatus');
         uploadErrorStatus(errorMsg)
     }
     // 模拟任务完成，更新任务状态
+    console.log('doing updateTaskStatus');
     updateTaskStatus(errorMsg)
     
 };
@@ -114,9 +116,15 @@ function executeTask(payload){
             }
         }
         console.error(error.message);
-        uploadErrorStatus(errorMsg)
-        updateTaskStatus(errorMsg)
-        backToDesk()
+        try {
+            console.error('doing _executeTask exception');
+            uploadErrorStatus(errorMsg)
+            updateTaskStatus(errorMsg)
+            backToDesk()
+        } catch (error) {
+            console.error(error.message);
+        }
+
     }
 }
 
@@ -267,16 +275,16 @@ const windowInterId = setInterval(() => {
         console.log(`recorded ping timestamp ${timestamp} to "${pathMap.dirPath + pathMap.heartbeatFile}"`);
     }
     // 2 * 3600 * 1000
-    if ((date - doTaskEndDate) > 2 * 3600 * 1000 && isTaskRunning === false && restart === false){ 
-        // 超过2个小时没执行任务, 则重启/关闭(22:30以后)关闭任务
-        restart = true
-        launchPackage('com.autox.startmstandauto');
-    }
-    if (timeString >= '22:30:00' || timeString <= "05:00:00"){
-        console.log('22:30至05:00自动关闭应用');
+    // if ((date - doTaskEndDate) > 2 * 3600 * 1000 && isTaskRunning === false && restart === false){ 
+    //     // 超过2个小时没执行任务, 则重启/关闭(22:30以后)关闭任务
+    //     restart = true
+    //     launchPackage('com.autox.startmstandauto');
+    // }
+    if (timeString >= '22:10:00' || timeString <= "05:00:00"){
+        toast('22:10至05:00自动关闭应用');
         isClose = true
     }
-    if (isClose){
+    if (isClose === true && isTaskRunning == false){
         clearInterval(windowInterId)
         console.log("退出时钟悬浮窗!!!");
         clearInterval(heartBeatId)
