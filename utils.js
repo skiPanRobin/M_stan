@@ -23,7 +23,7 @@ const imgClips = {
     'xy门店自取': [190, 1120, 450 , 1230],
     'xy常用城市': [50, 580, 900, 680],
     'xy城市开头大写': [950, 400, 1070, 1700],
-    'xy城市列表': [0, 500, 200, 2250,],
+    'xy城市列表': [0, 150, 200, 2250],
     'xy门店选择': [200, 500, 450, 620],
     'xy咖啡类目' :[30, 730, 250, 2000],
     'xy咖啡列表': [550, 730, 1000, 1950],
@@ -52,7 +52,7 @@ function getCityLatter(cityName){
  */
 function getScreenImg(quality){
     takeScreenShot(ocrImgPath)
-    quality = quality? quality: 10
+    quality = quality? quality: 20
     var img = images.read(ocrImgPath)
     images.save(img, ocrImgPath, 'jpg', quality)
     img.recycle()
@@ -69,7 +69,7 @@ function getOcrObj(xy, holdLimit, quality) {
         "BINARY"
     )
     gimg.saveTo('/sdcard/DCIM/temp.jpg')
-    var ocrObj = paddle.ocr(gimg)
+    var ocrObj = paddle.ocr(gimg, 1)
     img.recycle()
     gimg.recycle()
     return ocrObj
@@ -85,7 +85,7 @@ function getOcrObj(xy, holdLimit, quality) {
  * @returns 
  */
 function ocrLoctionXY(xy, checkText, isLike, holdLimit, quality){
-    holdLimit = holdLimit? holdLimit: 100
+    holdLimit = holdLimit? holdLimit: 120
     isLike = isLike? isLike: false
     var ocrObj = getOcrObj(xy, holdLimit, quality)
     
@@ -361,13 +361,14 @@ function isExists(content, findTime, sleepTime){
  * 截图函数
 */
 function takeScreenShot(savePath) {
-    sleep(200)
+    sleep(100)
     var result = shell("screencap -p " + savePath, true);
     if (result.code == 0) {
         console.log("截图成功，保存路径：" + savePath);
     } else {
         console.log("截图失败");
     }
+    sleep(300)
 };
 
 function clockFloaty(isClose){

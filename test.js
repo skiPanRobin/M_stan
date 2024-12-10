@@ -58,15 +58,25 @@ var payload = {
         }
     
     ],
-    "city": "广州市",
-    "shopName": "武汉咸安坊店",
-    "wechatNo": 2,
+    "city": "珠海市",
+    "shopName": "",
+    "wechatNo": 1,
     "orderType": "店内就餐",
-    "wechatName": "C4自动下单"
+    "wechatName": "阿呆的大哥"
 }
-mstandTOMenu(payload)
+
+// const CITES_LATTER_MAPPING = {
+//     '北京市': 'B', '成都市': 'C', '重庆市': 'C', '长沙市': 'C', '常州市': 'C', '慈溪市': 'C',
+//     '东莞市': 'D', '佛山市': 'F', '福州市': 'F', '广州市': 'F', '杭州市': 'F', '海口市': 'F',
+//     '合肥市': 'F', '嘉兴市': 'F', '金华市': 'F', '济南市': 'F', '昆山市': 'K', '昆明市': 'K',
+//     '宁波市': 'N', '南京市': 'N', '南昌市': 'N', '南通市': 'N', '泉州市': 'N', '青岛市': 'N',
+//     '上海市': 'S', '深圳市': 'S', '苏州市': 'S', '绍兴市': 'S', '三亚市': 'S', '天津市': 'T',
+//     '无锡市': 'W', '武汉市': 'W', '温州市': 'W', '厦门市': 'X', '西安市': 'X', '余姚市': 'Y',
+//     '扬州市': 'Y', '珠海市': 'Z', '中山市': 'Z', '郑州市': 'Z', '晋江市': '其他'}
+
+// mstandTOMenu(payload)
 // console.log(openWechat(payload));
-// console.log(mstand(payload));
+console.log(mstand(payload));
 
 // console.log(mstandTOMenu(payload))
 // mstandPayment(payload)

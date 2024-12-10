@@ -250,12 +250,16 @@ function mstandTOMenu(payload){
             return
         } else {
             var latter = getCityLatter(cityName)
-            var [lx, ly] = ocrLoctionXY(imgClips.xy城市开头大写, latter, true, 140, 40)
-            if (lx ==0){
-                console.error(`无法定位城市, latter: ${latter} 定位失败`);
-                throw new Error(`无法定位城市, latter: ${latter} 定位失败`);
-            } else {
-                pressXY(lx, ly, 150, 500)
+            if (['B', 'C', 'D'].includes(latter)) {
+                console.log('直接通过"xy城市列表"识别城市名');
+            }  else {
+                var [lx, ly] = ocrLoctionXY(imgClips.xy城市开头大写, latter, true, 140, 40)
+                if (lx ==0){
+                    console.error(`无法定位城市, latter: ${latter} 定位失败`);
+                    throw new Error(`无法定位城市, latter: ${latter} 定位失败`);
+                } else {
+                    pressXY(lx, ly, 150, 500)
+                }
             }
             var [lx, ly] = ocrLoctionXY(imgClips.xy城市列表, cityName)
             if (lx == 0){
@@ -273,6 +277,11 @@ function mstandTOMenu(payload){
             msg.msg = '无法定位门店输入框'
             return false
         } 
+        if (!!shopName === false){
+            msg.status = 12
+            msg.msg = `shopName 值为空`
+            return 
+        }
         for (let index = 0; index < 8; index++) {
             var ele = text(shopName).findOne(1000)
             if (ele) {
@@ -519,11 +528,11 @@ function mstandSelectDrinks(payload){
 
 function _payment(isTest){
     if (text('余额支付').find().length == 1){
-        console.log('余额支付: ', text('余额支付').findOne().bounds().centerY());
+        console.log('"余额支付" Y坐标: ', text('余额支付').findOne().bounds().centerY());
         pressXY(990, text('余额支付').findOne().bounds().centerY(), 200, 500)
     }
     var 支付bottoms = text('待支付').findOne(1000).parent().children().find(text('余额支付'))
-    if (支付bottoms){
+    if (支付bottoms && 支付bottoms[0]){
         console.log(支付bottoms[0].bounds().centerX(), 支付bottoms[0].bounds().centerY(), 200, 500);
         pressXY(支付bottoms[0].bounds().centerX(), 支付bottoms[0].bounds().centerY(), 200, 500)
     } else {
@@ -548,8 +557,8 @@ function _payment(isTest){
         }
         // 不管卡券是否定位到, 都点击屏幕空白区域(250, 250)
         pressXY(randomInt(240, 260), randomInt(240, 260), 100, 500)
-        takeScreenShot(`/sdcard/DCIM/支付页面${(new Date()).getTime()}.png`)
         pressXY(randomInt(240, 260), randomInt(240, 260), 100, 500)
+        takeScreenShot(`/sdcard/DCIM/支付是否成功前截图${(new Date()).getTime()}.png`)
         return {"status": 0, "msg": ""}
     } else {
         console.log('无法定位确认门店.. 请人工确认');
@@ -669,6 +678,7 @@ function mstandPayment(payload){
         msg.msg = payload.isTest == true ? '测试任务不支付': '支付可能失败,未检测到"已下单"'
         toast(msg.msg)
     }
+    paddle.release()
     return msg
 }
 
