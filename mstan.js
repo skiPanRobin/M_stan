@@ -1,6 +1,7 @@
 const {
     pressSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, randomInt, descClick,
-    ocrLoctionXY, ocrClickS, getOcrObj, imgClips, getCityLatter
+    ocrLoctionXY, ocrClickS, getOcrObj, imgClips, getCityLatter,
+    takeScreenShot
 
 } = require('./utils')
 
@@ -249,7 +250,7 @@ function mstandTOMenu(payload){
             return
         } else {
             var latter = getCityLatter(cityName)
-            var [lx, ly] = ocrLoctionXY(imgClips.xy城市开头大写, latter, true)
+            var [lx, ly] = ocrLoctionXY(imgClips.xy城市开头大写, latter, true, 140, 40)
             if (lx ==0){
                 console.error(`无法定位城市, latter: ${latter} 定位失败`);
                 throw new Error(`无法定位城市, latter: ${latter} 定位失败`);
@@ -538,16 +539,17 @@ function _payment(isTest){
         for (let index = 0; index < 3; index++) {
             if (!text('查看卡券').findOne(1000)){
                 console.log('查看卡券 没定位到');
-                click(250, 250)
+                pressXY(randomInt(240, 260), randomInt(240, 260), 100, 500)
             }  else {
                 console.log('定位到卡券 break')
-                click(250, 250)
+                pressXY(randomInt(240, 260), randomInt(240, 260), 100, 500)
                 break
             }
         }
         // 不管卡券是否定位到, 都点击屏幕空白区域(250, 250)
-        pressXY(randomInt(240, 260), randomInt(240, 260), 150, 800)
-        pressXY(randomInt(240, 260), randomInt(240, 260), 150, 1000)
+        pressXY(randomInt(240, 260), randomInt(240, 260), 100, 500)
+        takeScreenShot(`/sdcard/DCIM/支付页面${(new Date()).getTime()}.png`)
+        pressXY(randomInt(240, 260), randomInt(240, 260), 100, 500)
         return {"status": 0, "msg": ""}
     } else {
         console.log('无法定位确认门店.. 请人工确认');
@@ -661,6 +663,7 @@ function mstandPayment(payload){
         default:
             break;
     }
+    pressXY(randomInt(240, 260), randomInt(240, 260), 150, 1000)
     if (!ocrLoctionXY([400, 300, 700, 500], "已下单", false, 120, 20)[0]){
         msg.status = 19
         msg.msg = payload.isTest == true ? '测试任务不支付': '支付可能失败,未检测到"已下单"'
