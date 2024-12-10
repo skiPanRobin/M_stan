@@ -1,13 +1,12 @@
 // const { autoSwipe, pressSleep, clickEvent, pressContainsSleep, pressXY } = require("./utils");
 
 const {openWechat} = require("./wechat")
-const {mstand, mstandSelectDrinks} = require("./mstan");
+const {mstand, mstandTOMenu, mstandSelectDrinks} = require("./mstan");
 const { pressXY } = require("./utils");
 // const { pressXY, actionSleep, autoSwipe } = require("./utils")
 
 var payload = {
     "id": "1259",
-    "city": "北京市",
     "notes": "",
     "isTest": true,
     "appName": "M Stand",
@@ -45,29 +44,31 @@ var payload = {
         // }
         // ,
         {
-            "feature": ["标杯（冷）354ml", "少冰", '加份浓度', '少糖'],
+            "feature": ['一份', '经典拼配', '200ml', '燕麦奶'],
             "category": "奶咖",
             "quantity": 1,
-            "productName": "奶油话梅拿铁"
+            "productName": "脏咖啡"
         }
         ,
         {
-            "feature": ["标杯（冷）354ml", '去冰', '加份浓度', '无糖'],
+            "feature": ["标杯（冷）354ml", '去冰', '加份浓度', '少糖'],
             "category": "奶咖",
             "quantity": 1,
             "productName": "椰香拿铁"
         }
     
     ],
-    "shopName": "北京乐成中心店",
+    "city": "广州市",
+    "shopName": "武汉咸安坊店",
     "wechatNo": 2,
     "orderType": "店内就餐",
     "wechatName": "C4自动下单"
 }
-// mstandSelectDrinks(payload)
-console.log(openWechat(payload));
-console.log(mstand(payload));
+mstandTOMenu(payload)
+// console.log(openWechat(payload));
+// console.log(mstand(payload));
 
+// console.log(mstandTOMenu(payload))
 // mstandPayment(payload)
 // _useCoupons({"total": 4, titleSub: "单杯标杯饮品兑换券"})
 

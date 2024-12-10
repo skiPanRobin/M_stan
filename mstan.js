@@ -1,6 +1,6 @@
 const {
     pressSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, randomInt, descClick,
-    ocrLoctionXY, ocrClickS, getOcrObj, imgClips
+    ocrLoctionXY, ocrClickS, getOcrObj, imgClips, getCityLatter
 
 } = require('./utils')
 
@@ -247,33 +247,23 @@ function mstandTOMenu(payload){
         if (x > 0){
             pressXY(x, y, 150, 500)
             return
-        }
-        if (text(cityName).findOne(2000)){
-            var cnt = 10
-            while (!!cnt){
-                var cityBounds = text(cityName).findOne(100).bounds()
-                console.log(cityBounds.centerX(), cityBounds.centerY());
-                if (cityBounds.centerY() < 200){
-                    autoSwipe(450, 400, 460, 1603, 400, 500)
-                } else if (cityBounds.centerY() > 2230){
-                    autoSwipe(460, 1603, 450, 400, 400, 500)
-                } else {
-                    click(cityBounds.centerX(), cityBounds.centerY())
-                    sleep(400)
-                    break
-                }
-                cnt--
+        } else {
+            var latter = getCityLatter(cityName)
+            var [lx, ly] = ocrLoctionXY(imgClips.xy城市开头大写, latter, true)
+            if (lx ==0){
+                console.error(`无法定位城市, latter: ${latter} 定位失败`);
+                throw new Error(`无法定位城市, latter: ${latter} 定位失败`);
+            } else {
+                pressXY(lx, ly, 150, 500)
             }
-            if (cnt == 0) {
-                throw new Error('无法定位城市')
+            var [lx, ly] = ocrLoctionXY(imgClips.xy城市列表, cityName)
+            if (lx == 0){
+                throw new Error(`无法定位城市, 城市名: ${cityName} 定位失败`);
+            } else {
+                pressXY(lx, ly, 150, 500)
+                return
             }
-        }else {
-            msg.status = 11
-            msg.msg = `无法定位城市: ${cityName}`
-            return false
         }
-        sleep(sleepTime)
-        return true
     }
     
     function selectShop(shopName){
@@ -315,7 +305,7 @@ function mstandTOMenu(payload){
     var whileCnt = 0
     var toShopCnt = 0
     // 网络问题可能导致页面无法加载
-    var xy门店自取 = [190, 1120, 450 , 1230]
+    var xy门店自取 = imgClips.xy门店自取
     while (currentStep < 3) {
         console.log('currentStep: ' + currentStep);
         if (toShopCnt > 3) {
@@ -326,15 +316,23 @@ function mstandTOMenu(payload){
         switch (currentStep){
             case 1:
                 whileCnt = 0
-                while (!text("手动选择").findOne(400)){
-                    pressXY(300, 300, 100, 500)    //  消除弹窗
-                    pressXY(300, 300, 100, 500)    //  消除弹窗
+                while (!text("手动选择").findOne(500)){
+                    pressXY(300, 300, 150, 500)    //  消除弹窗
+                    pressXY(300, 300, 150, 500)    //  消除弹窗
                     var [cx, cy]  = ocrLoctionXY(xy门店自取, '门店自取')
                     if (cx && cy){
-                        pressXY(cx, cy, 100, 500);  //   门店自取
+                        pressXY(cx, cy, 150, 500);  //   点击 "门店自取" 跳转到 "手动选择"
+                    } else {
+                        // 没有识别到 '门店自取', 识别弹窗中包含"同意" 并点击
+                        var [tx, ty]  = ocrLoctionXY(imgClips.xy同意协议, '同意', true, 100, 10)
+                        if (tx && ty){
+                            pressXY(tx, ty, 150, 500)
+                        } else {
+                            console.log('没有定位到"同意协议弹窗"');
+                        }
                     }
                     whileCnt++
-                    if (whileCnt >= 10) {
+                    if (whileCnt >= 5) {
                         break
                     }
                 }
@@ -362,7 +360,7 @@ function mstandTOMenu(payload){
                     }                    
                     sleep(500)
                     whileCnt++
-                    if (whileCnt >= 10) {
+                    if (whileCnt >= 5) {
                         break
                     }
                 }
@@ -479,6 +477,8 @@ function mstandSelectDrinks(payload){
                     pressXY(temX, temY, 150, 1000)
                     autoSwipe(400, 1300, 400, 500, 300, 800)    // 滑动到咖啡属性页底部
                 }
+            }  else if (feat == '一份'){
+                console.log('ocr无法识别"一份", 特殊处理');
             } else{
                 featureElse.push(feat)
             }
@@ -517,13 +517,6 @@ function mstandSelectDrinks(payload){
 }
 
 function _payment(isTest){
-    function matchMoney(str){
-        if (!!str && typeof(str) === 'string'){
-            var _ = str.match(/[.\d]+/)
-            return !!_? parseFloat(_[0]): 0
-        }
-        return 0
-    }
     if (text('余额支付').find().length == 1){
         console.log('余额支付: ', text('余额支付').findOne().bounds().centerY());
         pressXY(990, text('余额支付').findOne().bounds().centerY(), 200, 500)
@@ -552,27 +545,9 @@ function _payment(isTest){
                 break
             }
         }
-        // 关闭查看卡券
-        if (text('查看卡券').findOne(500)) {
-            console.log('查看卡券 已定位到')
-            var ele = textContains('关注 M Stand').findOne(3000)
-            if (ele){
-                pressSleep('关注 M Stand', 300)
-            } else {
-                console.log('关注 M Stand 无法定位')
-                click(820, 371)
-            }
-            sleep(500)
-        }
-        if (text('查看卡券').findOne(500)){
-            console.log('再次定位到卡券');
-            pressXY(250, 250, 150, 1000)
-        }
-        if (textContains('关注 M Stand').findOne(800)){
-            pressSleep('关注 M Stand', 500)
-        } {
-            pressXY(820, 371, 150, 800)
-        }
+        // 不管卡券是否定位到, 都点击屏幕空白区域(250, 250)
+        pressXY(randomInt(240, 260), randomInt(240, 260), 150, 800)
+        pressXY(randomInt(240, 260), randomInt(240, 260), 150, 1000)
         return {"status": 0, "msg": ""}
     } else {
         console.log('无法定位确认门店.. 请人工确认');
@@ -685,7 +660,7 @@ function mstandPayment(payload){
             break
         default:
             break;
-    }  
+    }
     if (!ocrLoctionXY([400, 300, 700, 500], "已下单", false, 120, 20)[0]){
         msg.status = 19
         msg.msg = payload.isTest == true ? '测试任务不支付': '支付可能失败,未检测到"已下单"'

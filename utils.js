@@ -19,7 +19,11 @@ const pathMap = {
     "heartbeatFile": 'heartbeat.txt'
 }
 const imgClips = {
-    'xy常用城市': [50, 580, 900, 680] ,
+    'xy同意协议': [350,  1350, 750, 1750],
+    'xy门店自取': [190, 1120, 450 , 1230],
+    'xy常用城市': [50, 580, 900, 680],
+    'xy城市开头大写': [950, 400, 1070, 1700],
+    'xy城市列表': [0, 500, 200, 2250,],
     'xy门店选择': [200, 500, 450, 620],
     'xy咖啡类目' :[30, 730, 250, 2000],
     'xy咖啡列表': [550, 730, 1000, 1950],
@@ -27,6 +31,20 @@ const imgClips = {
     'xy咖啡属性_其他': [50, 700, 950, 1950],    // 剔除温度选择
     'xy清空购物车': [770, 1900, 1000, 2050]
 }
+const CITES_LATTER_MAPPING = {
+    '北京市': 'B', '成都市': 'C', '重庆市': 'C', '长沙市': 'C', '常州市': 'C', '慈溪市': 'C',
+    '东莞市': 'D', '佛山市': 'F', '福州市': 'F', '广州市': 'G', '杭州市': 'H', '海口市': 'H',
+    '合肥市': 'H', '嘉兴市': 'J', '金华市': 'J', '济南市': 'J', '昆山市': 'K', '昆明市': 'K',
+    '宁波市': 'N', '南京市': 'N', '南昌市': 'N', '南通市': 'N', '泉州市': 'Q', '青岛市': 'Q',
+    '上海市': 'S', '深圳市': 'S', '苏州市': 'S', '绍兴市': 'S', '三亚市': 'S', '天津市': 'T',
+    '无锡市': 'W', '武汉市': 'W', '温州市': 'W', '厦门市': 'X', '西安市': 'X', '余姚市': 'Y',
+    '扬州市': 'Y', '珠海市': 'Z', '中山市': 'Z', '郑州市': 'Z', '晋江市': '其他'}
+
+function getCityLatter(cityName){
+    return CITES_LATTER_MAPPING[cityName]
+}
+
+
 /**
  * 
  * @param {number} quality -图片质量 0 - 100
@@ -78,7 +96,7 @@ function ocrLoctionXY(xy, checkText, isLike, holdLimit, quality){
             console.log(`定位 "${checkText}" 成功`);
             return [xy[0] + ocrResult.bounds.centerX(), xy[1] + ocrResult.bounds.centerY()]
         } else {
-            // console.log(`ocrResult text: ${ocrResult.text}, not match: ${checkText}, substring: ${ocrResult.text.substring(0, 8)}`)
+            console.log(`ocrResult text: ${ocrResult.text}, not match: ${checkText}, substring: ${ocrResult.text.substring(0, 8)}`)
             continue
         }
     }
@@ -420,6 +438,7 @@ module.exports = {
     ocrLoctionXY: ocrLoctionXY,
     ocrClickS: ocrClickS,
     getOcrObj: getOcrObj,
+    getCityLatter: getCityLatter,
     imgClips: imgClips,
     shotPath: shotPath,
     pathMap: pathMap,
