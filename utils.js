@@ -54,9 +54,12 @@ function getScreenImg(quality){
     takeScreenShot(ocrImgPath)
     quality = quality? quality: 20
     var img = images.read(ocrImgPath)
-    images.save(img, ocrImgPath, 'jpg', quality)
-    img.recycle()
-    return images.read(ocrImgPath)
+    if (quality !== 100){
+        images.save(img, ocrImgPath, 'jpg', quality)
+        img.recycle()
+        img = images.read(ocrImgPath)
+    }
+    return img
 }
 
 function getOcrObj(xy, holdLimit, quality) {

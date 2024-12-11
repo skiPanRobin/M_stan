@@ -285,9 +285,11 @@ const windowInterId = setInterval(() => {
         isClose = true
     }
     if (isClose === true && isTaskRunning == false){
+        sleep(1000)
         clearInterval(windowInterId)
         console.log("退出时钟悬浮窗!!!");
         clearInterval(heartBeatId)
         console.log("停止心跳!!!")
+        setTimeout(() => exit(), 1000);
     }
 }, 1000);

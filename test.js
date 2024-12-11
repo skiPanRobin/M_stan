@@ -52,13 +52,13 @@ var payload = {
         ,
         {
             "feature": ["标杯（冷）354ml", '去冰', '加份浓度', '少糖'],
-            "category": "奶咖",
+            "category": "奶咖", 
             "quantity": 1,
             "productName": "椰香拿铁"
         }
     
     ],
-    "city": "珠海市",
+    "city": "深圳市",
     "shopName": "",
     "wechatNo": 1,
     "orderType": "店内就餐",

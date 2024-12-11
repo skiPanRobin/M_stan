@@ -143,17 +143,18 @@ function _clearShopCar(){
         var children = ele.children()
         if (children.length == 0){
             // 商品多余两种时, for循环可能无法删除购物车种商品, 添加如下方法
-            pressXY(843, 1993, 150, 500)
+            pressXY(843, 1993, 150, 800)
             continue   
         }
         for (let index = 0; index < children.length; index++) {
             var element = children[index];
             if (!!element && isNumeric(element.text())) {
                 // console.log(`杯数 ${element.text()}, 下标: ${index}`);
-                pressXY(children[index - 1].bounds().centerX(), children[index - 1].bounds().centerY(), 150, 800)
+                pressXY(children[index - 1].bounds().centerX(), children[index - 1].bounds().centerY(), 150, 200)
                 break
             } 
         }
+        sleep(600)
         cntClear --
         if (cntClear <= 0 ){break}
     }
@@ -253,7 +254,7 @@ function mstandTOMenu(payload){
             if (['B', 'C', 'D'].includes(latter)) {
                 console.log('直接通过"xy城市列表"识别城市名');
             }  else {
-                var [lx, ly] = ocrLoctionXY(imgClips.xy城市开头大写, latter, true, 140, 40)
+                var [lx, ly] = ocrLoctionXY(imgClips.xy城市开头大写, latter , false, 70, 60)
                 if (lx ==0){
                     console.error(`无法定位城市, latter: ${latter} 定位失败`);
                     throw new Error(`无法定位城市, latter: ${latter} 定位失败`);
@@ -279,7 +280,7 @@ function mstandTOMenu(payload){
         } 
         if (!!shopName === false){
             msg.status = 12
-            msg.msg = `shopName 值为空`
+            msg.msg = `shopName : ${shopName}`
             return 
         }
         for (let index = 0; index < 8; index++) {
@@ -310,7 +311,7 @@ function mstandTOMenu(payload){
         }
     }    
     pressSleep(payload.appName, 200)
-    text('首页').findOne(5000)
+    text('首页').findOne(9000)
     var currentStep = 1
     var whileCnt = 0
     var toShopCnt = 0
@@ -334,7 +335,7 @@ function mstandTOMenu(payload){
                         pressXY(cx, cy, 150, 500);  //   点击 "门店自取" 跳转到 "手动选择"
                     } else {
                         // 没有识别到 '门店自取', 识别弹窗中包含"同意" 并点击
-                        var [tx, ty]  = ocrLoctionXY(imgClips.xy同意协议, '同意', true, 100, 10)
+                        var [tx, ty]  = ocrLoctionXY(imgClips.xy同意协议, '同意并继续', true, 100, 20)
                         if (tx && ty){
                             pressXY(tx, ty, 150, 500)
                         } else {
@@ -415,12 +416,26 @@ function mstandSelectDrinks(payload){
     function toItemDetail(item){
         console.log('toItemDetail');
         console.log(item.category + '==>' + item.productName)
-        var [categoryX, categoryY] = ocrLoctionXY(imgClips.xy咖啡类目, item.category, false, 180)
-        pressXY(categoryX, categoryY, 150, 800)
+        for (let i = 0; i < 3; i++) {
+            var [categoryX, categoryY] = ocrLoctionXY(imgClips.xy咖啡类目, item.category, false, 180)
+            if (categoryX == 0){
+                var [x果咖, y果咖] = ocrLoctionXY(imgClips.xy咖啡类目, '果咖', false, 180)
+                pressXY(x果咖, y果咖, 150, 800)
+            } else  {
+                pressXY(categoryX, categoryY, 150, 800)
+                break
+            }
+            if (i >= 2){
+                throw new Error(`无法定位到类目: ${item.category}`)   
+            }
+        }
+            
+        
         swipTimes = 10
         while (!!swipTimes){
-            var [productX, productY] = ocrLoctionXY(imgClips.xy咖啡列表, item.productName, true)
-            console.log(`productX: ${productX}, productY: ${productY}`);
+            var productName = item.productName.replace(/\s+/g, "")
+            var [productX, productY] = ocrLoctionXY(imgClips.xy咖啡列表, productName, true, 40)
+            console.log(`productName: ${productName}; ${item.productName}, productX: ${productX}, productY: ${productY}`);
             swipTimes--
             if (productY >= 800 &&  productY <=  2070){
                 console.log(`centerY : ${productY}; productName: ${item.productName}`);
@@ -447,6 +462,7 @@ function mstandSelectDrinks(payload){
     // 开始选购商品前清空购物车
     if (textContains('结算').findOne(5000) && textContains('结算').findOne(5000).text() === '去结算') {
         var result = _clearShopCar()
+        console.log(`clear shop car result: ${result}`);
         if (result.status != 0){
             msg.status == result.status
             msg.msg = result.msg
@@ -678,7 +694,6 @@ function mstandPayment(payload){
         msg.msg = payload.isTest == true ? '测试任务不支付': '支付可能失败,未检测到"已下单"'
         toast(msg.msg)
     }
-    paddle.release()
     return msg
 }
 
