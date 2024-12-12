@@ -282,14 +282,13 @@ const windowInterId = setInterval(() => {
     // }
     if (timeString >= '22:10:00' || timeString <= "05:00:00"){
         toast('22:10至05:00自动关闭应用');
-        isClose = true
+        setTimeout(() => shell("reboot"), 500);
     }
     if (isClose === true && isTaskRunning == false){
-        sleep(1000)
         clearInterval(windowInterId)
         console.log("退出时钟悬浮窗!!!");
         clearInterval(heartBeatId)
         console.log("停止心跳!!!")
-        setTimeout(() => exit(), 1000);
+        setTimeout(() => exit(), 2000);
     }
 }, 1000);

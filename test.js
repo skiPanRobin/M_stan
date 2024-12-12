@@ -11,7 +11,7 @@ var payload = {
     "isTest": true,
     "appName": "M Stand",
     "coupons": {
-        "total": 2,
+        "total": 1,
         "titleSub": "单杯标杯饮品兑换券"
     },
     "shopList": [
@@ -43,23 +43,29 @@ var payload = {
         //     "productName": "山野樱桃拼配拿铁"
         // }
         // ,
+        // {
+        //     "feature": ['一份', '经典拼配', '200ml', '燕麦奶'],
+        //     "category": "奶咖",
+        //     "quantity": 1,
+        //     "productName": "脏咖啡"
+        // }
+        // ,
         {
-            "feature": ['一份', '经典拼配', '200ml', '燕麦奶'],
-            "category": "奶咖",
+            "feature": [],
+            "category": "面包简餐", 
             "quantity": 1,
-            "productName": "脏咖啡"
-        }
-        ,
+            "productName": "辛香肌肉大米法棍"
+        },
         {
-            "feature": ["标杯（冷）354ml", '去冰', '加份浓度', '少糖'],
-            "category": "奶咖", 
+            "feature": [],
+            "category": "潮流周边", 
             "quantity": 1,
-            "productName": "椰香拿铁"
+            "productName": "M stand复古亮面咖啡保温杯原力蓝"
         }
     
     ],
-    "city": "深圳市",
-    "shopName": "",
+    "city": "北京市",
+    "shopName": "北京乐成中心店",
     "wechatNo": 1,
     "orderType": "店内就餐",
     "wechatName": "阿呆的大哥"
@@ -75,7 +81,7 @@ var payload = {
 //     '扬州市': 'Y', '珠海市': 'Z', '中山市': 'Z', '郑州市': 'Z', '晋江市': '其他'}
 
 // mstandTOMenu(payload)
-// console.log(openWechat(payload));
+console.log(openWechat(payload));
 console.log(mstand(payload));
 
 // console.log(mstandTOMenu(payload))

@@ -1,6 +1,6 @@
 const {
     pressSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, randomInt, descClick,
-    ocrLoctionXY, ocrClickS, getOcrObj, imgClips, getCityLatter,
+    ocrLoctionXY, ocrClickS, getOcrObj, imgClips, getCityLatter, ocrLongTextXY,
     takeScreenShot
 
 } = require('./utils')
@@ -434,7 +434,11 @@ function mstandSelectDrinks(payload){
         swipTimes = 10
         while (!!swipTimes){
             var productName = item.productName.replace(/\s+/g, "")
-            var [productX, productY] = ocrLoctionXY(imgClips.xy咖啡列表, productName, true, 40)
+            if (item.productName.length <= 13){
+                var [productX, productY] = ocrLoctionXY(imgClips.xy咖啡列表, productName, true, 60)
+            } else {
+                var [productX, productY] = ocrLongTextXY(imgClips.xy咖啡列表, productName, 60)
+            }
             console.log(`productName: ${productName}; ${item.productName}, productX: ${productX}, productY: ${productY}`);
             swipTimes--
             if (productY >= 800 &&  productY <=  2070){
@@ -442,9 +446,9 @@ function mstandSelectDrinks(payload){
                 pressXY(productX, productY, 150, 1000)
                 break
             } else if(productY < 800 ) {
-                autoSwipe(850, 1700, 850, 800, 500, 500)    // 手指往上滑
+                autoSwipe(850, 1700, 850, 800, 500, 800)    // 手指往上滑
             } else {
-                autoSwipe(800, 800, 800, 1700, 500, 500)   // 手指往下滑
+                autoSwipe(800, 800, 800, 1700, 500, 800)   // 手指往下滑
             }
         }
         if (!!swipTimes){

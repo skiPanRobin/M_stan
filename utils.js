@@ -25,8 +25,8 @@ const imgClips = {
     'xy城市开头大写': [950, 400, 1070, 1700],
     'xy城市列表': [0, 150, 200, 2250],
     'xy门店选择': [200, 500, 450, 620],
-    'xy咖啡类目' :[30, 730, 250, 2000],
-    'xy咖啡列表': [550, 730, 1000, 1950],
+    'xy咖啡类目' :[30, 730, 250, 2050],
+    'xy咖啡列表': [550, 730, 1050, 1950],
     'xy咖啡属性_温度': [50, 450, 750, 1450],    // 选择咖啡温度
     'xy咖啡属性_其他': [50, 700, 950, 1950],    // 剔除温度选择
     'xy清空购物车': [770, 1900, 1000, 2050]
@@ -52,7 +52,7 @@ function getCityLatter(cityName){
  */
 function getScreenImg(quality){
     takeScreenShot(ocrImgPath)
-    quality = quality? quality: 20
+    quality = quality? quality: 40
     var img = images.read(ocrImgPath)
     if (quality !== 100){
         images.save(img, ocrImgPath, 'jpg', quality)
@@ -107,6 +107,39 @@ function ocrLoctionXY(xy, checkText, isLike, holdLimit, quality){
     return [0, 0]   
 }
 
+/**
+ * 
+ * @param {*} xy                - 选定图片区域的左上/右下坐标 [x1, y1, x2, y2]
+ * @param {string} checkText    - 检测的文字
+ * @param {number} holdLimit    - 二值化分界值, 默认: 100
+ * @param {number} quality      - 图片质量, 默认 10, 传值范围0-100
+ * @returns 
+ */
+function ocrLongTextXY(xy, checkText, holdLimit, quality){
+    holdLimit = holdLimit? holdLimit: 120
+    var ocrObj = getOcrObj(xy, holdLimit, quality)
+    
+    for (let index = 0; index < ocrObj.length - 1 ; index++) {
+        var ocrResult = ocrObj[index];
+        var nextOcrRes = ocrObj[index + 1]
+        if (checkText.includes(ocrResult.text)){
+            if (checkText === ocrResult.text || checkText.includes(nextOcrRes.text)){  // 单行且相等 或者 两行包含则判断相等
+                console.log(`定位 "${checkText}" 成功`);
+                return [xy[0] + ocrResult.bounds.centerX(), xy[1] + ocrResult.bounds.centerY()]
+            } else if (checkText === nextOcrRes.text){      // 下一行完全相等
+                return [xy[0] + nextOcrRes.bounds.centerX(), xy[1] + nextOcrRes.bounds.centerY()]
+            } else {
+                console.log(`checkText: ${checkText}, ocrText: ${ocrResult.text}`);
+            }
+            
+        } else {
+            console.log(`ocrResult text: ${ocrResult.text}, not match: ${checkText}, nextOcrRes text: ${nextOcrRes.text}`)
+            continue
+        }
+    }
+    console.log(`定位 "${checkText}" 失败`);
+    return [0, 0]   
+}
 
 function ocrClickS(xy, checkTextArray, isLike, holdLimit, sleep){
     holdLimit = holdLimit? holdLimit: 60
@@ -440,6 +473,7 @@ module.exports = {
     pressContainsSleep: pressContainsSleep,
     getScreenImg: getScreenImg,
     ocrLoctionXY: ocrLoctionXY,
+    ocrLongTextXY: ocrLongTextXY,
     ocrClickS: ocrClickS,
     getOcrObj: getOcrObj,
     getCityLatter: getCityLatter,

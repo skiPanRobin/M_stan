@@ -19,7 +19,7 @@ function ocrLongTextXY(xy, checkText, holdLimit, quality){
             }
             
         } else {
-            console.log(`ocrResult text: ${ocrResult.text}, not match: ${checkText}, substring: ${ocrResult.text.substring(0, 8)}`)
+            console.log(`ocrResult text: ${ocrResult.text}, not match: ${checkText}, nextOcrRes text: ${nextOcrRes.text}`)
             continue
         }
     }
