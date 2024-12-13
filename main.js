@@ -274,21 +274,15 @@ const windowInterId = setInterval(() => {
         }
         console.log(`recorded ping timestamp ${timestamp} to "${pathMap.dirPath + pathMap.heartbeatFile}"`);
     }
-    // 2 * 3600 * 1000
-    // if ((date - doTaskEndDate) > 2 * 3600 * 1000 && isTaskRunning === false && restart === false){ 
-    //     // 超过2个小时没执行任务, 则重启/关闭(22:30以后)关闭任务
-    //     restart = true
-    //     launchPackage('com.autox.startmstandauto');
-    // }
     if (timeString >= '22:10:00' || timeString <= "05:00:00"){
         toast('22:10至05:00自动关闭应用');
-        setTimeout(() => shell("reboot"), 500);
+        setTimeout(()=>shell('su -c reboot'), 500);
     }
     if (isClose === true && isTaskRunning == false){
         clearInterval(windowInterId)
         console.log("退出时钟悬浮窗!!!");
         clearInterval(heartBeatId)
         console.log("停止心跳!!!")
-        setTimeout(() => exit(), 2000);
+        setTimeout(() => exit(), 1000);
     }
 }, 1000);
