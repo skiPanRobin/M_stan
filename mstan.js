@@ -577,8 +577,8 @@ function _payment(isTest){
         }
         // 不管卡券是否定位到, 都点击屏幕空白区域(250, 250)
         pressXY(randomInt(240, 260), randomInt(240, 260), 100, 500)
-        pressXY(randomInt(240, 260), randomInt(240, 260), 100, 500)
         takeScreenShot(`/sdcard/DCIM/支付是否成功前截图${(new Date()).getTime()}.png`)
+        pressXY(randomInt(240, 260), randomInt(240, 260), 100, 500)
         return {"status": 0, "msg": ""}
     } else {
         console.log('无法定位确认门店.. 请人工确认');
@@ -692,7 +692,14 @@ function mstandPayment(payload){
         default:
             break;
     }
-    pressXY(randomInt(240, 260), randomInt(240, 260), 150, 1000)
+    for (let index = 0; index < 8; index++) {
+        if (!!ocrLoctionXY([400, 300, 700, 500], "已下单", false, 120, 20)[0] === true){
+            return msg
+        } else {
+            console.warn(`未检测到"已下单"; index : ${index}`);
+            pressXY(randomInt(240, 260), randomInt(240, 260), 150, 1000)
+        }
+    }
     if (!ocrLoctionXY([400, 300, 700, 500], "已下单", false, 120, 20)[0]){
         msg.status = 19
         msg.msg = payload.isTest == true ? '测试任务不支付': '支付可能失败,未检测到"已下单"'
