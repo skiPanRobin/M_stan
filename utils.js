@@ -141,10 +141,10 @@ function ocrLongTextXY(xy, checkText, holdLimit, quality){
     return [0, 0]   
 }
 
-function ocrClickS(xy, checkTextArray, isLike, holdLimit, sleep){
+function ocrClickS(xy, checkTextArray, isLike, holdLimit, sleeep){
     holdLimit = holdLimit? holdLimit: 60
     isLike = isLike? isLike: false
-    sleep = sleep? sleep: 300
+    sleeep = sleeep? sleeep: 300
     var ocrObj = getOcrObj(xy, holdLimit)
 
     for (let i = 0; i < checkTextArray.length; i++) {
@@ -155,7 +155,7 @@ function ocrClickS(xy, checkTextArray, isLike, holdLimit, sleep){
             if (ocrResult.text==checkText || (isLike == true && checkText.includes(ocrResult.text.substring(0, 4)))){
                 console.log(`定位 "${checkText}" 成功`);
                 var [cx, cy] = [xy[0] + ocrResult.bounds.centerX(), xy[1] + ocrResult.bounds.centerY()]
-                pressXY(cx, cy, 100, sleep);  //   门店自取
+                pressXY(cx, cy, 100, sleeep);  //   门店自取
                 ocrSeccess = true
                 break
             } else {

@@ -190,7 +190,7 @@ function startWebSocket(){
                     isClose = true
                     break
                 default:
-                    console.log("无需处理类型消息：" + JSON.stringify(message));
+                    console.log("无需处理类型消息 type：" + message.type);
                     break
             }
         },

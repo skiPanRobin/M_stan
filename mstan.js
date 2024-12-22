@@ -28,7 +28,7 @@ function _ocrCoupons(couponText, total, tailCoupons){
         if (total <= 0 ){
             break
         }
-        if (couponText.includes(ocrResult.text.substring(0, 4))){
+        if (couponText.includes(ocrResult.text.substring(0, 3))){
             console.log(`定位 "${couponText}" 成功`);
             var [cx, cy] = [x点击区, xy优惠券[1] + ocrResult.bounds.centerY() + y点击区_偏移量]
             if (tailCoupons == undefined){
@@ -429,7 +429,6 @@ function mstandSelectDrinks(payload){
                 throw new Error(`无法定位到类目: ${item.category}`)   
             }
         }
-            
         
         swipTimes = 10
         while (!!swipTimes){
@@ -693,18 +692,23 @@ function mstandPayment(payload){
             break;
     }
     for (let index = 0; index < 8; index++) {
-        if (!!ocrLoctionXY([400, 300, 700, 500], "已下单", false, 120, 20)[0] === true){
+        if (payload.isTest == true){
+            msg.status = 19
+            msg.msg = "测试任务不支付"
+            toast(msg.msg)
             return msg
-        } else {
+        }else if (!!ocrLoctionXY([400, 300, 700, 500], "已下单", false, 120, 20)[0] === true){
+            return msg
+        }else if (!!ocrLoctionXY([400, 300, 700, 500], "制作中", false, 120, 20)[0] === true){
+            return msg
+        }
+        else {
             console.warn(`未检测到"已下单"; index : ${index}`);
             pressXY(randomInt(240, 260), randomInt(240, 260), 150, 1000)
         }
     }
-    if (!ocrLoctionXY([400, 300, 700, 500], "已下单", false, 120, 20)[0]){
-        msg.status = 19
-        msg.msg = payload.isTest == true ? '测试任务不支付': '支付可能失败,未检测到"已下单"'
-        toast(msg.msg)
-    }
+    msg.status = 19
+    msg.msg = payload.isTest == true ? '测试任务不支付': '支付可能失败,未检测到"已下单"'
     return msg
 }
 

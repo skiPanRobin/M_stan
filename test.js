@@ -43,32 +43,33 @@ var payload = {
         //     "productName": "山野樱桃拼配拿铁"
         // }
         // ,
-        // {
-        //     "feature": ['一份', '经典拼配', '200ml', '燕麦奶'],
-        //     "category": "奶咖",
-        //     "quantity": 1,
-        //     "productName": "脏咖啡"
-        // }
-        // ,
+        {
+            "feature": [],
+            "category": "奶咖",
+            "quantity": 1,
+            "productName": "脏咖啡"
+        }
+        ,
         {
             "feature": [],
             "category": "面包简餐", 
             "quantity": 1,
-            "productName": "辛香肌肉大米法棍"
-        },
-        {
-            "feature": [],
-            "category": "潮流周边", 
-            "quantity": 1,
-            "productName": "M stand复古亮面咖啡保温杯原力蓝"
+            "productName": "辛香鸡肉大米法棍"
         }
+        // ,
+        // {
+        //     "feature": [],
+        //     "category": "潮流周边", 
+        //     "quantity": 1,
+        //     "productName": "M stand复古亮面咖啡保温杯原力蓝"
+        // }
     
     ],
     "city": "北京市",
     "shopName": "北京乐成中心店",
-    "wechatNo": 1,
+    "wechatNo": 2,
     "orderType": "店内就餐",
-    "wechatName": "阿呆的大哥"
+    "wechatName": "C4自动下单"
 }
 
 // const CITES_LATTER_MAPPING = {
@@ -81,8 +82,8 @@ var payload = {
 //     '扬州市': 'Y', '珠海市': 'Z', '中山市': 'Z', '郑州市': 'Z', '晋江市': '其他'}
 
 // mstandTOMenu(payload)
-console.log(openWechat(payload));
-console.log(mstand(payload));
+console.log(JSON.stringify(openWechat(payload)));
+console.log(JSON.stringify(mstand(payload)));
 
 // console.log(mstandTOMenu(payload))
 // mstandPayment(payload)

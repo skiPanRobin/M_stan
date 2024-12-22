@@ -35,6 +35,7 @@ function updaloadPayPic(online_path, msg){
             "shopList": []
         }
     }
+    console.info('updaload Pay Pic req: ' + JSON.stringify(json))
     var res = http.postJson(apiConfig.apiMsg, json)
     console.info('updaload pic res: ' + res.body.string())
 }
@@ -61,8 +62,9 @@ function uploadErrorStatus(errorMsg){
         "type": "errOrder",
         "data": errorMsg
     }
+    console.info('uploadErrorStatus res: ' + JSON.stringify(json))
     var res = http.postJson(url, json)
-    console.info('updaloadPayPic res: ' + res.body.string())
+    console.info('uploadErrorStatus res: ' + res.body.string())
 
 }
 
