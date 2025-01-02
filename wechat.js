@@ -25,10 +25,15 @@ function _openWechat(payload){
             // return {'status': 2, "msg": '打开微信失败'}
             status = 2
         }
+        if (status !== 0){
+            var bounds = text('微信').find()[payload.wechatName - 1].bounds()
+            pressXY(bounds.centerX(), bounds.centerY(), 150, 800)
+        }
         if (currentPackage() === 'com.tencent.mm'){
             status = 0
             break
         }
+
     }
     if (status !== 0){
         return {'status': status, "msg": status === 2? '打开微信失败': '点亮屏幕失败'}
@@ -85,6 +90,22 @@ function _openWechat(payload){
         }
     }
 }
+// 定位异常任务
+function getWDesc(){
+    var addMsg = ''
+    try {
+        text('微信').find().forEach(element => {
+            addMsg = addMsg + element.contentDescription
+        });
+    } catch (error) {
+        addMsg= error.message
+    }
+    console.log('addMsg: '+addMsg);
+    if (addMsg == ''){
+        return '未发现"微信"应用'
+    }
+    return addMsg
+}
 
 /**
  * @param payload -任务信息
@@ -110,11 +131,13 @@ function openWechat(payload){
         msg.msg = r.msg
     } catch (error) {
         msg.status = 1
-        msg.msg = error.msg
+        msg.msg = error.message
     }
-    console.log(JSON.stringify(msg));
+    if (msg.status !== 0) {
+        msg.msg = msg.msg + getWDesc()
+    }
+    console.log('wechat end msg : ' + JSON.stringify(msg));
     return msg
-    
 }
 
 module.exports = {

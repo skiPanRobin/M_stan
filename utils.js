@@ -18,37 +18,156 @@ const pathMap = {
     "tempFile": 'heartbeat_temp.txt',
     "heartbeatFile": 'heartbeat.txt'
 }
+const imgClips = {
+    'xy同意协议': [350,  1350, 750, 1750],
+    'xy门店自取': [190, 1120, 450 , 1230],
+    'xy常用城市': [50, 580, 900, 680],
+    'xy城市开头大写': [950, 400, 1070, 1700],
+    'xy城市列表': [0, 150, 200, 2250],
+    'xy门店选择': [200, 500, 450, 620],
+    'xy咖啡类目' :[30, 730, 250, 2050],
+    'xy咖啡列表': [550, 730, 1050, 1950],
+    'xy咖啡属性_温度': [50, 450, 750, 1450],    // 选择咖啡温度
+    'xy咖啡属性_其他': [50, 700, 950, 1950],    // 剔除温度选择
+    'xy清空购物车': [770, 1900, 1000, 2050]
+}
+const CITES_LATTER_MAPPING = {
+    '北京市': 'B', '成都市': 'C', '重庆市': 'C', '长沙市': 'C', '常州市': 'C', '慈溪市': 'C',
+    '东莞市': 'D', '佛山市': 'F', '福州市': 'F', '广州市': 'F', '杭州市': 'F', '海口市': 'F',
+    '合肥市': 'F', '嘉兴市': 'F', '金华市': 'F', '济南市': 'F', '昆山市': 'K', '昆明市': 'K',
+    '宁波市': 'N', '南京市': 'N', '南昌市': 'N', '南通市': 'N', '泉州市': 'N', '青岛市': 'N',
+    '上海市': 'S', '深圳市': 'S', '苏州市': 'S', '绍兴市': 'S', '三亚市': 'S', '天津市': 'T',
+    '无锡市': 'W', '武汉市': 'W', '温州市': 'W', '厦门市': 'X', '西安市': 'X', '余姚市': 'Y',
+    '扬州市': 'Y', '珠海市': 'Z', '中山市': 'Z', '郑州市': 'Z', '晋江市': '其他'}
 
-function getScreenImg(){
+function getCityLatter(cityName){
+    return CITES_LATTER_MAPPING[cityName]
+}
+
+
+/**
+ * 
+ * @param {number} quality -图片质量 0 - 100
+ * @returns 
+ */
+function getScreenImg(quality){
     takeScreenShot(ocrImgPath)
-    sleep(500)
-    return images.read(ocrImgPath)
+    quality = quality? quality: 40
+    var img = images.read(ocrImgPath)
+    if (quality !== 100){
+        images.save(img, ocrImgPath, 'jpg', quality)
+        img.recycle()
+        img = images.read(ocrImgPath)
+    }
+    return img
+}
+
+function getOcrObj(xy, holdLimit, quality) {
+    var img = getScreenImg(quality)
+    var gimg = images.threshold(
+        images.grayscale(                                                       // 二值化
+            images.clip(img, xy[0], xy[1], xy[2] - xy[0], xy[3]-xy[1])),        // 剪切
+        holdLimit,                                                              // 二值化分界值
+        255,                                                                    // 二值化上届
+        "BINARY"
+    )
+    gimg.saveTo('/sdcard/DCIM/temp.jpg')
+    var ocrObj = paddle.ocr(gimg, 1)
+    img.recycle()
+    gimg.recycle()
+    return ocrObj
 }
 
 /**
- * 识别指定区域内文字, 返回中心坐标
  * 
-*/
-function ocrLoctionXY(img, xy, checkText){
-    var clipImg = images.clip(img, xy[0], xy[1], xy[2] - xy[0], xy[3]-xy[1])
-    var gimg = images.grayscale(clipImg)
-    var gimg = images.threshold(gimg, 140, 255, "BINARY")
-    var res = paddle.ocr(clipImg)
-    for (let index = 0; index < res.length; index++) {
-        var ocrResult = res[index];
-        if (ocrResult.text==checkText){
+ * @param {*} xy                - 选定图片区域的左上/右下坐标 [x1, y1, x2, y2]
+ * @param {string} checkText    - 检测的文字
+ * @param {boolean} isLike      - 是否模糊匹配, 默认: 否
+ * @param {number} holdLimit    - 二值化分界值, 默认: 100
+ * @param {number} quality      - 图片质量, 默认 10, 传值范围0-100
+ * @returns 
+ */
+function ocrLoctionXY(xy, checkText, isLike, holdLimit, quality){
+    holdLimit = holdLimit? holdLimit: 120
+    isLike = isLike? isLike: false
+    var ocrObj = getOcrObj(xy, holdLimit, quality)
+    
+    for (let index = 0; index < ocrObj.length; index++) {
+        var ocrResult = ocrObj[index];
+        // console.log(`ocrResult text: ${ocrResult.text}, checkText: ${checkText}, substring: ${ocrResult.text.substring(1, 4)}`)
+        if (ocrResult.text==checkText || (isLike == true && ocrResult.text.length >= 7 && checkText.includes(ocrResult.text.substring(0, 8)))){
             console.log(`定位 "${checkText}" 成功`);
             return [xy[0] + ocrResult.bounds.centerX(), xy[1] + ocrResult.bounds.centerY()]
         } else {
-            toast(`ocrResult text: ${ocrResult.text}, not match`)
+            console.log(`ocrResult text: ${ocrResult.text}, not match: ${checkText}, substring: ${ocrResult.text.substring(0, 8)}`)
+            continue
         }
-        
     }
     console.log(`定位 "${checkText}" 失败`);
-    img.recycle()
     return [0, 0]   
 }
 
+/**
+ * 
+ * @param {*} xy                - 选定图片区域的左上/右下坐标 [x1, y1, x2, y2]
+ * @param {string} checkText    - 检测的文字
+ * @param {number} holdLimit    - 二值化分界值, 默认: 100
+ * @param {number} quality      - 图片质量, 默认 10, 传值范围0-100
+ * @returns 
+ */
+function ocrLongTextXY(xy, checkText, holdLimit, quality){
+    holdLimit = holdLimit? holdLimit: 120
+    var ocrObj = getOcrObj(xy, holdLimit, quality)
+    
+    for (let index = 0; index < ocrObj.length - 1 ; index++) {
+        var ocrResult = ocrObj[index];
+        var nextOcrRes = ocrObj[index + 1]
+        if (checkText.includes(ocrResult.text)){
+            if (checkText === ocrResult.text || checkText.includes(nextOcrRes.text)){  // 单行且相等 或者 两行包含则判断相等
+                console.log(`定位 "${checkText}" 成功`);
+                return [xy[0] + ocrResult.bounds.centerX(), xy[1] + ocrResult.bounds.centerY()]
+            } else if (checkText === nextOcrRes.text){      // 下一行完全相等
+                return [xy[0] + nextOcrRes.bounds.centerX(), xy[1] + nextOcrRes.bounds.centerY()]
+            } else {
+                console.log(`checkText: ${checkText}, ocrText: ${ocrResult.text}`);
+            }
+            
+        } else {
+            console.log(`ocrResult text: ${ocrResult.text}, not match: ${checkText}, nextOcrRes text: ${nextOcrRes.text}`)
+            continue
+        }
+    }
+    console.log(`定位 "${checkText}" 失败`);
+    return [0, 0]   
+}
+
+function ocrClickS(xy, checkTextArray, isLike, holdLimit, sleeep){
+    holdLimit = holdLimit? holdLimit: 60
+    isLike = isLike? isLike: false
+    sleeep = sleeep? sleeep: 300
+    var ocrObj = getOcrObj(xy, holdLimit)
+
+    for (let i = 0; i < checkTextArray.length; i++) {
+        var checkText = checkTextArray[i];
+        var ocrSeccess = false
+        for (let index = 0; index < ocrObj.length; index++) {
+            var ocrResult = ocrObj[index];
+            if (ocrResult.text==checkText || (isLike == true && checkText.includes(ocrResult.text.substring(0, 4)))){
+                console.log(`定位 "${checkText}" 成功`);
+                var [cx, cy] = [xy[0] + ocrResult.bounds.centerX(), xy[1] + ocrResult.bounds.centerY()]
+                pressXY(cx, cy, 100, sleeep);  //   门店自取
+                ocrSeccess = true
+                break
+            } else {
+                console.log(`ocrResult text: ${ocrResult.text}, not match: ${checkText}, substring: ${ocrResult.text.substring(0, 4)}`)
+            }
+        }   
+        if (ocrSeccess === false) { // 无法定位 checkText 字符串
+            return checkText
+        }
+    }
+    return true
+}
 
 function randomInt(min, max){
     min = Math.ceil(min)
@@ -147,7 +266,7 @@ function clickIdSleep(resourceId, sleepTime) {
 function pressSleep(textToClick, sleepTime) {
     // 通过文本定位元素
     // toast(textToClick);
-    console.log(`添加到购物车: ${textToClick}`);
+    
     sleepTime = sleepTime === undefined ? 200 : sleepTime
     var ele = text(textToClick).findOne(6000);
     if (ele === null) {
@@ -278,13 +397,14 @@ function isExists(content, findTime, sleepTime){
  * 截图函数
 */
 function takeScreenShot(savePath) {
-    sleep(200)
+    sleep(100)
     var result = shell("screencap -p " + savePath, true);
     if (result.code == 0) {
         console.log("截图成功，保存路径：" + savePath);
     } else {
         console.log("截图失败");
     }
+    sleep(300)
 };
 
 function clockFloaty(isClose){
@@ -353,6 +473,11 @@ module.exports = {
     pressContainsSleep: pressContainsSleep,
     getScreenImg: getScreenImg,
     ocrLoctionXY: ocrLoctionXY,
+    ocrLongTextXY: ocrLongTextXY,
+    ocrClickS: ocrClickS,
+    getOcrObj: getOcrObj,
+    getCityLatter: getCityLatter,
+    imgClips: imgClips,
     shotPath: shotPath,
     pathMap: pathMap,
     WIDTH: WIDTH

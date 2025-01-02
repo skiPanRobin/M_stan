@@ -1,4 +1,10 @@
-const {pressSleep, pressContainsSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, ocrLoctionXY, getScreenImg, randomInt, descClick} = require('./utils')
+const {
+    pressSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, randomInt, descClick,
+    ocrLoctionXY, ocrClickS, getOcrObj, imgClips, getCityLatter, ocrLongTextXY,
+    takeScreenShot,
+    pressContainsSleep
+
+} = require('./utils')
 
 function _textClickEvent(textContent, sleepTime){
     console.info('textContent: ' + textContent)
@@ -13,46 +19,52 @@ function _textClickEvent(textContent, sleepTime){
     return !ele ? false : true
 }
 
+function _ocrCoupons(couponText, total, tailCoupons){
+    var xy优惠券 = [350, 350, 600, 2020]
+    var x点击区 = 965
+    var y点击区_偏移量 = 75
+    var ocrObj优惠券 = getOcrObj(xy优惠券, 100)
+    for (let index = 0; index < ocrObj优惠券.length; index++) {
+        var ocrResult = ocrObj优惠券[index];
+        if (total <= 0 ){
+            break
+        }
+        if (couponText.includes(ocrResult.text.substring(0, 3))){
+            console.log(`定位 "${couponText}" 成功`);
+            var [cx, cy] = [x点击区, xy优惠券[1] + ocrResult.bounds.centerY() + y点击区_偏移量]
+            if (tailCoupons == undefined){
+                pressXY(cx, cy, 100, 1000);  //   门店自取
+            } else if(cy > 2000 - tailCoupons * 400) {
+                pressXY(cx, cy, 100, 1000);  //   门店自取
+            }
+            
+            --total
+        } else {
+            console.log(`ocrResult text: ${ocrResult.text}, not match: ${couponText}, substring: ${ocrResult.text.substring(0, 4)}`)
+        }
+    }
+    return total
+}
 
-function _selectCoupons(coupons){
+function _selectCoupons(coupons, userfulCoupons){
     var titleSub = coupons.titleSub;
     var total = coupons.total
+    var tailCoupons = userfulCoupons % 5
     sleep(800)
-    var tickts = textContains(titleSub).find()
-    total = total < tickts.length? total : tickts.length
-    toast(`coupons total: ${total}; titleSub: ${tickts.length}`)
-    console.log(`coupons total: ${total}; titleSub: ${tickts.length}`);
-    for (let index = 0; index < total; index++) {
-        for (let j = 0; j < 5; j++) {
-            var ele = textContains(titleSub).find()[index]
-            console.log(`ele bounds X: ${ele.bounds().centerX()}, Y: ${ele.bounds().centerY()}, i: ${index}, j:${j}`);
-            
-            if (ele.bounds().centerY() > 2000){
-                autoSwipe(500, 1900, 502, 400, 600, 1000)
-                continue
-            } else if (ele.bounds().centerY()  < 400){
-                autoSwipe(500, 400, 502, 1900, 600, 1000)
-                continue
-            } else {
-                var elesiblings = ele.parent().find(className('android.widget.Image'))
-                var isSelected = false
-                
-                for (let z = 0; z < elesiblings.length; z++) {
-                    var element = elesiblings[z];
-                    var bounds = element.bounds()
-                    console.log(`X: ${bounds.centerX()}, Y: ${bounds.centerY()}`);
-                    if ((bounds.centerX() > 850 && bounds.width() < 100) || elesiblings.length==1){
-                        click(bounds.centerX(), bounds.centerY())
-                        sleep(800)
-                        isSelected = true
-                        break   
-                    } 
-                }
-                if (isSelected === true){
-                    break
-                }
-            }
+    console.log(`需使用: ${total}; 总计: ${userfulCoupons}, 需翻页次数: ${Math.floor(userfulCoupons/5)}`);
+    for (let index = 0; index < Math.floor(userfulCoupons/5); index++) {
+        total = _ocrCoupons(titleSub, total)    // 选择优惠券
+        if (total<=0){
+            return
+        } else {
+            autoSwipe(500, 1900, 502, 400, 600, 1000)
         }
+    }
+    if (total>0 && userfulCoupons <= 5) {
+        _ocrCoupons(titleSub, total)
+    }
+    if (total > 0 && userfulCoupons > 5 && tailCoupons > 0){
+        _ocrCoupons(titleSub, total, tailCoupons)
     }
 }
 
@@ -116,34 +128,39 @@ function _addQuantities(quantity){
  * 清空购物车
 */
 function _clearShopCar(){
+    console.log('准备清空购物车...');
     var 已选购 =  textMatches(/^[已未]选购\d{0,2}[件]{0,1}商品$/).findOne(2000)
     var b自提 = text('自提').findOne(2000).bounds()
     if (!已选购){ return {"status": 0, "msg": ""}}
     var b已选购 = 已选购.bounds()
-    click(b已选购.centerX(), b已选购.centerY())
-    sleep(400)
-    click(b自提.centerX(), b自提.centerY())
-    sleep(300)
-    click(b已选购.centerX(), b已选购.centerY())
-    sleep(400)
-    var status_ = 13
+    pressXY(b已选购.centerX(), b已选购.centerY(), 150, 700)
+    pressXY(b自提.centerX(), b自提.centerY(), 150, 600)
+    pressXY(b已选购.centerX(), b已选购.centerY(), 150, 800)
+    var cntClear = 13
     while (textContains('最多可添加').findOne(300)){
-        status_ = 0
         var ele最多 = textContains('最多可添加').findOne(300)
         if (!ele最多){break}
         var ele = ele最多.parent().children()[3].children()[0]
         var children = ele.children()
+        if (children.length == 0){
+            // 商品多余两种时, for循环可能无法删除购物车种商品, 添加如下方法
+            pressXY(843, 1993, 150, 800)
+            continue   
+        }
         for (let index = 0; index < children.length; index++) {
             var element = children[index];
-            if (isNumeric(element.text())) {
+            if (!!element && isNumeric(element.text())) {
                 // console.log(`杯数 ${element.text()}, 下标: ${index}`);
-                click(children[index - 1].bounds().centerX(), children[index - 1].bounds().centerY())
-                sleep(300)
+                pressXY(children[index - 1].bounds().centerX(), children[index - 1].bounds().centerY(), 150, 200)
                 break
             } 
         }
+        sleep(600)
+        cntClear --
+        if (cntClear <= 0 ){break}
     }
-    return {'status': status_, 'msg': '清空购物车失败, 请人工检查'}
+
+    return {'status': cntClear > 0 ? 0 : 13, 'msg': '清空购物车失败, 请人工检查'}
 }
 function _toPayBottom(){
     sleep(1000)
@@ -193,17 +210,14 @@ function _useCoupons(coupons){
         return false
     }
     var isSelected = false
-    for (let index = 0; index < 5; index++) {
+    for (let index = 0; index < 3; index++) {
         pressXY(couponsEle.bounds().centerX(), couponsEle.bounds().centerY(), 200, 800)
         if(textContains(titleSub).findOne(4000)){
-            _selectCoupons(coupons)
+            _selectCoupons(coupons, userfulCoupons)
             isSelected = true
         } else {
             console.log('没有相关优惠券: ' + titleSub);
         }
-        // if (text('可使用').findOne(1000) || !text('优惠券').findOne(200)){
-        //     actionSleep(back, 500)
-        // } 
         actionSleep(back, 500)
         if (isSelected === true){
             break
@@ -232,45 +246,48 @@ function mstandTOMenu(payload){
             return true
         }
         pressSleep('上海市', 500)
-        if (text(cityName).findOne(2000)){
-            var cnt = 10
-            while (!!cnt){
-                var cityBounds = text(cityName).findOne(100).bounds()
-                console.log(cityBounds.centerX(), cityBounds.centerY());
-                if (cityBounds.centerY() < 200){
-                    autoSwipe(450, 400, 460, 1603, 400, 500)
-                } else if (cityBounds.centerY() > 2230){
-                    autoSwipe(460, 1603, 450, 400, 400, 500)
+        var [x, y] = ocrLoctionXY(imgClips.xy常用城市, cityName)
+        if (x > 0){
+            pressXY(x, y, 150, 500)
+            return
+        } else {
+            var latter = getCityLatter(cityName)
+            if (['B', 'C', 'D'].includes(latter)) {
+                console.log('直接通过"xy城市列表"识别城市名');
+            }  else {
+                var [lx, ly] = ocrLoctionXY(imgClips.xy城市开头大写, latter , false, 70, 60)
+                if (lx ==0){
+                    console.error(`无法定位城市, latter: ${latter} 定位失败`);
+                    throw new Error(`无法定位城市, latter: ${latter} 定位失败`);
                 } else {
-                    click(cityBounds.centerX(), cityBounds.centerY())
-                    sleep(400)
-                    break
+                    pressXY(lx, ly, 150, 500)
                 }
-                cnt--
             }
-            if (cnt == 0) {
-                throw new Error('无法定位城市')
+            var [lx, ly] = ocrLoctionXY(imgClips.xy城市列表, cityName)
+            if (lx == 0){
+                throw new Error(`无法定位城市, 城市名: ${cityName} 定位失败`);
+            } else {
+                pressXY(lx, ly, 150, 500)
+                return
             }
-        }else {
-            msg.status = 11
-            msg.msg = `无法定位城市: ${cityName}`
-            return false
         }
-        sleep(sleepTime)
-        return true
     }
     
     function selectShop(shopName){
-        if (!text('请输入门店名称').findOne(5000)){
+        if (!textContains('请输入门店名称').findOne(5000)){
             msg.status = 11
             msg.msg = '无法定位门店输入框'
             return false
         } 
+        if (!!shopName === false){
+            msg.status = 12
+            msg.msg = `shopName : ${shopName}`
+            return 
+        }
         for (let index = 0; index < 8; index++) {
-            var ele = textContains(shopName).findOne(500)
-            console.log(ele? `"${shopName}"位置: ${ele.bounds().centerY()}; index:${index}`: `页面中未出现"${shopName}"节点, index: ${index}`);
-            if (ele && ele.bounds().centerY() < 2100) {
-                var shopEle = className('android.widget.TextView').textContains(shopName).findOne(3000)
+            var ele = text(shopName).findOne(1000)
+            if (ele) {
+                var shopEle = className('android.widget.TextView').text(shopName).findOne(3000)
                 if (shopEle) {
                     click(shopEle.bounds().centerX(), shopEle.bounds().centerY())
                     break
@@ -278,9 +295,9 @@ function mstandTOMenu(payload){
                     console.log('无法定位商店, 重试次数: ' + index);  
                 }                
             } else {
-                if (text('请输入门店名称').findOne(1000)){
-                    pressSleep('请输入门店名称', 500)
-                    var inputEle = text('请输入门店名称').findOne(1000)
+                if (textContains('请输入门店名称').findOne(1000)){
+                    pressContainsSleep('请输入门店名称', 500)
+                    var inputEle = textContains('请输入门店名称').findOne(1000)
                     inputEle? inputEle.setText(shopName) : console.log('无法定位, 重试次数: ' + index)
                 } 
             }
@@ -295,12 +312,12 @@ function mstandTOMenu(payload){
         }
     }    
     pressSleep(payload.appName, 200)
-    text('首页').findOne(5000)
+    text('首页').findOne(9000)
     var currentStep = 1
     var whileCnt = 0
     var toShopCnt = 0
     // 网络问题可能导致页面无法加载
-    var xy门店自取 = [190, 1120, 450 , 1230]
+    var xy门店自取 = imgClips.xy门店自取
     while (currentStep < 3) {
         console.log('currentStep: ' + currentStep);
         if (toShopCnt > 3) {
@@ -311,17 +328,23 @@ function mstandTOMenu(payload){
         switch (currentStep){
             case 1:
                 whileCnt = 0
-                while (!text("手动选择").findOne(400)){
-                    pressXY(300, 300, 100, 500)    //  消除弹窗
-                    pressXY(300, 300, 100, 500)    //  消除弹窗
-
-                    var img = getScreenImg()
-                    var [cx, cy]  = ocrLoctionXY(img, xy门店自取, '门店自取')
+                while (!text("手动选择").findOne(500)){
+                    pressXY(300, 300, 150, 500)    //  消除弹窗
+                    pressXY(300, 300, 150, 500)    //  消除弹窗
+                    var [cx, cy]  = ocrLoctionXY(xy门店自取, '门店自取')
                     if (cx && cy){
-                        pressXY(cx, cy, 100, 500);  //   门店自取
+                        pressXY(cx, cy, 150, 500);  //   点击 "门店自取" 跳转到 "手动选择"
+                    } else {
+                        // 没有识别到 '门店自取', 识别弹窗中包含"同意" 并点击
+                        var [tx, ty]  = ocrLoctionXY(imgClips.xy同意协议, '同意并继续', true, 100, 20)
+                        if (tx && ty){
+                            pressXY(tx, ty, 150, 500)
+                        } else {
+                            console.log('没有定位到"同意协议弹窗"');
+                        }
                     }
                     whileCnt++
-                    if (whileCnt >= 10) {
+                    if (whileCnt >= 5) {
                         break
                     }
                 }
@@ -349,7 +372,7 @@ function mstandTOMenu(payload){
                     }                    
                     sleep(500)
                     whileCnt++
-                    if (whileCnt >= 10) {
+                    if (whileCnt >= 5) {
                         break
                     }
                 }
@@ -394,20 +417,38 @@ function mstandSelectDrinks(payload){
     function toItemDetail(item){
         console.log('toItemDetail');
         console.log(item.category + '==>' + item.productName)
-        pressSleep(item.category, 800)
-        swipTimes = 8
-        while (!!swipTimes){
-            var cy = text(item.productName).findOne(1000).bounds().centerY()
-            console.log(cy);
-            swipTimes--
-            if (cy >= 800 &&  cy <=  2000){
-                console.log(`centerY : ${cy}; productName: ${item.productName}`);
-                pressSleep(item.productName)
+        for (let i = 0; i < 3; i++) {
+            var [categoryX, categoryY] = ocrLoctionXY(imgClips.xy咖啡类目, item.category, false, 180)
+            if (categoryX == 0){
+                var [x果咖, y果咖] = ocrLoctionXY(imgClips.xy咖啡类目, '果咖', false, 180)
+                pressXY(x果咖, y果咖, 150, 800)
+            } else  {
+                pressXY(categoryX, categoryY, 150, 800)
                 break
-            } else if(cy < 800 ) {
-                autoSwipe(800, 800, 800, 1800, 500, 500)   // 手指往下滑
+            }
+            if (i >= 2){
+                throw new Error(`无法定位到类目: ${item.category}`)   
+            }
+        }
+        
+        swipTimes = 10
+        while (!!swipTimes){
+            var productName = item.productName.replace(/\s+/g, "")
+            if (item.productName.length <= 13){
+                var [productX, productY] = ocrLoctionXY(imgClips.xy咖啡列表, productName, true, 60)
             } else {
-                autoSwipe(650, 1800, 650, 800, 500, 500)    // 手指往上滑
+                var [productX, productY] = ocrLongTextXY(imgClips.xy咖啡列表, productName, 60)
+            }
+            console.log(`productName: ${productName}; ${item.productName}, productX: ${productX}, productY: ${productY}`);
+            swipTimes--
+            if (productY >= 800 &&  productY <=  2070){
+                console.log(`centerY : ${productY}; productName: ${item.productName}`);
+                pressXY(productX, productY, 150, 1000)
+                break
+            } else if(productY < 800 ) {
+                autoSwipe(850, 1700, 850, 800, 500, 800)    // 手指往上滑
+            } else {
+                autoSwipe(800, 800, 800, 1700, 500, 800)   // 手指往下滑
             }
         }
         if (!!swipTimes){
@@ -425,6 +466,7 @@ function mstandSelectDrinks(payload){
     // 开始选购商品前清空购物车
     if (textContains('结算').findOne(5000) && textContains('结算').findOne(5000).text() === '去结算') {
         var result = _clearShopCar()
+        console.log(`clear shop car result: ${result}`);
         if (result.status != 0){
             msg.status == result.status
             msg.msg = result.msg
@@ -435,60 +477,47 @@ function mstandSelectDrinks(payload){
     for (let shop of shopList){
         console.info('category:  '+ shop.category)
         console.info('productName: ' + shop.productName)
-        var pnEle = text(shop.productName).findOne(8000)
-        if (pnEle){
-            toItemDetail(shop)
-            sleep(500)
-        } else {
-            msg.status = 14
-            msg.msg = `商品无法定位: ${shop.productName}`
-            msg.payload.shopFailList.push(shop)
-            console.error(msg);
-            break
-        }
+        toItemDetail(shop)
         // 可能因为弹窗导致选购商品失败, 确认是否进入商品详情页面
-        if (!(text('规格').findOne(2000))){
+        if (!(textContains('规格').findOne(2000))){
             pressSleep('自提', 300)
             pressSleep('自提', 300)
             toItemDetail(shop)
             sleep(400)
         }
         // 当商品缺货时, 加入购物车不能点击, 页面保持在商品选购页. "规格" 只会出现在选购页面
-        if (!text('规格').findOne(2000)){
+        if (!textContains('规格').findOne(2000)){
             console.error('添加失败' + shop);
             msg.status = 14      // 商品添加失败
             msg.msg = `商品选购失败: ${shop.productName}`
             msg.payload.shopFailList.push(shop)
             break
         }
-        autoSwipe(400, 1300, 400, 500, 300, 500)
+        autoSwipe(400, 1300, 400, 500, 300, 500)    // 滑动到咖啡属性页底部
+        var featureElse = []
+
         shop.feature.forEach( feat => {
-            // text('规格').findOne(2000)
-            // autoSwipe(400, 1300, 400, 500, 300, 300)
-            var featEle = textContains(feat).findOne(2000)
-            if (featEle){
-                pressContainsSleep(feat, 100)
-            } else {
-                if(feat.includes('冷') || feat.includes('冰')){
-                    var start = feat.slice(0, 3)
-                    var end = feat.slice(-6)
-                    var regStr = "^" + start + "[冷冰]{1}" + end + '$'
-                    featEle = textMatches(regStr).findOne(2000)
-                    if (featEle){
-                        click(featEle.bounds().centerX(), featEle.bounds().centerY())
-                    } else {
-                        console.log(`没有匹配到:${feat}`);
-                    }
+            if(feat.includes('杯')){
+                var [temX, temY] = ocrLoctionXY(imgClips.xy咖啡属性_温度, feat, true, 120, 20)
+                if  (temX == 0) {
+                    console.error(`无法定位咖啡温度, 关键字: ${feat}`)
+
                 } else {
-                    console.log(`没有选中饮料属性: ${feat}`);
-                    toast(`没有选中饮料属性: ${feat}`)
+                    // 冷/热杯切换时, 商品可能会切换属性,如是加冰相关选项变动, 需要等待页面加载
+                    pressXY(temX, temY, 150, 1000)
+                    autoSwipe(400, 1300, 400, 500, 300, 800)    // 滑动到咖啡属性页底部
                 }
-            }
-            if (feat.includes('杯')){
-                // 冷/热杯切换时, 商品可能会切换属性,如是加冰相关选项变动, 需要等待页面加载
-                sleep(500)
+            }  else if (feat == '一份'){
+                console.log('ocr无法识别"一份", 特殊处理');
+            } else{
+                featureElse.push(feat)
             }
         })
+        var ocrsRes = ocrClickS(imgClips.xy咖啡属性_其他, featureElse, true, 100, 200)
+        if ( ocrsRes !== true){
+            console.warn(`ocr click feat fail, feats: ${featureElse}`)
+            throw new Error(`"${shop.productName}"无法选择"${ocrsRes}"`)
+        }
         _addQuantities(shop.quantity)
         pressSleep('加入购物车', 200)
         // 当商品缺货时, 加入购物车不能点击, 页面保持在商品详情选购页. "规格" 只会出现在商品详情选购页面
@@ -507,7 +536,7 @@ function mstandSelectDrinks(payload){
             default:
                 console.error('添加失败' + shop);
                 msg.status = 15      // 商品添加失败
-                msg.msg = `商品选购失败: ${shop.category}`
+                msg.msg = `商品选购失败: ${shop.productName}`
                 msg.payload.shopFailList.push(shop)
                 actionSleep(back, 500)  // 回到饮品列表页
                 break;
@@ -518,19 +547,12 @@ function mstandSelectDrinks(payload){
 }
 
 function _payment(isTest){
-    function matchMoney(str){
-        if (!!str && typeof(str) === 'string'){
-            var _ = str.match(/[.\d]+/)
-            return !!_? parseFloat(_[0]): 0
-        }
-        return 0
-    }
     if (text('余额支付').find().length == 1){
-        console.log('余额支付: ', text('余额支付').findOne().bounds().centerY());
+        console.log('"余额支付" Y坐标: ', text('余额支付').findOne().bounds().centerY());
         pressXY(990, text('余额支付').findOne().bounds().centerY(), 200, 500)
     }
     var 支付bottoms = text('待支付').findOne(1000).parent().children().find(text('余额支付'))
-    if (支付bottoms){
+    if (支付bottoms && 支付bottoms[0]){
         console.log(支付bottoms[0].bounds().centerX(), 支付bottoms[0].bounds().centerY(), 200, 500);
         pressXY(支付bottoms[0].bounds().centerX(), 支付bottoms[0].bounds().centerY(), 200, 500)
     } else {
@@ -543,63 +565,20 @@ function _payment(isTest){
         } else {
             pressSleep('确定门店', 500)
         }
-        
-        // if (textContains('余额支付').findOne(3000)){
-        //     var balance = 0
-        //     var amount = 0
-        //     if (textContains('储值余额').findOne(3000)){
-        //         balance = matchMoney(textContains('储值余额').findOne(3000).text())
-        //     }
-        //     if (textContains('余额支付').findOne(2000)){
-        //         amount = matchMoney(textContains('余额支付').findOne(2000).text())
-        //     }   
-        //     console.log(`账户余额: ${balance}, 需支付: ${amount}`);
-        //     console.log('余额是否充足：' + !( balance && balance < amount));
-        //     if (balance && balance < amount){
-        //         console.log(`余额不足, 余额: ${balance}, 需支付: ${amount}`);
-        //         return {'status': 17, "msg": "余额不足, 转人工"}
-        //     } else  {
-        //         if (isTest == true){
-        //             console.log('测试支付...');
-        //             return {'status': 0, "msg": "测试支付"}
-        //         } else {
-        //             pressContainsSleep('余额支付', 100)
-        //         }
-        //     }
-        // } else {
-        //     if (isTest == true){
-        //         console.log('测试支付...');
-        //         return {'status': 0, "msg": "测试支付"}
-        //     }
-        //     return {"status": 18, "msg": "没有进入到余额支付页面"}
-        // }
         for (let index = 0; index < 3; index++) {
             if (!text('查看卡券').findOne(1000)){
                 console.log('查看卡券 没定位到');
-                click(250, 250)
+                pressXY(randomInt(240, 260), randomInt(240, 260), 100, 500)
             }  else {
                 console.log('定位到卡券 break')
-                click(250, 250)
+                pressXY(randomInt(240, 260), randomInt(240, 260), 100, 500)
                 break
             }
         }
-        // 关闭查看卡券
-        while (text('查看卡券').findOne(500)) {
-            console.log('查看卡券 已定位到')
-            var ele = textContains('关注 M Stand').findOne(3000)
-            ele ? pressSleep('关注 M Stand', 300): console.log('关注 M Stand 无法定位');
-        }
-        while (text('查看卡券').findOne(500)){
-            console.log('再次定位到卡券');
-            click(250, 250);
-            sleep(1000)
-        }
-        if (textContains('关注 M Stand').findOne(500)){
-            pressSleep('关注 M Stand', 300)
-        } {
-            console.log();
-            click(820, 371)
-        }
+        // 不管卡券是否定位到, 都点击屏幕空白区域(250, 250)
+        pressXY(randomInt(240, 260), randomInt(240, 260), 100, 500)
+        takeScreenShot(`/sdcard/DCIM/支付是否成功前截图${(new Date()).getTime()}.png`)
+        pressXY(randomInt(240, 260), randomInt(240, 260), 100, 500)
         return {"status": 0, "msg": ""}
     } else {
         console.log('无法定位确认门店.. 请人工确认');
@@ -639,8 +618,7 @@ function _newWriteNotes(notes){
         }
         pressXY(WIDTH/2.2, finish.bounds().bottom + 80, 200, 300)  // 点击输入法剪贴板上备注
         pressSleep('完成', 400)
-        var img = getScreenImg()
-        var [x保存, y保存] = ocrLoctionXY(img, [470, 1410, 600, 1770], '保存')
+        var [x保存, y保存] = ocrLoctionXY([470, 1410, 600, 1770], '保存')
         console.log(`点击"保存", x: ${x保存}, y: ${y保存}`);
         pressXY(x保存, y保存, 200, 500)  // 点击备注框'保存'按钮
         // pressSleep('保存', 400)
@@ -713,13 +691,25 @@ function mstandPayment(payload){
             break
         default:
             break;
-    }  
-    var img = getScreenImg()
-    if (!ocrLoctionXY(img, [450, 300, 650, 400], "已下单")[0]){
-        msg.status = 19
-        msg.msg = payload.isTest == true ? '测试任务不支付': '支付可能失败,未检测到"已下单"'
-        toast(msg.msg)
     }
+    for (let index = 0; index < 8; index++) {
+        if (payload.isTest == true){
+            msg.status = 19
+            msg.msg = "测试任务不支付"
+            toast(msg.msg)
+            return msg
+        }else if (!!ocrLoctionXY([400, 300, 700, 500], "已下单", false, 120, 20)[0] === true){
+            return msg
+        }else if (!!ocrLoctionXY([400, 300, 700, 500], "制作中", false, 120, 20)[0] === true){
+            return msg
+        }
+        else {
+            console.warn(`未检测到"已下单"; index : ${index}`);
+            pressXY(randomInt(240, 260), randomInt(240, 260), 150, 1000)
+        }
+    }
+    msg.status = 19
+    msg.msg = payload.isTest == true ? '测试任务不支付': '支付可能失败,未检测到"已下单"'
     return msg
 }
 
