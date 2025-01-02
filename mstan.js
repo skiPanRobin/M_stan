@@ -1,7 +1,8 @@
 const {
     pressSleep, pressXY, autoSwipe, actionSleep, isNumeric, isExists, WIDTH, randomInt, descClick,
     ocrLoctionXY, ocrClickS, getOcrObj, imgClips, getCityLatter, ocrLongTextXY,
-    takeScreenShot
+    takeScreenShot,
+    pressContainsSleep
 
 } = require('./utils')
 
@@ -273,7 +274,7 @@ function mstandTOMenu(payload){
     }
     
     function selectShop(shopName){
-        if (!text('请输入门店名称').findOne(5000)){
+        if (!textContains('请输入门店名称').findOne(5000)){
             msg.status = 11
             msg.msg = '无法定位门店输入框'
             return false
@@ -294,9 +295,9 @@ function mstandTOMenu(payload){
                     console.log('无法定位商店, 重试次数: ' + index);  
                 }                
             } else {
-                if (text('请输入门店名称').findOne(1000)){
-                    pressSleep('请输入门店名称', 500)
-                    var inputEle = text('请输入门店名称').findOne(1000)
+                if (textContains('请输入门店名称').findOne(1000)){
+                    pressContainsSleep('请输入门店名称', 500)
+                    var inputEle = textContains('请输入门店名称').findOne(1000)
                     inputEle? inputEle.setText(shopName) : console.log('无法定位, 重试次数: ' + index)
                 } 
             }
