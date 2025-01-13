@@ -246,6 +246,7 @@ function mstandTOMenu(payload){
             return true
         }
         pressSleep('上海市', 500)
+        text('城市选择').findOne(5000)
         var [x, y] = ocrLoctionXY(imgClips.xy常用城市, cityName)
         if (x > 0){
             pressXY(x, y, 150, 500)
@@ -286,7 +287,7 @@ function mstandTOMenu(payload){
         }
         for (let index = 0; index < 8; index++) {
             var ele = text(shopName).findOne(1000)
-            if (ele) {
+            if (ele && ele.bounds().centerY() < 2200) {
                 var shopEle = className('android.widget.TextView').text(shopName).findOne(3000)
                 if (shopEle) {
                     click(shopEle.bounds().centerX(), shopEle.bounds().centerY())
@@ -299,7 +300,13 @@ function mstandTOMenu(payload){
                     pressContainsSleep('请输入门店名称', 500)
                     var inputEle = textContains('请输入门店名称').findOne(1000)
                     inputEle? inputEle.setText(shopName) : console.log('无法定位, 重试次数: ' + index)
-                } 
+                    sleep(500)
+                } else {
+                    // 门店输入框未加载的情况下
+                    setClip(shopName)                   // 复制门店名称到输入法
+                    pressXY(831, 303, 150, 500)         // 点击输入框
+                    pressXY(WIDTH/2.2, 1495, 150, 500)  // 点击输入法剪复制的shopName
+                }
             }
         }
         console.log('完成选择');
@@ -359,7 +366,6 @@ function mstandTOMenu(payload){
             case 2: 
                 if (text('选择门店').findOne(1000)){
                     // 页面可能会直接跳转到选择城市导致错误
-                    toast('定位到 "选择门店"')
                     actionSleep(back, 500)
                 }
                 whileCnt = 0
@@ -507,7 +513,7 @@ function mstandSelectDrinks(payload){
                     pressXY(temX, temY, 150, 1000)
                     autoSwipe(400, 1300, 400, 500, 300, 800)    // 滑动到咖啡属性页底部
                 }
-            }  else if (feat == '一份'){
+            }  else if (feat == '一份' || (shop.productName == '脏咖啡' && feat == '经典拼配')){
                 console.log('ocr无法识别"一份", 特殊处理');
             } else{
                 featureElse.push(feat)

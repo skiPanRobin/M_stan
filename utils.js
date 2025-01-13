@@ -229,7 +229,6 @@ function actionSleep(func, sleepTime){
  */
 function clickSleep(textToClick, sleepTime) {
     // 点击传入的文本
-    toast(textToClick);
     click(textToClick);
     sleep(sleepTime); // 休眠指定时间
 };
@@ -279,7 +278,6 @@ function pressSleep(textToClick, sleepTime) {
         var x = bounds.centerX();
         var y = bounds.centerY();
         // 在元素中心点长按0.5秒
-        toast('x:' + x + ';y: ' + y)
         press(x, y, 150);
         sleep(sleepTime); // 休眠指定时间
         return true
@@ -303,7 +301,6 @@ function pressContainsSleep(textSub, sleepTime) {
         var x = bounds.centerX();
         var y = bounds.centerY();
         // 在元素中心点长按0.5秒
-        toast('x:' + x + ';y: ' + y)
         press(x, y, 150);
         sleep(sleepTime); // 休眠指定时间
         return true
@@ -321,7 +318,6 @@ function clickByPartialText(partialText, sleepTime) {
     var element = textMatches(partialText + ".*").findOne(2000);
     if (element) {
         element.click();
-        toast("已点击: " + element.text());
         sleep(sleepTime)
     } else {
         toast("未找到包含文本: " + partialText);
@@ -351,7 +347,6 @@ function inputAndSubmit(inputText, findText, sleepTime) {
         var inputField = text(findText).findOne(3000);
         inputField.setText(findText)
         typeTextSlowly(inputField, inputText); // 每输入一个字母间隔200毫秒
-        toast("已输入: " + inputText);
         inputField.click();
         sleep(sleepTime)
     } else {
